@@ -3,7 +3,14 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 
+// import * as fs from 'fs';
+
+// contextBridge.exposeInMainWorld('fs', fs);
+
 contextBridge.exposeInMainWorld('electron', {
+    readFile: (filePath: string) => ipcRenderer.invoke('read-file', filePath),
+    unzip: (filePath: string) => ipcRenderer.invoke('unzip', filePath),
+
     send: (channel: string, data: any) => {
         ipcRenderer.send(channel, data);
     },

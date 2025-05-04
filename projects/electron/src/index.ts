@@ -1,5 +1,7 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
+import * as fs from 'fs';
+import AdmZip from 'adm-zip';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -15,6 +17,7 @@ const createWindow = (): void => {
         width: 800,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
         },
     });
 
@@ -47,6 +50,27 @@ app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
     }
+});
+
+ipcMain.handle('read-file', async (_evt, filePath) => {
+    return await fs.promises.readFile(filePath);
+});
+
+ipcMain.handle('unzip', (_evt, filePath) => {
+    const zip = new AdmZip(filePath);
+    const info = zip.getEntry('ComicInfo.xml');
+
+    const img = zip.getEntry('Aquamen 002 (2022) (Digital) (BlackManta-Empire)/Aquamen (2022-) 002-000.jpg');
+
+    if (img) {
+        return img.getData()
+    }
+
+    if (info) {
+        return zip.readAsText(info);
+    }
+
+    return zip.getEntries().map(o => o.entryName);
 });
 
 // In this file you can include the rest of your app's specific main process
