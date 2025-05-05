@@ -3,6 +3,7 @@ import { ElectronService } from './core/electron.service';
 
 import { Buffer } from 'buffer';
 import { BookApiService } from './core/api/book-api.service';
+import { ComicVineService } from './core/api/comic-vine-api.service';
 
 @Component({
     selector: 'app-root',
@@ -11,6 +12,7 @@ import { BookApiService } from './core/api/book-api.service';
 })
 export class AppComponent implements OnInit {
     private bookApiService = inject(BookApiService);
+    private comicVineService = inject(ComicVineService);
 
     title = 'comicinator';
     public imgSrc: string = '';
@@ -29,6 +31,11 @@ export class AppComponent implements OnInit {
 
         // const image = new Blob([zip], { type: 'image/jpeg' });
         // this.imgSrc = URL.createObjectURL(image);
+    }
+
+    protected async loadComics() {
+        const results = await this.comicVineService.searchIssues('batman');
+        console.log('search results', results);
     }
 
     protected async createBook() {

@@ -1,10 +1,11 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, session } from 'electron';
 import path from 'path';
 import * as fs from 'fs';
 import AdmZip from 'adm-zip';
 // import Database from 'better-sqlite3';
-import { open } from 'sqlite'
-import sqlite3 from 'sqlite3'
+import { open } from 'sqlite';
+import sqlite3 from 'sqlite3';
+// import sharp from 'sharp';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -16,9 +17,9 @@ let mainWindow: BrowserWindow | null;
 // const db = {} as any;// new Database('D:\\projects\\comicinator\\db\\cdb.db', { fileMustExist: true });
 
 const dbLoader = open({
-    filename: 'D:\\projects\\comicinator\\db\\cdb.db',
-    driver: sqlite3.Database
-  });
+    filename: 'C:\\Development\\comicinator\\db\\cdb.db',
+    driver: sqlite3.Database,
+});
 
 const createWindow = (): void => {
     // Create the browser window.
@@ -35,6 +36,28 @@ const createWindow = (): void => {
         ? `file://${path.join(__dirname, 'comicinator', 'index.html')}`
         : `http://localhost:4200`;
 
+    const filter = {
+        urls: ['https://comicvine.gamespot.com/*'],
+    };
+
+    mainWindow.webContents.session.webRequest.onBeforeSendHeaders(
+        filter,
+        (details, callback) => {
+            details.requestHeaders.Origin = `https://comicvine.gamespot.com/*`;
+            callback({ requestHeaders: details.requestHeaders });
+        }
+    );
+
+    mainWindow.webContents.session.webRequest.onHeadersReceived(
+        filter,
+        (details, callback) => {
+            details.responseHeaders['access-control-allow-origin'] = [
+                'http://localhost:4200', // URL your local electron app hosted
+            ];
+            callback({ responseHeaders: details.responseHeaders });
+        }
+    );
+
     mainWindow.loadURL(startURL);
 };
 
@@ -50,7 +73,7 @@ app.on('ready', () => {
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-        dbLoader.then(db => db.close());
+        dbLoader.then((db) => db.close());
         app.quit();
     }
 });
@@ -71,37 +94,48 @@ ipcMain.handle('unzip', (_evt, filePath) => {
     const zip = new AdmZip(filePath);
     const info = zip.getEntry('ComicInfo.xml');
 
-    const img = zip.getEntry('Aquamen 002 (2022) (Digital) (BlackManta-Empire)/Aquamen (2022-) 002-000.jpg');
+    const img = zip.getEntry(
+        'Aquamen 002 (2022) (Digital) (BlackManta-Empire)/Aquamen (2022-) 002-000.jpg'
+    );
 
     if (img) {
-        return img.getData()
+        return img.getData();
     }
 
     if (info) {
         return zip.readAsText(info);
     }
 
-    return zip.getEntries().map(o => o.entryName);
+    return zip.getEntries().map((o) => o.entryName);
 });
 
-ipcMain.handle('sql-insert', async (_evt: any, statement: string, ...args: any[]) => {
-    const db = await dbLoader;
-    const stmt = await db.prepare(statement);
-    const result = stmt.run(...args);
-    return (await result).lastID;
-});
+ipcMain.handle(
+    'sql-insert',
+    async (_evt: any, statement: string, ...args: any[]) => {
+        const db = await dbLoader;
+        const stmt = await db.prepare(statement);
+        const result = stmt.run(...args);
+        return (await result).lastID;
+    }
+);
 
-ipcMain.handle('sql-select-all', async (_evt: any, statement: string, ...args: any[]) => {
-    const db = await dbLoader;
-    const stmt = await db.prepare(statement);
-    return await stmt.all(...args);
-});
+ipcMain.handle(
+    'sql-select-all',
+    async (_evt: any, statement: string, ...args: any[]) => {
+        const db = await dbLoader;
+        const stmt = await db.prepare(statement);
+        return await stmt.all(...args);
+    }
+);
 
-ipcMain.handle('sql-select', async (_evt: any, statement: string, ...args: any[]) => {
-    const db = await dbLoader;
-    const stmt = await db.prepare(statement);
-    return await stmt.get(...args);
-});
+ipcMain.handle(
+    'sql-select',
+    async (_evt: any, statement: string, ...args: any[]) => {
+        const db = await dbLoader;
+        const stmt = await db.prepare(statement);
+        return await stmt.get(...args);
+    }
+);
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
