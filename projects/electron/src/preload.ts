@@ -11,6 +11,10 @@ contextBridge.exposeInMainWorld('electron', {
     readFile: (filePath: string) => ipcRenderer.invoke('read-file', filePath),
     unzip: (filePath: string) => ipcRenderer.invoke('unzip', filePath),
 
+    sqlInsert: (sql: string, params: any[]) => ipcRenderer.invoke('sql-insert', sql, params),
+    sqlSelectAll: (sql: string, params: any[]) => ipcRenderer.invoke('sql-select-all', sql, params),
+    sqlSelect: (sql: string, params: any[]) => ipcRenderer.invoke('sql-select', sql, params),
+
     send: (channel: string, data: any) => {
         ipcRenderer.send(channel, data);
     },

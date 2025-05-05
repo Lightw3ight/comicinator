@@ -2,6 +2,9 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import * as fs from 'fs';
 import AdmZip from 'adm-zip';
+// import Database from 'better-sqlite3';
+import { open } from 'sqlite'
+import sqlite3 from 'sqlite3'
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -9,6 +12,13 @@ if (require('electron-squirrel-startup')) {
 }
 
 let mainWindow: BrowserWindow | null;
+
+// const db = {} as any;// new Database('D:\\projects\\comicinator\\db\\cdb.db', { fileMustExist: true });
+
+const dbLoader = open({
+    filename: 'D:\\projects\\comicinator\\db\\cdb.db',
+    driver: sqlite3.Database
+  });
 
 const createWindow = (): void => {
     // Create the browser window.
@@ -40,6 +50,7 @@ app.on('ready', () => {
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
+        dbLoader.then(db => db.close());
         app.quit();
     }
 });
@@ -71,6 +82,25 @@ ipcMain.handle('unzip', (_evt, filePath) => {
     }
 
     return zip.getEntries().map(o => o.entryName);
+});
+
+ipcMain.handle('sql-insert', async (_evt: any, statement: string, ...args: any[]) => {
+    const db = await dbLoader;
+    const stmt = await db.prepare(statement);
+    const result = stmt.run(...args);
+    return (await result).lastID;
+});
+
+ipcMain.handle('sql-select-all', async (_evt: any, statement: string, ...args: any[]) => {
+    const db = await dbLoader;
+    const stmt = await db.prepare(statement);
+    return await stmt.all(...args);
+});
+
+ipcMain.handle('sql-select', async (_evt: any, statement: string, ...args: any[]) => {
+    const db = await dbLoader;
+    const stmt = await db.prepare(statement);
+    return await stmt.get(...args);
 });
 
 // In this file you can include the rest of your app's specific main process

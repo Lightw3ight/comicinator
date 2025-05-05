@@ -4,7 +4,6 @@ import { IpcRenderer } from 'electron';
 
 @Injectable({providedIn: 'root'})
 export class ElectronService {
-    // public fs: typeof fs = (window as any)['fs'];
     private electron: any = (window as any)['electron'];
 
     public async readFile(filePath: string) {
@@ -15,13 +14,15 @@ export class ElectronService {
         return this.electron.unzip(filePath);
     }
 
-    // constructor() {
-    //     if (this.isElectron()) {
-    //         this.fs = window.require('fs');
-    //     }
-    // }
-    
-    // public isElectron = () => {
-    //     return window && window.process// && window.process.type;
-    // };
+    public async sqlInsert(sql: string, ...params: any[]) {
+        return this.electron.sqlInsert(sql, ...params);
+    }
+
+    public async sqlSelectAll<T>(sql: string, ...params: any[]): Promise<T[]> {
+        return this.electron.sqlSelectAll(sql, ...params);
+    }
+
+    public async sqlSelect<T>(sql: string, ...params: any[]): Promise<T | undefined> {
+        return this.electron.sqlSelect(sql, ...params);
+    }
 }
