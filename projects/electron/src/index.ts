@@ -1,10 +1,15 @@
-import { app, BrowserWindow, ipcMain, session } from 'electron';
-import path from 'path';
-import * as fs from 'fs';
 import AdmZip from 'adm-zip';
-// import Database from 'better-sqlite3';
+import { app, BrowserWindow, ipcMain, net, protocol } from 'electron';
+import * as fs from 'fs';
+import path from 'path';
 import { open } from 'sqlite';
 import sqlite3 from 'sqlite3';
+import { getFileSystemMethods } from './file-system/file-system-handlers';
+import { getSqlHandlers } from './handlers/sql-handlers';
+import { ZIP_HANDLERS } from './zip/zip-handlers';
+import { createLazyValue } from './helpers/lazy-value';
+import { getZipThumbnail } from './helpers/get-zip-thumbnail';
+
 // import sharp from 'sharp';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -12,25 +17,44 @@ if (require('electron-squirrel-startup')) {
     app.quit();
 }
 
-let mainWindow: BrowserWindow | null;
+const mainWindow = createLazyValue<BrowserWindow>();
+const dataPath = app.isPackaged
+    ? path.join(__dirname, 'data')
+    : path.join(
+          __dirname.substring(0, __dirname.lastIndexOf('\\')),
+          'debug-data'
+      );
+const thumbPath = path.join(dataPath, 'thumb-cache');
+const noThumbAvailablePath = path.join(dataPath, 'no-thumbnail.jpg');
+
+try {
+    fs.accessSync(thumbPath);
+} catch {
+    fs.mkdirSync(thumbPath, { recursive: true });
+}
 
 // const db = {} as any;// new Database('D:\\projects\\comicinator\\db\\cdb.db', { fileMustExist: true });
 
 const dbLoader = open({
-    filename: 'C:\\Development\\comicinator\\db\\cdb.db',
+    filename: path.join(dataPath, 'cdb.db'),
     driver: sqlite3.Database,
 });
 
+console.log('DIR', __dirname);
+
 const createWindow = (): void => {
     // Create the browser window.
-    mainWindow = new BrowserWindow({
-        height: 600,
-        width: 800,
-        webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
-            contextIsolation: true,
-        },
-    });
+    mainWindow.set(
+        new BrowserWindow({
+            height: 600,
+            width: 800,
+            webPreferences: {
+                webSecurity: true,
+                preload: path.join(__dirname, 'preload.js'),
+                contextIsolation: true,
+            },
+        })
+    );
 
     const startURL = app.isPackaged
         ? `file://${path.join(__dirname, 'comicinator', 'index.html')}`
@@ -40,7 +64,7 @@ const createWindow = (): void => {
         urls: ['https://comicvine.gamespot.com/*'],
     };
 
-    mainWindow.webContents.session.webRequest.onBeforeSendHeaders(
+    mainWindow().webContents.session.webRequest.onBeforeSendHeaders(
         filter,
         (details, callback) => {
             details.requestHeaders.Origin = `https://comicvine.gamespot.com/*`;
@@ -48,7 +72,7 @@ const createWindow = (): void => {
         }
     );
 
-    mainWindow.webContents.session.webRequest.onHeadersReceived(
+    mainWindow().webContents.session.webRequest.onHeadersReceived(
         filter,
         (details, callback) => {
             details.responseHeaders['access-control-allow-origin'] = [
@@ -58,13 +82,22 @@ const createWindow = (): void => {
         }
     );
 
-    mainWindow.loadURL(startURL);
+    mainWindow().loadURL(startURL);
 };
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
+    protocol.handle('zip-thumb', async (request) => {
+        const url = request.url.replace(/^zip-thumb:\/\//, '').replace(/\//g, '\\');
+        const normalizedPath = decodeURIComponent(url);
+
+        
+        console.log('handling', normalizedPath);
+        return getZipThumbnail(normalizedPath, thumbPath, noThumbAvailablePath);
+    });
+
     createWindow();
 });
 
@@ -109,33 +142,22 @@ ipcMain.handle('unzip', (_evt, filePath) => {
     return zip.getEntries().map((o) => o.entryName);
 });
 
-ipcMain.handle(
-    'sql-insert',
-    async (_evt: any, statement: string, ...args: any[]) => {
-        const db = await dbLoader;
-        const stmt = await db.prepare(statement);
-        const result = stmt.run(...args);
-        return (await result).lastID;
-    }
-);
+function registerHandlers(
+    prefix: string,
+    handlers: { [key: string]: Function }
+) {
+    Object.entries(handlers).forEach(([name, fn]: [string, Function]) => {
+        ipcMain.handle(`${prefix}-${name}`, async (_evt: any, ...args: any[]) =>
+            fn(...args)
+        );
+    });
+}
 
-ipcMain.handle(
-    'sql-select-all',
-    async (_evt: any, statement: string, ...args: any[]) => {
-        const db = await dbLoader;
-        const stmt = await db.prepare(statement);
-        return await stmt.all(...args);
-    }
-);
+registerHandlers('fs', getFileSystemMethods(mainWindow));
 
-ipcMain.handle(
-    'sql-select',
-    async (_evt: any, statement: string, ...args: any[]) => {
-        const db = await dbLoader;
-        const stmt = await db.prepare(statement);
-        return await stmt.get(...args);
-    }
-);
+registerHandlers('sql', getSqlHandlers(dbLoader));
+
+registerHandlers('zip', ZIP_HANDLERS);
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.

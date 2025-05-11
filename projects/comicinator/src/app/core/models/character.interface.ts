@@ -1,0 +1,13 @@
+export interface Character {
+    id: number,
+    name: string,
+    aliases?: string,
+    creators?: string,
+    summary?: string,
+    description?: string,
+    gender?: string,
+    origin?: string,
+    powers?: string,
+    publisher?: string,
+    realName?: string
+}

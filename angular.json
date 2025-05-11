@@ -29,7 +29,11 @@
                                 "input": "projects/comicinator/public"
                             }
                         ],
-                        "styles": ["projects/comicinator/src/styles.scss"],
+                        "styles": [
+                          "@angular/material/prebuilt-themes/cyan-orange.css",
+                          "bootstrap-icons/font/bootstrap-icons.scss",
+                          "projects/comicinator/src/styles.scss"
+                        ],
                         "scripts": []
                     },
                     "configurations": {
@@ -84,7 +88,10 @@
                                 "input": "projects/comicinator/public"
                             }
                         ],
-                        "styles": ["projects/comicinator/src/styles.scss"],
+                        "styles": [
+                          "@angular/material/prebuilt-themes/cyan-orange.css",
+                          "projects/comicinator/src/styles.scss"
+                        ],
                         "scripts": []
                     }
                 }

@@ -1,0 +1,33 @@
+<h2 mat-dialog-title>Scan for new comics</h2>
+<mat-dialog-content>
+    @if (!processing()) {
+    <p>Scan your library for new comics</p>
+    <mat-checkbox [checked]="checkForXml()" (change)="checkForXml.set($event.checked)">
+        Check for ComicInfo.xml
+      </mat-checkbox>
+    } @else {
+    <span>{{ progressText() }}</span>
+    <mat-progress-bar
+        [mode]="progress() === 0 ? 'indeterminate' : 'determinate'"
+        [value]="progress()"
+    ></mat-progress-bar>
+    }
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button
+        mat-button
+        (click)="cancel()"
+        [disabled]="scanning() || canceling()"
+    >
+        Cancel
+    </button>
+    <button
+        mat-button
+        (click)="startScan()"
+        cdkFocusInitial
+        [disabled]="processing()"
+    >
+        Start Scan
+    </button>
+</mat-dialog-actions>

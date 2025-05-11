@@ -1,0 +1,9 @@
+<div class="book-item__img" [style.backgroundImage]="thumbSrc()"></div>
+
+@if (book().number != null) {
+    <div class="book-item__num">#{{ book().number }}</div>
+}
+
+<label class="book-item__label" [attr.title]="book().title">{{
+    book().title
+}}</label>

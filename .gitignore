@@ -43,3 +43,6 @@ Thumbs.db
 
 # Electron-Forge
 out/
+
+# App data for running in debug mode
+debug-data/*

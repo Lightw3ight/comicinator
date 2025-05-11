@@ -3,17 +3,30 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 
-// import * as fs from 'fs';
+const FILE_SYSTEM_METHODS = ['exists', 'getFolderContents', 'openDirectory'];
+const SQL_METHODS = ['select', 'selectAll', 'run', 'transaction'];
+const ZIP_METHODS = ['readText', 'readData', 'readEntries', 'readXml'];
 
-// contextBridge.exposeInMainWorld('fs', fs);
+function createHandlerPassthroughs(prefix: string, names: string[]) {
+    return names.reduce(
+        (acc, name) => {
+            const fnName = `${prefix}${name.charAt(0).toUpperCase()}${name.slice(1)}`
+            return {
+                ...acc,
+                [fnName]: (...args: any[]) => ipcRenderer.invoke(`${prefix}-${name}`, ...args),
+            }
+        },
+        {}
+    )
+}
 
 contextBridge.exposeInMainWorld('electron', {
     readFile: (filePath: string) => ipcRenderer.invoke('read-file', filePath),
     unzip: (filePath: string) => ipcRenderer.invoke('unzip', filePath),
 
-    sqlInsert: (sql: string, params: any[]) => ipcRenderer.invoke('sql-insert', sql, params),
-    sqlSelectAll: (sql: string, params: any[]) => ipcRenderer.invoke('sql-select-all', sql, params),
-    sqlSelect: (sql: string, params: any[]) => ipcRenderer.invoke('sql-select', sql, params),
+    ...createHandlerPassthroughs('fs', FILE_SYSTEM_METHODS),
+    ...createHandlerPassthroughs('sql', SQL_METHODS),
+    ...createHandlerPassthroughs('zip', ZIP_METHODS),
 
     send: (channel: string, data: any) => {
         ipcRenderer.send(channel, data);
@@ -29,3 +42,5 @@ contextBridge.exposeInMainWorld('electron', {
         ipcRenderer.removeListener(channel, func);
     },
 });
+
+
