@@ -1,0 +1,9 @@
+<cdk-virtual-scroll-viewport [itemSize]="itemHeight()">
+    <cbx-thumb-list-row
+        *cdkVirtualFor="let row of rows(); let index = index;"
+        [rowIndex]="index"
+        [columnCount]="columnCount()"
+        [data]="data()"
+        [itemTemplate]="itemTemplate().template"
+    />
+</cdk-virtual-scroll-viewport>
