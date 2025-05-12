@@ -16,11 +16,10 @@ html {
 
 html,
 body {
-    --side-bar-width: 250px;
-    --header-height: 70px;
-
     height: 100%;
     background-color: #222222;
+    margin: 0;
+    padding: 0;
 }
 
 i.bi,
@@ -40,7 +39,9 @@ h5 {
 
 body {
     --brand-color: #ff0095;
-    margin: var(--header-height) 0 0 var(--side-bar-width);
+    --side-bar-width: 250px;
+    --header-height: 70px;
+    padding-top: var(--header-height);
 }
 
 h1 {
@@ -48,4 +49,5 @@ h1 {
     font-weight: 400;
     font-style: normal;
     font-size: 28px;
+    color: var(--brand-color);
 }

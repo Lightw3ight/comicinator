@@ -1,6 +1,7 @@
 import AdmZip from 'adm-zip';
 import {parseStringPromise} from 'xml2js';
 import { readXml } from './read-xml';
+import { readImages } from './read-images';
 
 export const ZIP_HANDLERS = {
     async readText(
@@ -28,6 +29,7 @@ export const ZIP_HANDLERS = {
     },
 
     readXml,
+    readImages,
 
     // async readXml(zipPath: string, fileName: string): Promise<Object | undefined> {
     //     console.log('Opening zip', zipPath);

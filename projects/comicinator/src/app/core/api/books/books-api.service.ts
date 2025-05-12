@@ -113,6 +113,15 @@ export class BooksApiService {
             dateAdded: new Date(dateAdded),
         };
     }
+
+    public async searchByCharacter(characterId: number): Promise<number[]> {
+        const sql = `SELECT bookId from BookCharacter where characterId = ?`;
+        const results = await this.electron.sqlSelectAll<{ bookId: number }>(
+            sql,
+            characterId
+        );
+        return results.map((o) => o.bookId);
+    }
 }
 
 function createSqlParams(obj: Dictionary): { [key: string]: any } {

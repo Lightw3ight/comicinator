@@ -1,4 +1,6 @@
 :host {
     display: block;
-    // margin-left: var(--side-bar-width);
+    // padding: var(--header-height) 0 0 var(--side-bar-width);
+    padding-left: var(--side-bar-width);
+    height: calc(100vh - var(--header-height));
 }

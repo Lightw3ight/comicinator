@@ -1,0 +1,5 @@
+<cbx-virtual-thumb-list [data]="characters()" [itemWidth]="232" [itemHeight]="332">
+    <ng-template thumbListItemTemplate let-char>
+            <cbx-character-list-item [routerLink]="[char.id]" [character]="char" />
+    </ng-template>
+</cbx-virtual-thumb-list>

@@ -5,9 +5,10 @@ import { MatIconModule } from '@angular/material/icon';
     selector: 'cbx-search-bar',
     templateUrl: 'search-bar.component.html',
     styleUrl: 'search-bar.component.scss',
-    imports: [MatIconModule]
-
+    imports: [MatIconModule],
 })
-
 export class SearchBarComponent {
+    protected back() {
+        window.history.back();
+    }
 }

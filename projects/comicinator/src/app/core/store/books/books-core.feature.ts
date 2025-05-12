@@ -1,12 +1,17 @@
-import { inject } from '@angular/core';
+import { computed, inject } from '@angular/core';
 import {
     patchState,
     signalStoreFeature,
     type,
+    withComputed,
     withHooks,
     withMethods,
 } from '@ngrx/signals';
-import { addEntity, setAllEntities, withEntities } from '@ngrx/signals/entities';
+import {
+    addEntity,
+    setAllEntities,
+    withEntities,
+} from '@ngrx/signals/entities';
 import { BooksApiService } from '../../api/books/books-api.service';
 import { Book } from '../../models/book.interface';
 import { ComicInfoXml } from '../../models/comic-info-xml.interface';
@@ -20,10 +25,19 @@ export function withBooksCoreFeature() {
 
         withEntities<Book>(),
 
+        withComputed((store) => {
+            return {
+                searchResults: computed(() => {
+                    const entityMap = store.entityMap();
+                    return store.searchResultIds().map((id) => entityMap[id]);
+                }),
+            };
+        }),
+
         withMethods((store) => {
             const booksApiService = inject(BooksApiService);
             const charactersStore = inject(CharactersStore);
-            const teamsStore= inject(TeamsStore);
+            const teamsStore = inject(TeamsStore);
 
             return {
                 checkComicAdded(filePath: string) {
@@ -51,11 +65,17 @@ export function withBooksCoreFeature() {
                         return;
                     }
 
-                    const characterIds = await charactersStore.addCharactersByName(xml?.Characters);
+                    const characterIds =
+                        await charactersStore.addCharactersByName(
+                            xml?.Characters
+                        );
                     const teamIds = await teamsStore.addTeamsByName(xml?.Teams);
 
                     let fileName = filePath.replaceAll('/', '\\');
-                    fileName = fileName.substring(fileName.lastIndexOf('\\') + 1, fileName.lastIndexOf('.'));
+                    fileName = fileName.substring(
+                        fileName.lastIndexOf('\\') + 1,
+                        fileName.lastIndexOf('.')
+                    );
 
                     const book: Omit<Book, 'id'> = {
                         filePath: filePath,
@@ -79,15 +99,19 @@ export function withBooksCoreFeature() {
                         volume: xml?.Volume ? Number(xml?.Volume) : undefined,
                         writer: xml?.Writer,
                         year: xml?.Year ? Number(xml?.Year) : undefined,
-                    }
+                    };
 
-                    const newBook = await booksApiService.insertBook(book, characterIds, teamIds);
+                    const newBook = await booksApiService.insertBook(
+                        book,
+                        characterIds,
+                        teamIds
+                    );
 
                     patchState(store, addEntity(newBook), {
                         paths: {
                             ...store.paths(),
-                            [newBook.filePath]: true
-                        }
+                            [newBook.filePath]: true,
+                        },
                     });
                 },
             };

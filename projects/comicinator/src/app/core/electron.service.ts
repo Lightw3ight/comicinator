@@ -46,4 +46,8 @@ export class ElectronService {
     public async zipReadEntries(zipPath: string): Promise<string[]> {
         return this.electron.zipReadEntries(zipPath);
     }
+
+    public async zipReadImages(zipPath: string): Promise<Buffer[]> {
+        return this.electron.zipReadImages(zipPath);
+    }
 }

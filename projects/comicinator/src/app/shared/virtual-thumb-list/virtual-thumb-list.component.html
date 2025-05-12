@@ -1,9 +1,11 @@
-<cdk-virtual-scroll-viewport [itemSize]="itemHeight()">
+<cdk-virtual-scroll-viewport scrollWindow [itemSize]="itemHeight()">
+    <ng-container *cdkVirtualFor="let row of rows(); let index = index;">
     <cbx-thumb-list-row
-        *cdkVirtualFor="let row of rows(); let index = index;"
+        [style.height.px]="itemHeight()"
         [rowIndex]="index"
         [columnCount]="columnCount()"
         [data]="data()"
         [itemTemplate]="itemTemplate().template"
     />
+    </ng-container>
 </cdk-virtual-scroll-viewport>

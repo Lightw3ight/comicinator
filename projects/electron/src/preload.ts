@@ -5,7 +5,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 const FILE_SYSTEM_METHODS = ['exists', 'getFolderContents', 'openDirectory'];
 const SQL_METHODS = ['select', 'selectAll', 'run', 'transaction'];
-const ZIP_METHODS = ['readText', 'readData', 'readEntries', 'readXml'];
+const ZIP_METHODS = ['readText', 'readData', 'readEntries', 'readXml', 'readImages'];
 
 function createHandlerPassthroughs(prefix: string, names: string[]) {
     return names.reduce(

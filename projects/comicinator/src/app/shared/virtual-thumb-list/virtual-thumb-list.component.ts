@@ -3,18 +3,20 @@ import { observeSize } from '../observers/observe-size';
 import {ScrollingModule} from '@angular/cdk/scrolling';
 import { ThumbListRowComponent } from './thumb-list-row/thumb-list-row.component';
 import { ThumbListItemTemplateDirective } from './thumb-list-item-template.directive';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'cbx-virtual-thumb-list',
     templateUrl: 'virtual-thumb-list.component.html',
-    imports: [ScrollingModule, ThumbListRowComponent]
+    styleUrl: 'virtual-thumb-list.component.scss',
+    imports: [CommonModule, ScrollingModule, ThumbListRowComponent]
 })
 export class VirtualThumbListComponent {
     public readonly itemWidth = input.required<number>();
     public readonly itemHeight = input.required<number>();
     public readonly data = input.required<any[]>();
 
-    private readonly elementSize = observeSize();
+    protected readonly elementSize = observeSize();
     protected readonly columnCount = this.computeColumnCount();
     protected readonly rows = this.computeRows();
     protected readonly itemTemplate = contentChild.required(ThumbListItemTemplateDirective);

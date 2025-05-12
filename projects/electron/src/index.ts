@@ -1,14 +1,15 @@
 import AdmZip from 'adm-zip';
-import { app, BrowserWindow, ipcMain, net, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain, protocol } from 'electron';
 import * as fs from 'fs';
 import path from 'path';
 import { open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import { getFileSystemMethods } from './file-system/file-system-handlers';
 import { getSqlHandlers } from './handlers/sql-handlers';
-import { ZIP_HANDLERS } from './zip/zip-handlers';
-import { createLazyValue } from './helpers/lazy-value';
 import { getZipThumbnail } from './helpers/get-zip-thumbnail';
+import { isImage } from './helpers/is-jpg';
+import { createLazyValue } from './helpers/lazy-value';
+import { ZIP_HANDLERS } from './zip/zip-handlers';
 
 // import sharp from 'sharp';
 
@@ -90,10 +91,11 @@ const createWindow = (): void => {
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
     protocol.handle('zip-thumb', async (request) => {
-        const url = request.url.replace(/^zip-thumb:\/\//, '').replace(/\//g, '\\');
+        const url = request.url
+            .replace(/^zip-thumb:\/\//, '')
+            .replace(/\//g, '\\');
         const normalizedPath = decodeURIComponent(url);
 
-        
         console.log('handling', normalizedPath);
         return getZipThumbnail(normalizedPath, thumbPath, noThumbAvailablePath);
     });
@@ -125,22 +127,44 @@ ipcMain.handle('read-file', async (_evt, filePath) => {
 
 ipcMain.handle('unzip', (_evt, filePath) => {
     const zip = new AdmZip(filePath);
-    const info = zip.getEntry('ComicInfo.xml');
+    // const info = zip.getEntry('ComicInfo.xml');
 
-    const img = zip.getEntry(
-        'Aquamen 002 (2022) (Digital) (BlackManta-Empire)/Aquamen (2022-) 002-000.jpg'
-    );
+    // const img = zip.getEntry(
+    //     'Aquamen 002 (2022) (Digital) (BlackManta-Empire)/Aquamen (2022-) 002-000.jpg'
+    // );
 
-    if (img) {
-        return img.getData();
-    }
+    // if (img) {
+    //     return img.getData();
+    // }
 
-    if (info) {
-        return zip.readAsText(info);
-    }
+    // if (info) {
+    //     return zip.readAsText(info);
+    // }
 
-    return zip.getEntries().map((o) => o.entryName);
+    return zip
+        .getEntries()
+        .filter((o) => isImage(o.entryName))
+        .map((o) => o.getData());
 });
+
+// ipcMain.handle('unzip', (_evt, filePath) => {
+//     const zip = new AdmZip(filePath);
+//     const info = zip.getEntry('ComicInfo.xml');
+
+//     const img = zip.getEntry(
+//         'Aquamen 002 (2022) (Digital) (BlackManta-Empire)/Aquamen (2022-) 002-000.jpg'
+//     );
+
+//     if (img) {
+//         return img.getData();
+//     }
+
+//     if (info) {
+//         return zip.readAsText(info);
+//     }
+
+//     return zip.getEntries().map((o) => o.entryName);
+// });
 
 function registerHandlers(
     prefix: string,

@@ -22,7 +22,7 @@ export class CharactersApiService {
     private electron = inject(ElectronService);
 
     public async fetchCharacters(): Promise<Character[]> {
-        const sql = `SELECT * FROM character`;
+        const sql = `SELECT * FROM character ORDER BY name`;
         const results = await this.electron.sqlSelectAll<CharacterDto>(sql);
         return results.map((b) => ({ ...b }));
     }
@@ -40,7 +40,7 @@ export class CharactersApiService {
 
     public async insertCharacter(character: Omit<Character, 'id'>) {
         const fields = Object.keys(character);
-        
+
         const columnProps = fields.map((c) => `@${c}`);
         const sql = `INSERT INTO character (${fields.join(
             ', '
