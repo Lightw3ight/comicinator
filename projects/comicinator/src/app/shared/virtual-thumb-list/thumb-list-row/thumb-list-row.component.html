@@ -1,3 +1,5 @@
-@for (item of rowData(); track $index) {
-    <ng-container *ngTemplateOutlet="itemTemplate(); context: {$implicit: item}"></ng-container>
+@for (item of rowData(); track item.id) {
+<ng-container
+    *ngTemplateOutlet="itemTemplate(); context: { $implicit: item }"
+></ng-container>
 }

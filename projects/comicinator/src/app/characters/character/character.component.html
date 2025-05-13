@@ -1,5 +1,8 @@
+@if (character()) {
 <header>
-    <h1>{{ character()?.name }}</h1>
+    <h1>{{ character().name }}</h1>
+    <button icon-button (click)="edit()"><i class="bi bi-pencil"></i></button>
 </header>
 
 <cbx-book-list [books]="books()" />
+}

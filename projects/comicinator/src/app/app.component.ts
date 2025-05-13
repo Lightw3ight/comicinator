@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
 import { AppSettingsComponent } from './app-settings/app-settings.component';
-import { ComicVineService } from './core/api/comic-vine-api.service';
+import { ComicVineService } from './core/api/comic-vine/comic-vine-api.service';
 import { SearchBarComponent } from './core/header/search-bar.component';
 import { MainNavComponent } from './core/main-nav/main-nav.component';
 import { LibraryScannerComponent } from './library-scanner/library-scanner.component';
@@ -13,22 +13,29 @@ import { LibraryScannerComponent } from './library-scanner/library-scanner.compo
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss',
-    imports: [RouterOutlet, MainNavComponent, SearchBarComponent]
+    imports: [RouterOutlet, MainNavComponent, SearchBarComponent],
 })
 export class AppComponent implements OnInit {
     protected sanitizer = inject(DomSanitizer);
     private comicVineService = inject(ComicVineService);
     readonly dialog = inject(MatDialog);
 
-
-    protected filePath = `zip-thumb://${encodeURIComponent('C:/Development/Absolute Batman 001 (2024).cbz')}`;
+    protected filePath = `zip-thumb://${encodeURIComponent(
+        'C:/Development/Absolute Batman 001 (2024).cbz'
+    )}`;
 
     protected openSettings() {
-        this.dialog.open(AppSettingsComponent, { minWidth: 400, disableClose: true });
+        this.dialog.open(AppSettingsComponent, {
+            minWidth: 400,
+            disableClose: true,
+        });
     }
 
     protected async scanLibrary() {
-        this.dialog.open(LibraryScannerComponent, { disableClose: true, minWidth: 400 });
+        this.dialog.open(LibraryScannerComponent, {
+            disableClose: true,
+            minWidth: 400,
+        });
     }
 
     title = 'comicinator';
@@ -42,9 +49,7 @@ export class AppComponent implements OnInit {
         //     `C:\\Development\\comicinator\\files\\Aquamen 002.cbz`
         // );
         // console.log('the svc', thing);
-
         // const zip = new AdmZip(thing);
-
         // const image = new Blob([zip], { type: 'image/jpeg' });
         // this.imgSrc = URL.createObjectURL(image);
     }

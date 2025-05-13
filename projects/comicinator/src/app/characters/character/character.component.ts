@@ -5,22 +5,26 @@ import {
     inject,
     input,
     numberAttribute,
-    OnInit,
     untracked,
 } from '@angular/core';
-import { CharactersStore } from '../../core/store/characters/characters.store';
-import { BooksStore } from '../../core/store/books/books.store';
+import { MatButton } from '@angular/material/button';
 import { BookListComponent } from '../../books/book-list/book-list.component';
+import { BooksStore } from '../../core/store/books/books.store';
+import { CharactersStore } from '../../core/store/characters/characters.store';
+import { CharacterFormComponent } from '../character-form/character-form.component';
+import { MatDialog } from '@angular/material/dialog';
+import { IconButtonComponent } from '../../shared/icon-button/icon-button.component';
 
 @Component({
     selector: 'cbx-character',
     templateUrl: 'character.component.html',
     styleUrl: 'character.component.scss',
-    imports: [BookListComponent],
+    imports: [BookListComponent, MatButton, IconButtonComponent],
 })
 export class CharacterComponent {
     private charactersStore = inject(CharactersStore);
     private booksStore = inject(BooksStore);
+    private dialog = inject(MatDialog);
 
     public id = input.required({ transform: numberAttribute });
 
@@ -35,6 +39,10 @@ export class CharacterComponent {
                 this.booksStore.searchByCharacter(charId);
             });
         });
+    }
+
+    public edit() {
+        this.dialog.open(CharacterFormComponent, { data: this.id() });
     }
 
     private computeCharacter() {

@@ -1,0 +1,7 @@
+@if (team()) {
+<header>
+    <h1>{{ team().name }}</h1>
+</header>
+
+<cbx-book-list [books]="books()" />
+}

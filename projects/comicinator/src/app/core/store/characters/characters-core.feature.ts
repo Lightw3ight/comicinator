@@ -1,4 +1,4 @@
-import { inject } from '@angular/core';
+import { computed, inject } from '@angular/core';
 import {
     patchState,
     signalStoreFeature,
@@ -9,6 +9,7 @@ import {
 import {
     addEntity,
     setAllEntities,
+    updateEntity,
     withEntities,
 } from '@ngrx/signals/entities';
 import { CharactersApiService } from '../../api/characters/characters-api.service';
@@ -20,6 +21,20 @@ export function withCharactersCoreFeature() {
         { state: type<CharactersState>() },
 
         withEntities<Character>(),
+
+        withMethods((store) => {
+            return {
+                pageView: computed(() => {
+                    const search = store.currentSearch();
+                    if (search == null || search === '') {
+                        return store.entities();
+                    }
+
+                    const em = store.entityMap();
+                    return store.searchIds().map((id) => em[id]);
+                }),
+            };
+        }),
 
         withMethods((store) => {
             const charactersApiService = inject(CharactersApiService);
@@ -42,6 +57,11 @@ export function withCharactersCoreFeature() {
                     });
                 },
 
+                async updateCharacter(id: number, char: Partial<Character>) {
+                    await charactersApiService.updateCharacter(id, char);
+                    patchState(store, updateEntity({ id: id, changes: char }));
+                },
+
                 async addCharacter(
                     character: Omit<Character, 'id'>
                 ): Promise<number> {
@@ -59,10 +79,12 @@ export function withCharactersCoreFeature() {
                             character
                         );
 
-                    patchState(store, addEntity(added), { names: {
-                        ...store.names(),
-                        [added.name.trim().toLocaleLowerCase()]: added.id,
-                    } });
+                    patchState(store, addEntity(added), {
+                        names: {
+                            ...store.names(),
+                            [added.name.trim().toLocaleLowerCase()]: added.id,
+                        },
+                    });
 
                     return added.id;
                 },

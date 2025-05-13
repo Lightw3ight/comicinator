@@ -5,21 +5,46 @@ export function getSqlHandlers(
     dbLoader: Promise<Database<sqlite3.Database, sqlite3.Statement>>
 ) {
     return {
+        async saveBlob(statement: string, image: Uint8Array, ...args: any[]) {
+            const db = await dbLoader;
+            const stmt = await db.prepare(statement);
+            await stmt.run(image, ...args);
+        },
+
+        // async loadBlob(statement: string, ...args: any[]) {
+        //     const db = await dbLoader;
+        //     const stmt = await db.prepare(statement);
+        //     const result = await stmt.get(...args);
+
+        //     return result;
+        // },
+
         async select(statement: string, ...args: any[]) {
             const db = await dbLoader;
             const stmt = await db.prepare(statement);
-            return await stmt.get(...args);
+            const result = await stmt.get(...args);
+
+            return result;
         },
 
         async selectAll(statement: string, ...args: any[]) {
             const db = await dbLoader;
             const stmt = await db.prepare(statement);
-            return await stmt.all(...args);
+            const results = await stmt.all(...args);
+            return results;
         },
 
         async run(statement: string, ...args: any[]) {
             const db = await dbLoader;
             const stmt = await db.prepare(statement);
+
+            const img = args[0]?.['@image'];
+
+            if (img && img instanceof ArrayBuffer) {
+                console.log('convert to blob');
+                args[0]['@image'] = new Blob([img], { type: 'image/jpeg' });
+            }
+
             const result = stmt.run(...args);
             return (await result).lastID;
         },
@@ -47,6 +72,6 @@ export function getSqlHandlers(
             }
 
             await db.run('COMMIT');
-        }
+        },
     };
 }

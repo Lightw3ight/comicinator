@@ -122,6 +122,15 @@ export class BooksApiService {
         );
         return results.map((o) => o.bookId);
     }
+
+    public async searchByTeam(teamId: number): Promise<number[]> {
+        const sql = `SELECT bookId from BookTeam where teamId = ?`;
+        const results = await this.electron.sqlSelectAll<{ bookId: number }>(
+            sql,
+            teamId
+        );
+        return results.map((o) => o.bookId);
+    }
 }
 
 function createSqlParams(obj: Dictionary): { [key: string]: any } {

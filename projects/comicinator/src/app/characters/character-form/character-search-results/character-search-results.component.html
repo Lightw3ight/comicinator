@@ -1,0 +1,62 @@
+<h2 mat-dialog-title>Search results</h2>
+<mat-dialog-content>
+    <div class="search-result__container">
+        <table
+            mat-table
+            matSort
+            [dataSource]="results()"
+            class="mat-elevation-z8 demo-table"
+        >
+            <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef>Id.</th>
+                <td mat-cell *matCellDef="let element">{{ element.id }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+                <td mat-cell *matCellDef="let element">{{ element.name }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="realName">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    Real name
+                </th>
+                <td mat-cell *matCellDef="let element">
+                    {{ element.realName }}
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="publisher">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    Publisher
+                </th>
+                <td mat-cell *matCellDef="let element">
+                    {{ element.publisher }}
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr
+                mat-row
+                (click)="selectedItem.set(row)"
+                [class.search-result__selected]="selectedItem() === row"
+                *matRowDef="let row; columns: displayedColumns"
+            ></tr>
+        </table>
+        @if(selectedItem(); as item) {
+        <img [attr.src]="item.image.thumb_url" />
+        }
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button mat-button type="button" mat-dialog-close>Cancel</button>
+    <button
+        mat-button
+        type="submit"
+        cdkFocusInitial
+        [mat-dialog-close]="selectedItem()"
+        [disabled]="selectedItem() == null"
+    >
+        Select
+    </button>
+</mat-dialog-actions>

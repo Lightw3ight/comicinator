@@ -1,5 +1,17 @@
-<cbx-virtual-thumb-list [data]="characters()" [itemWidth]="232" [itemHeight]="332">
+@if (searchValue()) {
+<header>
+    <h1>Search Results: {{ searchValue() }}</h1>
+    <button icon-button (click)="clearSearch()" title="Clear search">
+        <i class="bi bi-x"></i>
+    </button>
+</header>
+}
+<cbx-virtual-thumb-list
+    [data]="characters()"
+    [itemWidth]="232"
+    [itemHeight]="332"
+>
     <ng-template thumbListItemTemplate let-char>
-            <cbx-character-list-item [routerLink]="[char.id]" [character]="char" />
+        <cbx-character-list-item [routerLink]="[char.id]" [character]="char" />
     </ng-template>
 </cbx-virtual-thumb-list>

@@ -24,7 +24,16 @@ export class CharactersApiService {
     public async fetchCharacters(): Promise<Character[]> {
         const sql = `SELECT * FROM character ORDER BY name`;
         const results = await this.electron.sqlSelectAll<CharacterDto>(sql);
-        return results.map((b) => ({ ...b }));
+        return results.map(this.mapCharacterDto);
+    }
+
+    public async searchSharacters(search: string): Promise<number[]> {
+        const sql = `SELECT id FROM character where name like ? ORDER BY name`;
+        const results = await this.electron.sqlSelectAll<{ id: number }>(
+            sql,
+            `%${search}%`
+        );
+        return results.map((o) => o.id);
     }
 
     public async fetchCharacter(id: number): Promise<Character> {
@@ -34,8 +43,20 @@ export class CharactersApiService {
         if (!character) {
             throw new Error(`Book with id ${id} not found`);
         }
+        return this.mapCharacterDto(character);
+    }
 
-        return character;
+    public async updateCharacter(id: number, character: Partial<Character>) {
+        const fields = Object.keys(character).filter((v) => v !== 'id');
+
+        const sqlValueSets = fields.map((field) => `${field} = @${field}`);
+        const sql = `UPDATE character SET ${sqlValueSets.join(
+            ','
+        )} WHERE id = @id`;
+
+        const params = createSqlParams({ ...character, id });
+
+        await this.electron.sqlRun(sql, params);
     }
 
     public async insertCharacter(character: Omit<Character, 'id'>) {
@@ -49,6 +70,25 @@ export class CharactersApiService {
         const params = createSqlParams(character);
         const id = await this.electron.sqlRun(sql, params);
         return await this.fetchCharacter(id);
+    }
+
+    private mapCharacterDto(dto: CharacterDto): Character {
+        return {
+            id: dto.id,
+            name: dto.name,
+            aliases: dto.aliases,
+            creators: dto.creators,
+            description: dto.description,
+            gender: dto.gender,
+            origin: dto.origin,
+            powers: dto.powers,
+            publisher: dto.publisher,
+            realName: dto.realName,
+            summary: dto.summary,
+            image: dto.image
+                ? new Blob([new Uint8Array(dto.image)], { type: 'image/jpeg' })
+                : undefined,
+        };
     }
 }
 

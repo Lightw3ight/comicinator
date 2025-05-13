@@ -1,0 +1,5 @@
+<cbx-virtual-thumb-list [data]="teams()" [itemWidth]="232" [itemHeight]="332">
+    <ng-template thumbListItemTemplate let-team>
+        <cbx-team-list-item [routerLink]="[team.id]" [team]="team" />
+    </ng-template>
+</cbx-virtual-thumb-list>
