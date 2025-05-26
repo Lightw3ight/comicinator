@@ -1,0 +1,8 @@
+<cbx-virtual-thumb-list [data]="groups()" [itemWidth]="232" [itemHeight]="389">
+    <ng-template thumbListItemTemplate let-group>
+        <cbx-group-list-item
+            [group]="group"
+            [routerLink]="['/books/group', groupField(), group.name]"
+        />
+    </ng-template>
+</cbx-virtual-thumb-list>

@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>{{ options.title }}</h2>
+<mat-dialog-content>
+    <p>{{ options.message }}</p>
+</mat-dialog-content>
+<mat-dialog-actions>
+    @if (!options.hideRejectButton) {
+        <button mat-button type="button" [mat-dialog-close]="false">
+            {{ options.rejectButtonText ?? "No" }}
+        </button>
+    }
+    <button mat-button type="submit" [mat-dialog-close]="true" cdkFocusInitial>
+        {{ options.confirmButtonText ?? "Yes" }}
+    </button>
+</mat-dialog-actions>

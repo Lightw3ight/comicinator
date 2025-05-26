@@ -1,1 +1,6 @@
-<cbx-book-list [books]="books()" />
+<cbx-books-view-bar />
+@if (showGroupedBooks()) {
+    <cbx-group-list [search]="searchValue()" />
+} @else {
+    <cbx-book-list [books]="books()" />
+}

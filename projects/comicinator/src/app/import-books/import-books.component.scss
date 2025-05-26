@@ -1,0 +1,61 @@
+.search-result__selected {
+    background-color: var(--brand-color);
+    color: white;
+}
+
+table {
+    width: 100%;
+    min-width: auto;
+}
+
+.mat-mdc-row:hover .mat-mdc-cell {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.import-books__content {
+    display: grid;
+    grid-template-columns: 150px auto;
+    gap: 24px;
+}
+
+img {
+    width: 100%;
+}
+
+.import__list-item {
+    border-bottom: 1px solid #ffffff;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    cursor: pointer;
+
+    label {
+        font-weight: 600;
+        display: inline-block;
+        color: var(--brand-color);
+        margin-right: 8px;
+    }
+
+    span {
+        + label {
+            margin-left: 16px;
+        }
+    }
+}
+
+.import__list-item--selected {
+    background-color: var(--brand-color);
+
+    label {
+        color: #ffffff;
+    }
+}
+
+.import__list-item-path {
+    display: flex;
+    flex-direction: column;
+    span {
+        padding-left: 16px;
+    }
+}

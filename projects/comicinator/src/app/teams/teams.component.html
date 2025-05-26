@@ -1,5 +1,13 @@
-<cbx-virtual-thumb-list [data]="teams()" [itemWidth]="232" [itemHeight]="332">
-    <ng-template thumbListItemTemplate let-team>
-        <cbx-team-list-item [routerLink]="[team.id]" [team]="team" />
-    </ng-template>
-</cbx-virtual-thumb-list>
+@if (searchValue()) {
+    <cbx-page-header [title]="searchTitle()">
+        <button mat-icon-button (click)="clearSearch()" title="Clear search">
+            <mat-icon>close</mat-icon>
+        </button>
+    </cbx-page-header>
+
+    @if (teams().length === 0) {
+        <p class="teams__no-search-results">No search results.</p>
+    }
+}
+
+<cbx-team-list [teams]="teams()" />

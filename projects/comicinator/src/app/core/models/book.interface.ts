@@ -8,9 +8,7 @@ export interface Book {
     volume?: number;
     summary?: string;
     notes?: string;
-    year?: number;
-    month?: number;
-    day?: number;
+    coverDate?: Date;
     writer?: string;
     penciler?: string;
     inker?: string;
@@ -18,7 +16,9 @@ export interface Book {
     letterer?: string;
     coverArtist?: string;
     editor?: string;
-    publisher?: string;
+    publisherId?: number;
     pageCount?: number;
     fileSize?: number;
+    externalUrl?: string;
+    externalId?: number;
 }

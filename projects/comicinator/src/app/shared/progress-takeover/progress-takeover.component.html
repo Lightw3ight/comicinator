@@ -1,0 +1,7 @@
+<mat-progress-spinner
+    [value]="value()"
+    [mode]="value() ? 'determinate' : 'indeterminate'"
+></mat-progress-spinner>
+@if (message()) {
+<div class="progress-takeover__message">{{ message() }}</div>
+}

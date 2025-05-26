@@ -1,0 +1,16 @@
+:host {
+    display: grid;
+    grid-template-columns: auto fit-content(0);
+    height: var(--page-header-height);
+    align-items: center;
+    padding: 0 24px;
+    background-color: var(--page-header-background);
+}
+
+h1 {
+    margin: 0;
+}
+
+.page-header__actions {
+    white-space: nowrap;
+}

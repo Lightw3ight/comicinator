@@ -5,10 +5,14 @@ export interface CharacterDto {
     creators?: string;
     summary?: string;
     description?: string;
-    gender?: string;
+    gender?: number;
     origin?: string;
     powers?: string;
-    publisher?: string;
+    publisherId?: number;
     realName?: string;
+    birthDate?: string;
+    dateAdded: string;
     image: ArrayBuffer;
+    externalUrl?: string;
+    externalId?: number;
 }

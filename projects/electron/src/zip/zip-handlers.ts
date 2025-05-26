@@ -1,85 +1,68 @@
 import AdmZip from 'adm-zip';
-import {parseStringPromise} from 'xml2js';
-import { readXml } from './read-xml';
+import { importBook } from './import-book';
 import { readImages } from './read-images';
+import { readXml } from './read-xml';
+import { writeXml } from './write-xml';
 
-export const ZIP_HANDLERS = {
-    async readText(
-        zipPath: string,
-        fileName: string
-    ): Promise<string | undefined> {
-        console.log('Opening zip', zipPath);
-        const zip = new AdmZip(zipPath);
-        const info = zip.getEntry(fileName);
+export function getZipHandlers(thumbPath: string) {
+    return {
+        async importBook(zipPath: string) {
+            return importBook(zipPath, thumbPath);
+        },
 
-        if (info) {
-            return await new Promise((resolve, reject) => {
-                zip.readAsTextAsync(info, (data, err) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(data);
-                    }
+        async readText(
+            zipPath: string,
+            fileName: string,
+        ): Promise<string | undefined> {
+            console.log('Opening zip', zipPath);
+            const zip = new AdmZip(zipPath);
+            const info = zip.getEntry(fileName);
+
+            if (info) {
+                return await new Promise((resolve, reject) => {
+                    zip.readAsTextAsync(info, (data, err) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(data);
+                        }
+                    });
                 });
-            });
-        }
+            }
 
-        console.log('unable to find ', fileName);
-        return undefined;
-    },
+            console.log('unable to find ', fileName);
+            return undefined;
+        },
 
-    readXml,
-    readImages,
+        readXml,
+        writeXml,
+        readImages,
 
-    // async readXml(zipPath: string, fileName: string): Promise<Object | undefined> {
-    //     console.log('Opening zip', zipPath);
-    //     const zip = new AdmZip(zipPath);
-    //     const info = zip.getEntry(fileName);
+        async readData(
+            zipPath: string,
+            fileName: string,
+        ): Promise<Buffer | undefined> {
+            const zip = new AdmZip(zipPath);
+            const info = zip.getEntry(fileName);
 
-    //     if (info) {
-    //         const text = await new Promise<string>((resolve, reject) => {
-    //             zip.readAsTextAsync(info, (data, err) => {
-    //                 if (err) {
-    //                     reject(err);
-    //                 } else {
-    //                     resolve(data);
-    //                 }
-    //             });
-    //         });
-
-    //         // const parser = new XMLParser();
-    //         // return parser.parse(text);
-    //         return await parseStringPromise(text, { explicitArray: false });
-    //     }
-
-    //     console.log('unable to find ', fileName);
-    //     return undefined;
-    // },
-
-    async readData(
-        zipPath: string,
-        fileName: string
-    ): Promise<Buffer | undefined> {
-        const zip = new AdmZip(zipPath);
-        const info = zip.getEntry(fileName);
-
-        if (info) {
-            return await new Promise<Buffer>((resolve, reject) => {
-                info.getDataAsync((data, err) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(data);
-                    }
+            if (info) {
+                return await new Promise<Buffer>((resolve, reject) => {
+                    info.getDataAsync((data, err) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(data);
+                        }
+                    });
                 });
-            });
-        }
+            }
 
-        return undefined;
-    },
+            return undefined;
+        },
 
-    readEntries(zipPath: string) {
-        const zip = new AdmZip(zipPath);
-        zip.getEntries().map((entry) => entry.entryName);
-    },
-};
+        readEntries(zipPath: string) {
+            const zip = new AdmZip(zipPath);
+            zip.getEntries().map((entry) => entry.entryName);
+        },
+    };
+}

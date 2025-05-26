@@ -14,29 +14,31 @@ export function withCharactersSearchFeature() {
     return signalStoreFeature(
         { state: type<CharactersState>() },
 
-        withEntities<Character>(),
-
         withMethods((store) => {
             const charactersApiService = inject(CharactersApiService);
 
             return {
-                async searchSharacters(search: string) {
-                    const ids = await charactersApiService.searchSharacters(
-                        search
-                    );
+                async search(query: string) {
+                    const ids =
+                        await charactersApiService.searchCharacters(query);
 
                     patchState(store, {
-                        currentSearch: search,
-                        searchIds: ids,
+                        activeSearch: {
+                            query,
+                            results: ids,
+                        },
                     });
                 },
 
                 clearSearch() {
-                    if (store.currentSearch().length) {
-                        patchState(store, { currentSearch: '', searchIds: [] });
-                    }
+                    patchState(store, {
+                        activeSearch: {
+                            query: undefined,
+                            results: [],
+                        },
+                    });
                 },
             };
-        })
+        }),
     );
 }

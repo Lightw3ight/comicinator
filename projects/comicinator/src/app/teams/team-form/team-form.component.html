@@ -1,0 +1,109 @@
+<form [formGroup]="form" (ngSubmit)="form.valid && save()">
+    <h2
+        mat-dialog-title
+        cdkDrag
+        cdkDragRootElement=".cdk-overlay-pane"
+        cdkDragHandle
+    >
+        {{ team?.name ?? "New Team" }}
+    </h2>
+    <mat-dialog-content>
+        @if (importing()) {
+            <cbx-progress-takeover [message]="progressText()" />
+        }
+        <div class="team-form__content">
+            <div>
+                @if (imageUrl()) {
+                    <img
+                        [attr.src]="imageUrl()"
+                        class="team-form__img-preview"
+                    />
+                }
+            </div>
+            <div class="team-form__form-container">
+                <mat-tab-group>
+                    <mat-tab label="Details">
+                        <mat-form-field
+                            [style.gridArea]="'name'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>Name</mat-label>
+                            <input matInput formControlName="name" />
+
+                            @if (form.value.name && showSearch()) {
+                                <button
+                                    matSuffix
+                                    mat-icon-button
+                                    type="button"
+                                    aria-label="Clear"
+                                    (click)="search()"
+                                >
+                                    <mat-icon>search</mat-icon>
+                                </button>
+                            }
+                        </mat-form-field>
+
+                        <mat-form-field
+                            [style.gridArea]="'publisher'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>Publisher</mat-label>
+                            <mat-select formControlName="publisherId">
+                                @for (pub of publishers(); track pub.id) {
+                                    <mat-option [value]="pub.id">{{
+                                        pub.name
+                                    }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field
+                            [style.gridArea]="'summary'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>Summary</mat-label>
+                            <textarea
+                                matInput
+                                formControlName="summary"
+                                rows="5"
+                            ></textarea>
+                        </mat-form-field>
+
+                        <mat-form-field
+                            [style.gridArea]="'description'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>Description</mat-label>
+                            <textarea
+                                matInput
+                                formControlName="description"
+                                rows="10"
+                            ></textarea>
+                        </mat-form-field>
+
+                        <mat-form-field
+                            [style.gridArea]="'external-url'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>External URL</mat-label>
+                            <input matInput formControlName="externalUrl" />
+                        </mat-form-field>
+                    </mat-tab>
+
+                    <mat-tab label="Characters">
+                        <cbx-character-selector
+                            [selection]="form.value.characterIds!"
+                            (selectionChange)="
+                                form.controls.characterIds.setValue($event)
+                            "
+                        />
+                    </mat-tab>
+                </mat-tab-group>
+            </div>
+        </div>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-button type="button" mat-dialog-close>Cancel</button>
+        <button mat-button type="submit" cdkFocusInitial>Save</button>
+    </mat-dialog-actions>
+</form>

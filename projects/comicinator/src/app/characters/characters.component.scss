@@ -1,17 +1,13 @@
 :host {
     display: block;
-    padding: 16px;
     color: white;
 }
 
-h1 {
-    margin: 0 0 0 16px;
+cbx-character-list {
+    padding: 8px;
 }
 
-header {
-    display: flex;
-    align-items: center;
-    h1 {
-        flex: 1 1 auto;
-    }
+.characters__no-search-results {
+    margin: 24px;
+    font-style: italic;
 }

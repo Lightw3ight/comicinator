@@ -5,7 +5,7 @@ import {
     AsyncValidatorFn,
     FormBuilder,
     ReactiveFormsModule,
-    Validators
+    Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import {
@@ -17,10 +17,10 @@ import {
 } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { ElectronService } from '../core/electron.service';
-import { SettingsStore } from '../core/store/settings/settings.store';
-import { AppSettings } from '../core/models/app-settings.interface';
+import { MatTabsModule } from '@angular/material/tabs';
 import { FileSystemService } from '../core/file-system.service';
+import { AppSettings } from '../core/models/app-settings.interface';
+import { SettingsStore } from '../core/store/settings/settings.store';
 
 @Component({
     selector: 'cmx-app-settings',
@@ -35,6 +35,7 @@ import { FileSystemService } from '../core/file-system.service';
         MatDialogContent,
         MatDialogActions,
         MatDialogClose,
+        MatTabsModule,
     ],
 })
 export class AppSettingsComponent {
@@ -52,7 +53,9 @@ export class AppSettingsComponent {
     }
 
     protected async chooseLibraryPath() {
-        const path = await this.fileSystemService.openDirectory(this.form.value.libraryPath ?? undefined);
+        const path = await this.fileSystemService.openDirectory(
+            this.form.value.libraryPath ?? undefined
+        );
 
         if (path) {
             this.form.controls.libraryPath.setValue(path);
@@ -75,19 +78,21 @@ export class AppSettingsComponent {
         return this.fb.group({
             libraryPath: ['', [Validators.required], [this.validatePath()]],
             apiKey: [''],
+            filePattern: [''],
+            folderPattern: [''],
         });
     }
 
     private validatePath(): AsyncValidatorFn {
         return async (control: AbstractControl) => {
             const value: string | undefined = control.value;
-    
+
             if (value == null || value.trim().length === 0) {
                 return null;
             }
-    
+
             const exists = await this.fileSystemService.exists(value);
             return exists ? null : { path: true };
-        }
+        };
     }
 }

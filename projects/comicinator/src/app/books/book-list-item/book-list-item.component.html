@@ -7,3 +7,7 @@
 <label class="book-item__label" [attr.title]="book().title">{{
     book().title
 }}</label>
+
+<button icon-button (click)="onEditClick($event)" class="book-item__edit">
+    <i class="bi bi-pencil"></i>
+</button>

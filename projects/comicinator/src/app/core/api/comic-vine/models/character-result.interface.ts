@@ -1,16 +1,15 @@
-export interface CharacterResult {
-    id: number;
-    name: string;
+import { ItemBase } from './item-base.interface';
+
+export interface CharacterResult extends ItemBase {
     aliases: string;
-    apiDetailUrl: string;
-    birth: Date | null;
+    birth?: Date;
     appearanceCount: number;
     dateAdded: Date;
     dateLastUpdated: Date;
     summary: string;
     description: string;
     firstIssue: string;
-    gender: number; // male = 1
+    gender: number; // male = 1, female = 2
     image: {
         icon_url: string;
         image_tags: string;
@@ -23,9 +22,12 @@ export interface CharacterResult {
         thumb_url: string;
         tiny_url: string;
     };
-    publisher: string;
+    publisher?: ItemBase;
+    teams?: ItemBase[];
     realName: string;
-    siteDetailUrl: string;
+    powers: string;
+    origin: string;
+    creators: string;
 }
 
 // "image": {

@@ -1,15 +1,19 @@
-import AdmZip from 'adm-zip';
-import { app, BrowserWindow, ipcMain, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain, net, protocol, shell } from 'electron';
 import * as fs from 'fs';
 import path from 'path';
 import { open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import { getFileSystemMethods } from './file-system/file-system-handlers';
 import { getSqlHandlers } from './handlers/sql-handlers';
+import { getGenericHandlers } from './helpers/generic-handlers';
 import { getZipThumbnail } from './helpers/get-zip-thumbnail';
-import { isImage } from './helpers/is-jpg';
 import { createLazyValue } from './helpers/lazy-value';
-import { ZIP_HANDLERS } from './zip/zip-handlers';
+import { getZipHandlers } from './zip/zip-handlers';
+import {
+    CHARACTER_CONTROLLER,
+    selectCharacterImage,
+} from './data/character-controller';
+import { fileTypeFromBuffer } from 'file-type';
 
 // import sharp from 'sharp';
 
@@ -23,25 +27,22 @@ const dataPath = app.isPackaged
     ? path.join(__dirname, 'data')
     : path.join(
           __dirname.substring(0, __dirname.lastIndexOf('\\')),
-          'debug-data'
+          'debug-data',
       );
-const thumbPath = path.join(dataPath, 'thumb-cache');
+const THUMB_PATH = path.join(dataPath, 'thumb-cache');
 const noThumbAvailablePath = path.join(dataPath, 'no-thumbnail.jpg');
+const NO_HERO_THUMB = path.join(dataPath, 'no-hero-thumbnail1.jpg');
 
 try {
-    fs.accessSync(thumbPath);
+    fs.accessSync(THUMB_PATH);
 } catch {
-    fs.mkdirSync(thumbPath, { recursive: true });
+    fs.mkdirSync(THUMB_PATH, { recursive: true });
 }
-
-// const db = {} as any;// new Database('D:\\projects\\comicinator\\db\\cdb.db', { fileMustExist: true });
 
 const dbLoader = open({
     filename: path.join(dataPath, 'cdb.db'),
     driver: sqlite3.Database,
 });
-
-console.log('DIR', __dirname);
 
 const createWindow = (): void => {
     // Create the browser window.
@@ -54,8 +55,13 @@ const createWindow = (): void => {
                 preload: path.join(__dirname, 'preload.js'),
                 contextIsolation: true,
             },
-        })
+        }),
     );
+
+    mainWindow().webContents.setWindowOpenHandler(({ url }) => {
+        shell.openExternal(url);
+        return { action: 'deny' };
+    });
 
     const startURL = app.isPackaged
         ? `file://${path.join(__dirname, 'comicinator', 'index.html')}`
@@ -70,7 +76,7 @@ const createWindow = (): void => {
         (details, callback) => {
             details.requestHeaders.Origin = `https://comicvine.gamespot.com/*`;
             callback({ requestHeaders: details.requestHeaders });
-        }
+        },
     );
 
     mainWindow().webContents.session.webRequest.onHeadersReceived(
@@ -80,7 +86,7 @@ const createWindow = (): void => {
                 'http://localhost:4200', // URL your local electron app hosted
             ];
             callback({ responseHeaders: details.responseHeaders });
-        }
+        },
     );
 
     mainWindow().loadURL(startURL);
@@ -96,8 +102,34 @@ app.on('ready', () => {
             .replace(/\//g, '\\');
         const normalizedPath = decodeURIComponent(url);
 
-        console.log('handling', normalizedPath);
-        return getZipThumbnail(normalizedPath, thumbPath, noThumbAvailablePath);
+        return await getZipThumbnail(
+            normalizedPath,
+            THUMB_PATH,
+            noThumbAvailablePath,
+        );
+    });
+
+    protocol.handle('char-img', async (request) => {
+        const match = request.url.match(/(?<=char-img:\/\/)\d+/);
+        const id = Number(match[0]);
+        console.log('Handling char img', id);
+        const buffer = await selectCharacterImage(id);
+
+        if (buffer) {
+            // Detect file type dynamically
+            const fileType = await fileTypeFromBuffer(buffer);
+            const mimeType = fileType
+                ? fileType.mime
+                : 'application/octet-stream'; // Default to binary if unknown
+
+            const uint8Array = new Uint8Array(buffer);
+
+            return new Response(uint8Array, {
+                headers: { 'Content-Type': mimeType },
+            });
+        }
+
+        return net.fetch(`file:///${NO_HERO_THUMB}`);
     });
 
     createWindow();
@@ -121,58 +153,17 @@ app.on('activate', () => {
     }
 });
 
-ipcMain.handle('read-file', async (_evt, filePath) => {
-    return await fs.promises.readFile(filePath);
-});
-
-ipcMain.handle('unzip', (_evt, filePath) => {
-    const zip = new AdmZip(filePath);
-    // const info = zip.getEntry('ComicInfo.xml');
-
-    // const img = zip.getEntry(
-    //     'Aquamen 002 (2022) (Digital) (BlackManta-Empire)/Aquamen (2022-) 002-000.jpg'
-    // );
-
-    // if (img) {
-    //     return img.getData();
-    // }
-
-    // if (info) {
-    //     return zip.readAsText(info);
-    // }
-
-    return zip
-        .getEntries()
-        .filter((o) => isImage(o.entryName))
-        .map((o) => o.getData());
-});
-
-// ipcMain.handle('unzip', (_evt, filePath) => {
-//     const zip = new AdmZip(filePath);
-//     const info = zip.getEntry('ComicInfo.xml');
-
-//     const img = zip.getEntry(
-//         'Aquamen 002 (2022) (Digital) (BlackManta-Empire)/Aquamen (2022-) 002-000.jpg'
-//     );
-
-//     if (img) {
-//         return img.getData();
-//     }
-
-//     if (info) {
-//         return zip.readAsText(info);
-//     }
-
-//     return zip.getEntries().map((o) => o.entryName);
+// ipcMain.handle('read-file', async (_evt, filePath) => {
+//     return await fs.promises.readFile(filePath);
 // });
 
 function registerHandlers(
     prefix: string,
-    handlers: { [key: string]: Function }
+    handlers: { [key: string]: Function },
 ) {
     Object.entries(handlers).forEach(([name, fn]: [string, Function]) => {
         ipcMain.handle(`${prefix}-${name}`, async (_evt: any, ...args: any[]) =>
-            fn(...args)
+            fn(...args),
         );
     });
 }
@@ -181,7 +172,11 @@ registerHandlers('fs', getFileSystemMethods(mainWindow));
 
 registerHandlers('sql', getSqlHandlers(dbLoader));
 
-registerHandlers('zip', ZIP_HANDLERS);
+registerHandlers('zip', getZipHandlers(THUMB_PATH));
+
+registerHandlers('cbx', getGenericHandlers(THUMB_PATH));
+
+registerHandlers('char', CHARACTER_CONTROLLER);
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.

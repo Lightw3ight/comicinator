@@ -1,15 +1,15 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import {
     MAT_DIALOG_DATA,
     MatDialogActions,
     MatDialogClose,
     MatDialogContent,
-    MatDialogRef,
     MatDialogTitle,
 } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
+import { MatTableModule } from '@angular/material/table';
+import { FileSystemService } from '../../core/file-system.service';
 import { ScanResult } from '../models/scan-result.interface';
-import {MatTableModule} from '@angular/material/table';
 
 @Component({
     selector: 'cmx-scan-results',
@@ -23,11 +23,12 @@ import {MatTableModule} from '@angular/material/table';
         MatTableModule,
     ],
 })
-
-export class ScanResultsComponent implements OnInit {
+export class ScanResultsComponent {
+    private fileSystem = inject(FileSystemService);
     protected results = inject<ScanResult[]>(MAT_DIALOG_DATA);
     displayedColumns: string[] = ['path', 'reason'];
-    constructor() { }
 
-    ngOnInit() { }
+    protected openLocation(filePath: string) {
+        this.fileSystem.showItemInFolder(filePath);
+    }
 }

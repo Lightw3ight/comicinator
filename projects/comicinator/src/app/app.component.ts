@@ -17,7 +17,6 @@ import { LibraryScannerComponent } from './library-scanner/library-scanner.compo
 })
 export class AppComponent implements OnInit {
     protected sanitizer = inject(DomSanitizer);
-    private comicVineService = inject(ComicVineService);
     readonly dialog = inject(MatDialog);
 
     protected filePath = `zip-thumb://${encodeURIComponent(
@@ -54,10 +53,10 @@ export class AppComponent implements OnInit {
         // this.imgSrc = URL.createObjectURL(image);
     }
 
-    protected async loadComics() {
-        const results = await this.comicVineService.searchIssues('batman');
-        console.log('search results', results);
-    }
+    // protected async loadComics() {
+    //     const results = await this.comicVineService.searchIssues('batman');
+    //     console.log('search results', results);
+    // }
 
     // protected async createBook() {
     //     const newBook = await this.bookApiService.insertBook({

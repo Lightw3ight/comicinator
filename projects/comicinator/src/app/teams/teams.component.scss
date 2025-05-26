@@ -1,5 +1,13 @@
 :host {
     display: block;
-    padding: 16px;
     color: white;
+}
+
+cbx-team-list {
+    padding: 8px;
+}
+
+.teams__no-search-results {
+    margin: 24px;
+    font-style: italic;
 }

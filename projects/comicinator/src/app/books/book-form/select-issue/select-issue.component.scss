@@ -1,0 +1,36 @@
+.search-result__selected {
+    background-color: var(--brand-color);
+    color: white;
+}
+
+table {
+    width: 100%;
+    min-width: auto;
+}
+
+.mat-mdc-row:hover .mat-mdc-cell {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.search-result__container {
+    display: grid;
+    grid-template-columns: 150px auto;
+    gap: 24px;
+
+    img {
+        width: 100%;
+    }
+}
+
+.search-result__preview-image {
+    position: sticky;
+    top: 0;
+}
+
+.search-result__container--hidden {
+    display: none;
+}
+
+mat-progress-bar {
+    margin-top: 16px;
+}

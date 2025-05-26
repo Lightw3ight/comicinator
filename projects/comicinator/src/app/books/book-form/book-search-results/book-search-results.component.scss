@@ -1,0 +1,43 @@
+.search-result__selected {
+    background-color: var(--brand-color);
+    color: white;
+}
+
+table {
+    width: 100%;
+    min-width: auto;
+}
+
+.mat-mdc-row:hover .mat-mdc-cell {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.search-result__container {
+    display: grid;
+    grid-template-columns: 200px auto 150px;
+    gap: 24px;
+}
+
+.search-result__file-preview-image {
+    position: sticky;
+    top: 0;
+    img {
+        width: 100%;
+    }
+}
+
+.search-result__selection-preview-image {
+    position: sticky;
+    top: 0;
+    img {
+        width: 100%;
+    }
+}
+
+.search-result__table--hidden {
+    display: none;
+}
+
+table td {
+    font-size: 12px;
+}

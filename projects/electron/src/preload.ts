@@ -3,20 +3,32 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 
-const FILE_SYSTEM_METHODS = ['exists', 'getFolderContents', 'openDirectory'];
-const SQL_METHODS = ['select', 'selectAll', 'transaction'];
+const FILE_SYSTEM_METHODS = [
+    'exists',
+    'getFolderContents',
+    'openDirectory',
+    'openFile',
+    'moveFile',
+    'showItemInFolder',
+];
+const SQL_METHODS = ['select', 'selectAll', 'transaction', 'deleteBook'];
 const ZIP_METHODS = [
     'readText',
     'readData',
     'readEntries',
     'readXml',
+    'writeXml',
     'readImages',
+    'importBook',
 ];
+const GENERIC_METHODS = ['removeThumbCache'];
+
+const CHARACTER_METHODS = ['selectAll', 'update', 'create', 'remove', 'search'];
 
 function createHandlerPassthroughs(prefix: string, names: string[]) {
     return names.reduce((acc, name) => {
         const fnName = `${prefix}${name.charAt(0).toUpperCase()}${name.slice(
-            1
+            1,
         )}`;
         return {
             ...acc,
@@ -26,19 +38,15 @@ function createHandlerPassthroughs(prefix: string, names: string[]) {
     }, {});
 }
 
-// Object.entries(params).forEach(([key, value]) => {
-//     if (params[key] instanceof Blob) {
-
-//     }
-// })
-
 contextBridge.exposeInMainWorld('electron', {
     readFile: (filePath: string) => ipcRenderer.invoke('read-file', filePath),
     unzip: (filePath: string) => ipcRenderer.invoke('unzip', filePath),
 
+    ...createHandlerPassthroughs('char', CHARACTER_METHODS),
     ...createHandlerPassthroughs('fs', FILE_SYSTEM_METHODS),
     ...createHandlerPassthroughs('sql', SQL_METHODS),
     ...createHandlerPassthroughs('zip', ZIP_METHODS),
+    ...createHandlerPassthroughs('cbx', GENERIC_METHODS),
     sqlRun: async (sql: string, ...args: any[]) => {
         for (let arg of args) {
             if (arg instanceof Object) {
@@ -53,7 +61,7 @@ contextBridge.exposeInMainWorld('electron', {
                 }
             }
         }
-        await ipcRenderer.invoke('sql-run', sql, ...args);
+        return await ipcRenderer.invoke('sql-run', sql, ...args);
     },
 
     send: (channel: string, data: any) => {

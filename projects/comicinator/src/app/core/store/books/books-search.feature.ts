@@ -7,10 +7,12 @@ import {
 } from '@ngrx/signals';
 import { BooksApiService } from '../../api/books/books-api.service';
 import { BooksState } from './books-state.interface';
+import { EntityState } from '@ngrx/signals/entities';
+import { Book } from '../../models/book.interface';
 
 export function withBooksSearchFeature() {
     return signalStoreFeature(
-        { state: type<BooksState>() },
+        { state: type<BooksState & EntityState<Book>>() },
 
         withMethods((store) => {
             const booksApiService = inject(BooksApiService);
@@ -21,11 +23,26 @@ export function withBooksSearchFeature() {
                     patchState(store, { searchResultIds: ids });
                 },
 
-                async searchByTeam(teamId: number) {
-                    const ids = await booksApiService.searchByTeam(teamId);
-                    patchState(store, { searchResultIds: ids });
+                async search(query: string) {
+                    const ids = await booksApiService.search(query);
+
+                    patchState(store, {
+                        activeSearch: {
+                            query,
+                            results: ids,
+                        },
+                    });
+                },
+
+                clearSearch() {
+                    patchState(store, {
+                        activeSearch: {
+                            query: undefined,
+                            results: [],
+                        },
+                    });
                 },
             };
-        })
+        }),
     );
 }

@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>Importing books</h2>
+<mat-dialog-content>
+    <mat-progress-spinner
+        [mode]="progress() == 0 ? 'indeterminate' : 'determinate'"
+        [value]="progress()"
+    ></mat-progress-spinner>
+    {{ progressText() }}
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button mat-button (click)="cancel()" [disabled]="cancelled()">
+        Cancel
+    </button>
+</mat-dialog-actions>

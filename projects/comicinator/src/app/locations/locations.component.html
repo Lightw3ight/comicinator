@@ -1,0 +1,13 @@
+@if (searchValue()) {
+    <cbx-page-header [title]="searchTitle()">
+        <button mat-icon-button (click)="clearSearch()" title="Clear search">
+            <mat-icon>close</mat-icon>
+        </button>
+    </cbx-page-header>
+
+    @if (locations().length === 0) {
+        <p class="locations__no-search-results">No search results.</p>
+    }
+}
+
+<cbx-location-list [locations]="locations()" />

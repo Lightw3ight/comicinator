@@ -1,0 +1,70 @@
+<form [formGroup]="form" (ngSubmit)="form.valid && save()">
+    <h2
+        mat-dialog-title
+        cdkDrag
+        cdkDragRootElement=".cdk-overlay-pane"
+        cdkDragHandle
+    >
+        {{ location?.name ?? "New Location" }}
+    </h2>
+    <mat-dialog-content>
+        @if (importing()) {
+            <cbx-progress-takeover [message]="progressText()" />
+        }
+        <div class="location-form__content">
+            <div>
+                @if (imageUrl()) {
+                    <img
+                        [attr.src]="imageUrl()"
+                        class="location-form__img-preview"
+                    />
+                }
+            </div>
+            <div class="location-form__form-container">
+                <mat-form-field
+                    [style.gridArea]="'name'"
+                    subscriptSizing="dynamic"
+                >
+                    <mat-label>Name</mat-label>
+                    <input matInput formControlName="name" />
+
+                    @if (form.value.name && showSearch()) {
+                        <button
+                            matSuffix
+                            mat-icon-button
+                            type="button"
+                            aria-label="Clear"
+                            (click)="search()"
+                        >
+                            <mat-icon>search</mat-icon>
+                        </button>
+                    }
+                </mat-form-field>
+
+                <mat-form-field
+                    [style.gridArea]="'description'"
+                    subscriptSizing="dynamic"
+                >
+                    <mat-label>Description</mat-label>
+                    <textarea
+                        matInput
+                        formControlName="description"
+                        rows="10"
+                    ></textarea>
+                </mat-form-field>
+
+                <mat-form-field
+                    [style.gridArea]="'external-url'"
+                    subscriptSizing="dynamic"
+                >
+                    <mat-label>External URL</mat-label>
+                    <input matInput formControlName="externalUrl" />
+                </mat-form-field>
+            </div>
+        </div>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-button type="button" mat-dialog-close>Cancel</button>
+        <button mat-button type="submit" cdkFocusInitial>Save</button>
+    </mat-dialog-actions>
+</form>

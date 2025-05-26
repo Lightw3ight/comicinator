@@ -1,0 +1,34 @@
+.char-form__content {
+    display: grid;
+    grid-template-columns: 200px auto;
+    gap: 24px;
+}
+
+.char-form__img-preview {
+    width: 200px;
+    position: absolute;
+}
+
+.char-form__form-container {
+    // display: grid;
+    // grid-template-columns: 1fr;
+    // gap: 16px;
+    // grid-template-areas:
+    //     "name"
+    //     "aliases"
+    //     "real-name"
+    //     "gender"
+    //     "birth-date"
+    //     "creators"
+    //     "powers"
+    //     "origin"
+    //     "publisher"
+    //     "summary"
+    //     "description"
+    //     "external-url";
+}
+
+mat-form-field {
+    width: 100%;
+    margin-bottom: 16px;
+}

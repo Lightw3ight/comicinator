@@ -1,0 +1,36 @@
+:host {
+    width: 200px;
+    height: 300px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 16px;
+    cursor: pointer;
+    padding: 16px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: relative;
+
+    &:hover {
+        .location-item__edit {
+            opacity: 1;
+        }
+    }
+}
+
+.location-item__name {
+    font-family: "Bangers", system-ui;
+    font-size: 24px;
+    text-align: center;
+    text-shadow: 0 0 10px black;
+}
+
+.location-item__edit {
+    position: absolute;
+    transition: opacity 0.2s ease-in-out;
+    top: 8px;
+    right: 8px;
+    opacity: 0;
+}

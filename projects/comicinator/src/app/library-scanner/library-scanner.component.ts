@@ -6,7 +6,7 @@ import {
     MatDialogActions,
     MatDialogContent,
     MatDialogRef,
-    MatDialogTitle
+    MatDialogTitle,
 } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { firstValueFrom } from 'rxjs';
@@ -28,7 +28,7 @@ import { ScanResultsComponent } from './scan-results/scan-results.component';
         MatDialogContent,
         MatDialogActions,
         MatProgressBarModule,
-        MatCheckboxModule
+        MatCheckboxModule,
     ],
 })
 export class LibraryScannerComponent {
@@ -59,7 +59,7 @@ export class LibraryScannerComponent {
 
             const files = await this.fileSystemService.getFolderContents(
                 path,
-                true
+                true,
             );
 
             this.scanning.set(false);
@@ -88,7 +88,7 @@ export class LibraryScannerComponent {
 
     private async showResults(results: ScanResult[]) {
         const ref = this.dialog.open(ScanResultsComponent, {
-            data: results.filter(o => o.error),
+            data: results.filter((o) => o.error),
         });
 
         await firstValueFrom(ref.afterClosed());
@@ -108,13 +108,14 @@ export class LibraryScannerComponent {
                 continue;
             }
 
-            this.progressText.set(`Adding file (${this.filesProcessed() + 1} of ${filePaths.length}): ${path}`);
+            this.progressText.set(
+                `Adding file (${this.filesProcessed() + 1} of ${filePaths.length}): ${path}`,
+            );
 
             try {
-                const data = await this.electronService.zipReadXml<{
-                    ComicInfo: ComicInfoXml;
-                }>(path, 'ComicInfo.xml');
-                await this.booksStore.importBook(path, data?.ComicInfo);
+                const comicInfo =
+                    await this.electronService.zipImportBook(path);
+                await this.booksStore.importBook(path, comicInfo);
 
                 results.push({
                     added: true,

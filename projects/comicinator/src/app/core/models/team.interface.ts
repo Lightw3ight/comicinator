@@ -5,6 +5,8 @@ export interface Team {
     aliases?: string;
     summary?: string;
     description?: string;
-    publisher?: string;
-    url?: string;
+    publisherId?: number;
+    externalUrl?: string;
+    externalId?: number;
+    image?: Blob;
 }

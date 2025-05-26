@@ -1,7 +1,51 @@
 @if (team()) {
-<header>
-    <h1>{{ team().name }}</h1>
-</header>
+    <div class="team__banner">
+        <div>
+            <img [attr.src]="imageUrl()" />
+        </div>
 
-<cbx-book-list [books]="books()" />
+        <div>
+            <header>
+                <h1>{{ team().name }}</h1>
+                @if (team().aliases) {
+                    <small>AKA: {{ team().aliases }}</small>
+                }
+
+                <div>
+                    <button icon-button (click)="edit()">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                </div>
+            </header>
+            <div class="team__details">
+                <p>{{ team().summary ?? "No Description" }}</p>
+
+                @if (team().externalUrl) {
+                    <a>
+                        <a [attr.href]="team().externalUrl" target="_blank">{{
+                            team().externalUrl
+                        }}</a>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <mat-tab-group
+        animationDuration
+        mat-stretch-tabs="false"
+        (selectedIndexChange)="activeTabIndex.set($event)"
+    >
+        <mat-tab label="Books"></mat-tab>
+        <mat-tab label="Members"></mat-tab>
+    </mat-tab-group>
+
+    <div class="team__lists">
+        @if (activeTabIndex() === 0) {
+            <cbx-book-list [books]="books()" />
+        }
+        @if (activeTabIndex() === 1) {
+            <cbx-character-list [characters]="characters()" />
+        }
+    </div>
 }

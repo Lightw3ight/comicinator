@@ -1,7 +1,9 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
+import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
+import { ActivatedRoute, Router } from '@angular/router';
+import { map } from 'rxjs';
 
 @Component({
     selector: 'cbx-search-bar',
@@ -11,7 +13,24 @@ import { Router } from '@angular/router';
 })
 export class SearchBarComponent {
     private router = inject(Router);
+    private route = inject(ActivatedRoute);
     protected searchValue = signal<string>('');
+
+    protected searchQuery = toSignal(
+        this.route.queryParamMap.pipe(map((pMap) => pMap.get('search'))),
+    );
+
+    constructor() {
+        effect(() => {
+            const searchQuery = this.searchQuery() ?? '';
+
+            untracked(() => {
+                if (searchQuery !== this.searchValue()) {
+                    this.searchValue.set(searchQuery);
+                }
+            });
+        });
+    }
 
     protected back() {
         window.history.back();
@@ -21,8 +40,6 @@ export class SearchBarComponent {
         const searchValue = this.searchValue().trim();
 
         if (searchValue.length) {
-            this.searchValue.set('');
-
             const [, searchAreaAndQuery] = this.router.url.split('/');
             const [searchArea] = searchAreaAndQuery.split('?');
 

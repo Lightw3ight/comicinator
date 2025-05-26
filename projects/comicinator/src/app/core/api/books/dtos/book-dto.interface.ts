@@ -7,9 +7,6 @@ export interface BookDto {
     volume: number;
     summary: string;
     notes: string;
-    year: number;
-    month: number;
-    day: number;
     writer: string;
     penciler: string;
     inker: string;
@@ -17,8 +14,9 @@ export interface BookDto {
     letterer: string;
     coverArtist: string;
     editor: string;
-    publisher: string;
+    publisherId: number;
     pageCount: number;
     dateAdded: string;
     fileSize: number;
+    coverDate: string;
 }

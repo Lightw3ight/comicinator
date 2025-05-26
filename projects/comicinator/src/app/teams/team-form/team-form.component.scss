@@ -1,0 +1,15 @@
+.team-form__content {
+    display: grid;
+    grid-template-columns: 200px auto;
+    gap: 24px;
+}
+
+.team-form__img-preview {
+    width: 200px;
+    position: absolute;
+}
+
+mat-form-field {
+    width: 100%;
+    margin-bottom: 16px;
+}

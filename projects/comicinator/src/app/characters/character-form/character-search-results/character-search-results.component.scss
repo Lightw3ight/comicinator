@@ -13,11 +13,16 @@ table {
 }
 
 .search-result__container {
-    display: flex;
+    display: grid;
+    grid-template-columns: 150px auto;
     align-items: flex-start;
     gap: 32px;
+}
 
-    img {
-        margin-top: 54px;
-    }
+.search-result__preview-image {
+    width: 100%;
+}
+
+.search-result__container--hidden {
+    display: none;
 }

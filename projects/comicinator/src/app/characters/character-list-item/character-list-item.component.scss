@@ -11,6 +11,13 @@
     padding: 16px;
     background-size: cover;
     background-repeat: no-repeat;
+    position: relative;
+
+    &:hover {
+        .character-item__edit {
+            opacity: 1;
+        }
+    }
 }
 
 .character-item__name {
@@ -18,4 +25,12 @@
     font-size: 24px;
     text-align: center;
     text-shadow: 0 0 10px black;
+}
+
+.character-item__edit {
+    position: absolute;
+    transition: opacity 0.2s ease-in-out;
+    top: 8px;
+    right: 8px;
+    opacity: 0;
 }

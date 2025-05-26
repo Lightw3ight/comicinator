@@ -1,0 +1,45 @@
+@if (location()) {
+    <div class="location__banner">
+        <div>
+            <img [attr.src]="imageUrl()" />
+        </div>
+
+        <div>
+            <header>
+                <h1>{{ location().name }}</h1>
+                <div>
+                    <button icon-button (click)="edit()">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                </div>
+            </header>
+            <div class="location__details">
+                <p>{{ location().description ?? "No Description" }}</p>
+
+                @if (location().externalUrl) {
+                    <a>
+                        <a
+                            [attr.href]="location().externalUrl"
+                            target="_blank"
+                            >{{ location().externalUrl }}</a
+                        >
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <mat-tab-group
+        animationDuration
+        mat-stretch-tabs="false"
+        (selectedIndexChange)="activeTabIndex.set($event)"
+    >
+        <mat-tab label="Books"></mat-tab>
+    </mat-tab-group>
+
+    <div class="location__lists">
+        @if (activeTabIndex() === 0) {
+            <cbx-book-list [books]="books()" />
+        }
+    </div>
+}

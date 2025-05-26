@@ -1,0 +1,11 @@
+Group by:
+<a href="javascript:void(0)" [matMenuTriggerFor]="menuGroupBy">{{
+    groupedField() ?? "None"
+}}</a>
+
+<mat-menu #menuGroupBy="matMenu">
+    <button mat-menu-item (click)="changeGrouping(undefined)">None</button>
+    <button mat-menu-item (click)="changeGrouping('series')">Series</button>
+    <button mat-menu-item (click)="changeGrouping('volume')">Volume</button>
+    <button mat-menu-item (click)="changeGrouping('writer')">Writer</button>
+</mat-menu>

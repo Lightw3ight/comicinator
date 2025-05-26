@@ -1,3 +1,5 @@
+import { Gender } from './gender.enum';
+
 export interface Character {
     id: number;
     name: string;
@@ -5,10 +7,14 @@ export interface Character {
     creators?: string;
     summary?: string;
     description?: string;
-    gender?: string;
+    gender?: Gender;
     origin?: string;
     powers?: string;
-    publisher?: string;
+    publisherId?: number;
     realName?: string;
+    externalUrl?: string;
+    externalId?: number;
     image?: Blob;
+    birthDate?: Date;
+    dateAdded: Date;
 }

@@ -1,8 +1,74 @@
-@if (character()) {
-<header>
-    <h1>{{ character().name }}</h1>
-    <button icon-button (click)="edit()"><i class="bi bi-pencil"></i></button>
-</header>
+@if (character(); as char) {
+    <div class="character__banner">
+        <div>
+            <img [attr.src]="imageUrl()" />
+        </div>
 
-<cbx-book-list [books]="books()" />
+        <div>
+            <cbx-page-header [title]="char.name">
+                <button
+                    mat-icon-button
+                    (click)="deleteCharacter()"
+                    title="Delete character"
+                >
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <button mat-icon-button (click)="edit()" title="Edit character">
+                    <mat-icon>edit</mat-icon>
+                </button>
+            </cbx-page-header>
+
+            <div class="character__details">
+                @if (char.aliases) {
+                    <p><label>AKA:</label> {{ char.aliases }}</p>
+                }
+                @if (char.realName) {
+                    <p><label>Real name:</label> {{ char.realName }}</p>
+                }
+                @if (char.origin) {
+                    <p><label>Origin:</label> {{ char.origin }}</p>
+                }
+                @if (char.powers) {
+                    <p><label>Powers:</label> {{ char.powers }}</p>
+                }
+                @if (publisher(); as pub) {
+                    <p><label>Publisher:</label> {{ pub.name }}</p>
+                }
+                @if (char.creators) {
+                    <p><label>Creators:</label> {{ char.creators }}</p>
+                }
+                @if (char.birthDate) {
+                    <p><label>Birth date:</label> {{ char.birthDate }}</p>
+                }
+
+                <p>{{ char.summary ?? "No Description" }}</p>
+
+                @if (char.externalUrl) {
+                    <a>
+                        <a [attr.href]="char.externalUrl" target="_blank">{{
+                            char.externalUrl
+                        }}</a>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <mat-tab-group
+        animationDuration
+        mat-stretch-tabs="false"
+        (selectedIndexChange)="activeTabIndex.set($event)"
+    >
+        <mat-tab label="Books"></mat-tab>
+        <mat-tab label="Teams"></mat-tab>
+    </mat-tab-group>
+
+    <div class="team__lists">
+        @if (activeTabIndex() === 0) {
+            <cbx-book-list [books]="books()" />
+        }
+        @if (activeTabIndex() === 1) {
+            <cbx-team-list [teams]="teams()" />
+        }
+    </div>
 }

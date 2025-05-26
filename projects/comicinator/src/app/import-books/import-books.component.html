@@ -1,0 +1,44 @@
+<h2 mat-dialog-title>Import books</h2>
+<mat-dialog-content>
+    <div class="import-books__content">
+        <div>
+            <img [attr.src]="thumbPath()" />
+        </div>
+        <div>
+            @for(item of itemsToImport(); track item.filePath) {
+            <div
+                class="import__list-item"
+                [class.import__list-item--selected]="selectedItem() === item"
+                (click)="selectedItem.set(item)"
+            >
+                <div class="import__list-item-details">
+                    <label>Name/Series:</label>
+                    <span>{{ item.name }}</span>
+
+                    <label>Issue:</label>
+                    <span>{{ item.issueNumber ?? "N/A" }}</span>
+
+                    <label>Year:</label>
+                    <span>{{ item.year ?? "N/A" }}</span>
+                </div>
+
+                <div class="import__list-item-path">
+                    <label>Source Path:</label>
+                    <span>{{ item.filePath }}</span>
+                </div>
+
+                <div class="import__list-item-path">
+                    <label>Destination Path:</label>
+                    <span>{{ item.outputPath }}</span>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button mat-button (click)="scanAllItems()">Scan</button>
+    <button mat-button cdkFocusInitial (click)="startImport()">Import</button>
+</mat-dialog-actions>

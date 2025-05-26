@@ -1,26 +1,180 @@
 <form [formGroup]="form" (ngSubmit)="form.valid && save()">
-    <h2 mat-dialog-title>{{ title() }}</h2>
+    <h2
+        mat-dialog-title
+        cdkDrag
+        cdkDragRootElement=".cdk-overlay-pane"
+        cdkDragHandle
+    >
+        {{ title() }}
+    </h2>
     <mat-dialog-content>
-        @if (imageUrl()) {
-        <img [attr.src]="imageUrl()" />
+        @if (importing()) {
+            <cbx-progress-takeover [message]="progressText()" />
         }
 
-        <mat-form-field class="example-full-width">
-            <mat-label>Name</mat-label>
-            <input matInput formControlName="name" />
+        <div class="char-form__content">
+            <div>
+                @if (imageUrl()) {
+                    <img
+                        [attr.src]="imageUrl()"
+                        class="char-form__img-preview"
+                    />
+                }
+            </div>
+            <div class="char-form__form-container">
+                <mat-tab-group mat-stretch-tabs="false">
+                    <mat-tab label="Details">
+                        <mat-form-field
+                            [style.gridArea]="'name'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>Name</mat-label>
+                            <input matInput formControlName="name" />
 
-            @if (form.value.name) {
-            <button
-                matSuffix
-                mat-icon-button
-                type="button"
-                aria-label="Clear"
-                (click)="search()"
-            >
-                <mat-icon>search</mat-icon>
-            </button>
-            }
-        </mat-form-field>
+                            @if (form.value.name && showSearch()) {
+                                <button
+                                    matSuffix
+                                    mat-icon-button
+                                    type="button"
+                                    aria-label="Clear"
+                                    (click)="search()"
+                                >
+                                    <mat-icon>search</mat-icon>
+                                </button>
+                            }
+                        </mat-form-field>
+
+                        <mat-form-field
+                            [style.gridArea]="'aliases'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>Aliases</mat-label>
+                            <input matInput formControlName="aliases" />
+                        </mat-form-field>
+
+                        <mat-form-field
+                            [style.gridArea]="'real-name'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>Real name</mat-label>
+                            <input matInput formControlName="realName" />
+                        </mat-form-field>
+
+                        <mat-radio-group
+                            aria-label="Gender"
+                            formControlName="gender"
+                            [style.gridArea]="'gender'"
+                        >
+                            <mat-radio-button [value]="1"
+                                >Male</mat-radio-button
+                            >
+                            <mat-radio-button [value]="2"
+                                >Female</mat-radio-button
+                            >
+                            <mat-radio-button [value]="3"
+                                >Other</mat-radio-button
+                            >
+                        </mat-radio-group>
+
+                        <mat-form-field
+                            [style.gridArea]="'birth-date'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>Birth date</mat-label>
+                            <input
+                                matInput
+                                [matDatepicker]="picker"
+                                formControlName="birthDate"
+                            />
+                            <!-- <mat-hint>MM/DD/YYYY</mat-hint> -->
+                            <mat-datepicker-toggle
+                                matIconSuffix
+                                [for]="picker"
+                            ></mat-datepicker-toggle>
+                            <mat-datepicker #picker></mat-datepicker>
+                        </mat-form-field>
+
+                        <mat-form-field
+                            [style.gridArea]="'creators'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>Creators</mat-label>
+                            <input matInput formControlName="creators" />
+                        </mat-form-field>
+
+                        <mat-form-field
+                            [style.gridArea]="'origin'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>Origin</mat-label>
+                            <input matInput formControlName="origin" />
+                        </mat-form-field>
+
+                        <mat-form-field
+                            [style.gridArea]="'powers'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>Powers</mat-label>
+                            <input matInput formControlName="powers" />
+                        </mat-form-field>
+
+                        <mat-form-field
+                            [style.gridArea]="'publisher'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>Publisher</mat-label>
+                            <mat-select formControlName="publisherId">
+                                @for (pub of publishers(); track pub.id) {
+                                    <mat-option [value]="pub.id">{{
+                                        pub.name
+                                    }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field
+                            [style.gridArea]="'summary'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>Summary</mat-label>
+                            <textarea
+                                matInput
+                                formControlName="summary"
+                                rows="5"
+                            ></textarea>
+                        </mat-form-field>
+
+                        <mat-form-field
+                            [style.gridArea]="'description'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>Description</mat-label>
+                            <textarea
+                                matInput
+                                formControlName="description"
+                                rows="10"
+                            ></textarea>
+                        </mat-form-field>
+
+                        <mat-form-field
+                            [style.gridArea]="'external-url'"
+                            subscriptSizing="dynamic"
+                        >
+                            <mat-label>External URL</mat-label>
+                            <input matInput formControlName="externalUrl" />
+                        </mat-form-field>
+                    </mat-tab>
+                    <mat-tab label="Teams">
+                        <cbx-team-selector
+                            [selection]="form.value.teamIds!"
+                            (selectionChange)="
+                                form.controls.teamIds.setValue($event)
+                            "
+                        />
+                    </mat-tab>
+                </mat-tab-group>
+            </div>
+        </div>
     </mat-dialog-content>
     <mat-dialog-actions>
         <button mat-button type="button" mat-dialog-close>Cancel</button>
