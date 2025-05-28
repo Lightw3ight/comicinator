@@ -104,7 +104,7 @@ export class BookComponent implements OnDestroy {
         const result = await firstValueFrom(ref.afterClosed());
 
         if (Array.isArray(result)) {
-            await this.electronService.sqlDeleteBook(this.book().id, result[1]);
+            await this.booksStore.deleteBook(this.book().id, result[1]);
             this.router.navigate(['/books'], { replaceUrl: true });
         }
     }

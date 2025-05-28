@@ -1,0 +1,20 @@
+:host {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 24px 0 24px;
+}
+
+.quick-filter__item {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+}
+
+.quick-filter__item--active {
+    background-color: var(--brand-color);
+}

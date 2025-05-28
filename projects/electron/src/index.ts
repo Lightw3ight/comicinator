@@ -1,21 +1,25 @@
 import { app, BrowserWindow, ipcMain, net, protocol, shell } from 'electron';
+import { fileTypeFromBuffer } from 'file-type';
 import * as fs from 'fs';
 import path from 'path';
-import { open } from 'sqlite';
-import sqlite3 from 'sqlite3';
+import { BookController } from './data/book/book-controller';
+import { CharacterController } from './data/character/character-controller';
+import { db } from './data/db';
+import { LocationController } from './data/location/location-controller';
+import { PublisherController } from './data/publisher/publisher-controller';
+import { SettingController } from './data/setting/setting-controller';
+import { TeamController } from './data/team/team-controller';
 import { getFileSystemMethods } from './file-system/file-system-handlers';
-import { getSqlHandlers } from './handlers/sql-handlers';
 import { getGenericHandlers } from './helpers/generic-handlers';
 import { getZipThumbnail } from './helpers/get-zip-thumbnail';
 import { createLazyValue } from './helpers/lazy-value';
 import { getZipHandlers } from './zip/zip-handlers';
-import {
-    CHARACTER_CONTROLLER,
-    selectCharacterImage,
-} from './data/character-controller';
-import { fileTypeFromBuffer } from 'file-type';
+import { initializeModelRelationships } from './data/initialize-models';
+// import blocked from 'blocked-at';
 
-// import sharp from 'sharp';
+// blocked((time, stack) => {
+//     console.log(`Blocked for ${time}ms, operation started here:`, stack);
+// });
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -39,12 +43,9 @@ try {
     fs.mkdirSync(THUMB_PATH, { recursive: true });
 }
 
-const dbLoader = open({
-    filename: path.join(dataPath, 'cdb.db'),
-    driver: sqlite3.Database,
-});
-
 const createWindow = (): void => {
+    initializeModelRelationships();
+
     // Create the browser window.
     mainWindow.set(
         new BrowserWindow({
@@ -112,35 +113,56 @@ app.on('ready', () => {
     protocol.handle('char-img', async (request) => {
         const match = request.url.match(/(?<=char-img:\/\/)\d+/);
         const id = Number(match[0]);
-        console.log('Handling char img', id);
-        const buffer = await selectCharacterImage(id);
+        const buffer = await CharacterController.selectImage(id);
 
-        if (buffer) {
-            // Detect file type dynamically
-            const fileType = await fileTypeFromBuffer(buffer);
-            const mimeType = fileType
-                ? fileType.mime
-                : 'application/octet-stream'; // Default to binary if unknown
+        return await handleEntityImageRequest(buffer, NO_HERO_THUMB);
+    });
 
-            const uint8Array = new Uint8Array(buffer);
+    protocol.handle('team-img', async (request) => {
+        const match = request.url.match(/(?<=team-img:\/\/)\d+/);
+        const id = Number(match[0]);
+        const buffer = await TeamController.selectImage(id);
 
-            return new Response(uint8Array, {
-                headers: { 'Content-Type': mimeType },
-            });
-        }
+        return await handleEntityImageRequest(buffer, NO_HERO_THUMB);
+    });
 
-        return net.fetch(`file:///${NO_HERO_THUMB}`);
+    protocol.handle('loc-img', async (request) => {
+        const match = request.url.match(/(?<=loc-img:\/\/)\d+/);
+        const id = Number(match[0]);
+        const buffer = await LocationController.selectImage(id);
+
+        return await handleEntityImageRequest(buffer, NO_HERO_THUMB);
     });
 
     createWindow();
 });
+
+async function handleEntityImageRequest(
+    buffer: Buffer<ArrayBufferLike>,
+    noImagePlaceholder: string,
+) {
+    if (buffer) {
+        // Detect file type dynamically
+        const fileType = await fileTypeFromBuffer(buffer);
+        const mimeType = fileType ? fileType.mime : 'application/octet-stream'; // Default to binary if unknown
+
+        const uint8Array = new Uint8Array(buffer);
+
+        return new Response(uint8Array, {
+            headers: { 'Content-Type': mimeType },
+        });
+    }
+
+    return net.fetch(`file:///${noImagePlaceholder}`);
+}
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-        dbLoader.then((db) => db.close());
+        db.close();
+        // dbLoader.then((db) => db.close());
         app.quit();
     }
 });
@@ -157,26 +179,45 @@ app.on('activate', () => {
 //     return await fs.promises.readFile(filePath);
 // });
 
-function registerHandlers(
-    prefix: string,
-    handlers: { [key: string]: Function },
-) {
-    Object.entries(handlers).forEach(([name, fn]: [string, Function]) => {
-        ipcMain.handle(`${prefix}-${name}`, async (_evt: any, ...args: any[]) =>
-            fn(...args),
-        );
+function registerHandlers(prefix: string, handlers: Object) {
+    Object.entries(handlers).forEach(([name, fn]: [string, any]) => {
+        console.log('register', prefix, name);
+        if (typeof fn === 'function') {
+            ipcMain.handle(
+                `${prefix}-${name}`,
+                async (_evt: any, ...args: any[]) => fn(...args),
+            );
+        }
+    });
+}
+
+function registerControllerHandlers(prefix: string, controller: any) {
+    const keys = Object.getOwnPropertyNames(controller).filter(
+        (o) => o !== 'constructor',
+    );
+
+    keys.forEach((key) => {
+        if (typeof controller[key] === 'function') {
+            ipcMain.handle(
+                `${prefix}-${key}`,
+                async (_evt: any, ...args: any[]) => controller[key](...args),
+            );
+        }
     });
 }
 
 registerHandlers('fs', getFileSystemMethods(mainWindow));
 
-registerHandlers('sql', getSqlHandlers(dbLoader));
-
 registerHandlers('zip', getZipHandlers(THUMB_PATH));
 
 registerHandlers('cbx', getGenericHandlers(THUMB_PATH));
 
-registerHandlers('char', CHARACTER_CONTROLLER);
+registerControllerHandlers('char', CharacterController);
+registerControllerHandlers('team', TeamController);
+registerControllerHandlers('loc', LocationController);
+registerControllerHandlers('setting', SettingController);
+registerControllerHandlers('pub', PublisherController);
+registerControllerHandlers('book', BookController);
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.

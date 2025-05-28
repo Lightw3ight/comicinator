@@ -5,7 +5,7 @@ import {
     type,
     withMethods,
 } from '@ngrx/signals';
-import { EntityState } from '@ngrx/signals/entities';
+import { addEntities, EntityState } from '@ngrx/signals/entities';
 import { LocationsApiService } from '../../api/locations/locations-api.service';
 import { Location } from '../../models/location.interface';
 import { LocationsState } from './locations-state.interface';
@@ -19,22 +19,28 @@ export function withLocationsSearchFeature<_>() {
 
             return {
                 async search(query: string) {
-                    const ids = await locationsApiService.search(query);
+                    const locations = await locationsApiService.search(query);
+                    patchState(store, addEntities(locations));
+                    return locations;
+                },
 
-                    patchState(store, {
-                        activeSearch: {
-                            query,
-                            results: ids,
-                        },
+                async searchByBook(bookId: number): Promise<Location[]> {
+                    return await locationsApiService.selectByBook(bookId);
+                },
+
+                async setActiveSearch(query: string) {
+                    const locations = await this.search(query);
+
+                    patchState(store, addEntities(locations), {
+                        search: query,
+                        activeDisplayIds: locations.map((o) => o.id),
                     });
                 },
 
                 clearSearch() {
                     patchState(store, {
-                        activeSearch: {
-                            query: undefined,
-                            results: [],
-                        },
+                        search: undefined,
+                        activeDisplayIds: [],
                     });
                 },
             };

@@ -4,6 +4,7 @@ import { Character } from '../../core/models/character.interface';
 import { IconButtonComponent } from '../../shared/icon-button/icon-button.component';
 import { CharacterFormComponent } from '../character-form/character-form.component';
 import { firstValueFrom } from 'rxjs';
+import { generateImageCssSrc } from '../../shared/generate-image-path';
 
 @Component({
     selector: 'cbx-character-list-item',
@@ -18,23 +19,8 @@ export class CharacterListItemComponent {
     public character = input.required<Character>();
     private dialog = inject(MatDialog);
 
-    // protected imageUrl = signal<string | undefined>(undefined);
     protected imageCssUrl = this.computeImageUrlSrc();
-    private timeStamp = signal<number | undefined>(undefined);
-
-    // constructor() {
-    //     effect(() => {
-    //         const char = this.character();
-
-    //         untracked(() => {
-    //             this.setImage(char.image);
-    //         });
-    //     });
-    // }
-
-    // public ngOnDestroy(): void {
-    //     this.disposeImage();
-    // }
+    private timeStamp = signal<Date | undefined>(undefined);
 
     public async onEditClick(args: MouseEvent) {
         args.stopPropagation();
@@ -44,31 +30,16 @@ export class CharacterListItemComponent {
         });
         await firstValueFrom(ref.afterClosed());
 
-        const stamp = new Date().getTime();
-        this.timeStamp.set(stamp);
+        this.timeStamp.set(new Date());
     }
-
-    // private setImage(image: Blob | undefined) {
-    //     this.disposeImage();
-
-    //     if (image && typeof image !== 'string') {
-    //         const url = URL.createObjectURL(image);
-    //         this.imageUrl.set(url);
-    //     }
-    // }
-
-    // private disposeImage() {
-    //     const url = this.imageUrl();
-    //     if (url) {
-    //         URL.revokeObjectURL(url);
-    //     }
-    // }
 
     private computeImageUrlSrc() {
         return computed(() => {
-            const ts = this.timeStamp();
-            const qs = ts ? `?${ts}` : '';
-            return `url("char-img://${this.character().id}${qs}")`;
+            return generateImageCssSrc(
+                this.character().id,
+                'char',
+                this.timeStamp() ?? this.character().lastUpdated,
+            );
         });
     }
 }

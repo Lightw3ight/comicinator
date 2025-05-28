@@ -11,47 +11,35 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { MatTabsModule } from '@angular/material/tabs';
 import { BookListComponent } from '../../books/book-list/book-list.component';
-import { BooksStore } from '../../core/store/books/books.store';
-import { LocationsStore } from '../../core/store/locations/locations.store';
+import { generateImagePath } from '../../shared/generate-image-path';
 import { IconButtonComponent } from '../../shared/icon-button/icon-button.component';
 import { LocationFormComponent } from '../location-form/location-form.component';
+import { LocationDetailsStore } from './store/location-details.store';
 
 @Component({
     selector: 'cbx-location',
     templateUrl: 'location.component.html',
     styleUrl: 'location.component.scss',
+    providers: [LocationDetailsStore],
     imports: [BookListComponent, MatTabsModule, IconButtonComponent],
 })
 export class LocationComponent {
-    private booksStore = inject(BooksStore);
-    private locationsStore = inject(LocationsStore);
+    private locationDetailsStore = inject(LocationDetailsStore);
 
     public id = input.required({ transform: numberAttribute });
 
-    protected location = this.computeLocation();
-    protected books = this.computeBooks();
+    protected location = this.locationDetailsStore.location;
+    protected books = this.locationDetailsStore.books;
     protected activeTabIndex = signal(0);
-    protected imageUrl = signal<string | undefined>(undefined);
+    protected imageUrl = this.computeImageUrl();
     private dialog = inject(MatDialog);
 
     constructor() {
         effect(() => {
-            const locationId = this.id();
+            const id = this.id();
 
             untracked(() => {
-                this.locationsStore.setActiveLocation(locationId);
-            });
-        });
-
-        effect(() => {
-            const location = this.location();
-
-            untracked(() => {
-                if (location?.image) {
-                    this.setImage(location.image);
-                } else {
-                    this.disposeImage();
-                }
+                this.locationDetailsStore.setActiveTeam(id);
             });
         });
     }
@@ -63,33 +51,13 @@ export class LocationComponent {
         });
     }
 
-    private computeLocation() {
+    private computeImageUrl() {
         return computed(() => {
-            const id = this.id();
-            return this.locationsStore.entityMap()[id];
+            return generateImagePath(
+                this.id(),
+                'loc',
+                this.location()?.lastUpdated,
+            );
         });
-    }
-
-    private computeBooks() {
-        return computed(() => {
-            const bookIds = this.locationsStore.activeLocation.bookIds();
-            return bookIds.map((id) => this.booksStore.entityMap()[id]);
-        });
-    }
-
-    private setImage(image: Blob | undefined) {
-        this.disposeImage();
-
-        if (image && typeof image !== 'string') {
-            const url = URL.createObjectURL(image);
-            this.imageUrl.set(url);
-        }
-    }
-
-    private disposeImage() {
-        const url = this.imageUrl();
-        if (url) {
-            URL.revokeObjectURL(url);
-        }
     }
 }

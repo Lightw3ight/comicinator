@@ -1,3 +1,4 @@
+import { CdkDrag } from '@angular/cdk/drag-drop';
 import { Component, computed, inject, signal, Signal } from '@angular/core';
 import {
     NonNullableFormBuilder,
@@ -20,9 +21,9 @@ import { MatIcon } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
 import { firstValueFrom } from 'rxjs';
 import { CharacterResult } from '../../core/api/comic-vine/models/character-result.interface';
-import { ItemBase } from '../../core/api/comic-vine/models/item-base.interface';
 import { AbortedImport } from '../../core/importers/aborted-import';
 import { ImporterService } from '../../core/importers/importer.service';
 import { MessagingService } from '../../core/messaging/messaging.service';
@@ -30,12 +31,10 @@ import { Character } from '../../core/models/character.interface';
 import { CharactersStore } from '../../core/store/characters/characters.store';
 import { PublishersStore } from '../../core/store/publishers/publishers.store';
 import { SettingsStore } from '../../core/store/settings/settings.store';
-import { ProgressTakeoverComponent } from '../../shared/progress-takeover/progress-takeover.component';
-import { CharacerSearchResultsComponent } from './character-search-results/character-search-results.component';
-import { CdkDrag } from '@angular/cdk/drag-drop';
 import { TeamsStore } from '../../core/store/teams/teams.store';
-import { MatTabsModule } from '@angular/material/tabs';
+import { ProgressTakeoverComponent } from '../../shared/progress-takeover/progress-takeover.component';
 import { TeamSelectorComponent } from '../../shared/team-selector/team-selector.component';
+import { CharacerSearchResultsComponent } from './character-search-results/character-search-results.component';
 
 @Component({
     selector: 'cbx-character-form',
@@ -87,13 +86,22 @@ export class CharacterFormComponent {
 
     public async ngOnInit() {
         if (this.characterId) {
-            const teamIds = await this.teamsStore.selectIdsByCharacter(
+            await this.loadImage(this.characterId);
+            const teams = await this.teamsStore.searchByCharacter(
                 this.characterId,
             );
             this.form.patchValue({
-                teamIds: teamIds,
+                teamIds: teams.map((o) => o.id),
             });
             this.form.markAsPristine();
+        }
+    }
+
+    private async loadImage(characterId: number) {
+        const img = await this.charactersStore.selectImage(characterId!);
+
+        if (img) {
+            this.setImage(img);
         }
     }
 
@@ -101,16 +109,16 @@ export class CharacterFormComponent {
         const { teamIds, ...formValue } = this.form.value;
 
         if (this.characterId != null) {
-            const { image, dateAdded, ...character } = this.character()!;
+            const { dateAdded, ...character } = this.character()!;
 
             await this.charactersStore.updateCharacter(
                 this.characterId,
                 {
                     ...character,
                     ...formValue,
-                    image: this.imageBlob(),
                     id: this.characterId,
                 },
+                this.imageBlob(),
                 teamIds ?? [],
             );
             this.dialogRef.close();
@@ -144,6 +152,10 @@ export class CharacterFormComponent {
                 await this.importerService.importCharacter(result);
 
             this.setImage(image);
+
+            if (teamIds?.length) {
+                await this.teamsStore.loadByIds(teamIds);
+            }
 
             this.form.patchValue({
                 ...character,
@@ -216,7 +228,6 @@ export class CharacterFormComponent {
         const char = this.character();
 
         if (char) {
-            this.setImage(char.image);
             form.patchValue(char);
             form.markAsPristine();
         }

@@ -99,7 +99,7 @@ export class LibraryScannerComponent {
         const results: ScanResult[] = [];
 
         for (let path of filePaths) {
-            if (this.booksStore.checkComicAdded(path)) {
+            if (await this.booksStore.checkComicAdded(path)) {
                 results.push({
                     added: false,
                     reason: 'File already exists',

@@ -4,25 +4,23 @@ import {
     signalStoreFeature,
     type,
     withComputed,
-    withHooks,
     withMethods,
 } from '@ngrx/signals';
 import {
+    addEntities,
     addEntity,
-    EntityState,
     setAllEntities,
     updateEntity,
     withEntities,
 } from '@ngrx/signals/entities';
 import { TeamResult } from '../../api/comic-vine/models/team-result.interface';
 import { TeamsApiService } from '../../api/teams/teams-api.service';
-import { Team } from '../../models/team.interface';
-import { TeamsState } from './teams-state.interface';
-import { PublishersStore } from '../publishers/publishers.store';
+import { LoadState } from '../../models/load-state.enum';
 import { Publisher } from '../../models/publisher.interface';
+import { Team } from '../../models/team.interface';
 import { CharactersStore } from '../characters/characters.store';
-import { BooksApiService } from '../../api/books/books-api.service';
-import { CharactersApiService } from '../../api/characters/characters-api.service';
+import { PublishersStore } from '../publishers/publishers.store';
+import { TeamsState } from './teams-state.interface';
 
 export function withTeamsCoreFeature<_>() {
     return signalStoreFeature(
@@ -32,29 +30,54 @@ export function withTeamsCoreFeature<_>() {
 
         withComputed((store) => {
             return {
-                pageView: computed(() => {
-                    const search = store.activeSearch.query();
+                displayItems: computed(() => {
+                    const search = store.search();
+                    const em = store.entityMap();
+                    let bookIds =
+                        store.quickSearchResultCache()[store.quickSearch()] ??
+                        [];
 
-                    if (search == null || search === '') {
-                        return store.entities();
+                    if (search?.length) {
+                        bookIds = store.activeDisplayIds();
                     }
 
-                    const em = store.entityMap();
-                    return store.activeSearch.results().map((id) => em[id]);
+                    return bookIds.map((id) => em[id]);
                 }),
             };
         }),
 
         withMethods((store) => {
             const teamsApiService = inject(TeamsApiService);
-            const booksApiService = inject(BooksApiService);
-            const charactersApiService = inject(CharactersApiService);
             const publishersStore = inject(PublishersStore);
             const charactersStore = inject(CharactersStore);
 
             return {
+                async runQuickSearch(filter: string) {
+                    patchState(store, { quickSearch: filter });
+
+                    if (store.quickSearchResultCache()[filter] != null) {
+                        return;
+                    }
+
+                    const teams = await teamsApiService.startsWith(filter);
+
+                    patchState(store, addEntities(teams), {
+                        quickSearch: filter,
+                        quickSearchResultCache: {
+                            ...store.quickSearchResultCache(),
+                            [filter]: teams.map((o) => o.id),
+                        },
+                    });
+                },
+
                 async loadTeams() {
-                    const teams = await teamsApiService.fetchTeams();
+                    if (store.loadState() !== LoadState.Initial) {
+                        return;
+                    }
+
+                    patchState(store, { loadState: LoadState.Loading });
+
+                    const teams = await teamsApiService.selectAll();
                     const names = teams.reduce(
                         (acc, c) => ({
                             ...acc,
@@ -64,48 +87,44 @@ export function withTeamsCoreFeature<_>() {
                     );
 
                     patchState(store, setAllEntities(teams), {
-                        loaded: true,
-                        names,
+                        loadState: LoadState.Loaded,
                     });
                 },
 
-                async setActiveTeam(teamId: number) {
-                    const characterIds =
-                        await charactersApiService.selectByTeam(teamId);
-                    const bookIds = await booksApiService.searchByTeam(teamId);
+                async loadTeam(id: number) {
+                    if (store.entityMap()[id] != null) {
+                        return;
+                    }
 
-                    patchState(store, {
-                        activeTeam: {
-                            teamId,
-                            characterIds,
-                            bookIds,
-                        },
-                    });
+                    const char = await teamsApiService.selectById(id);
+                    patchState(store, addEntity(char));
                 },
 
-                clearActiveTeam() {
-                    patchState(store, {
-                        activeTeam: {
-                            teamId: undefined,
-                            characterIds: [],
-                            bookIds: [],
-                        },
-                    });
+                async loadByIds(ids: number[]) {
+                    const toLoad = ids.filter(
+                        (id) => store.entityMap()[id] == null,
+                    );
+                    if (toLoad.length > 0) {
+                        const items = await teamsApiService.selectByIds(toLoad);
+                        patchState(store, addEntities(items));
+                    }
                 },
 
-                async selectIdsByBook(bookId: number): Promise<number[]> {
-                    return await teamsApiService.selectByBook(bookId);
-                },
-
-                async selectIdsByCharacter(
-                    characterId: number,
-                ): Promise<number[]> {
-                    return await teamsApiService.selectByCharacter(characterId);
+                async searchByCharacter(characterId: number): Promise<Team[]> {
+                    const teams =
+                        await teamsApiService.selectByCharacter(characterId);
+                    patchState(store, addEntities(teams));
+                    return teams;
                 },
 
                 async selectByBook(bookId: number): Promise<Team[]> {
-                    const ids = await teamsApiService.selectByBook(bookId);
-                    return ids.map((id) => store.entityMap()[id]);
+                    const teams = await teamsApiService.selectByBook(bookId);
+                    patchState(store, addEntities(teams));
+                    return teams;
+                },
+
+                async selectImage(teamId: number): Promise<Blob | undefined> {
+                    return await teamsApiService.selectImage(teamId);
                 },
 
                 async importTeam(data: TeamResult): Promise<number> {
@@ -155,7 +174,7 @@ export function withTeamsCoreFeature<_>() {
                             .filter((val) => val != null);
                     }
 
-                    const newChar: Omit<Team, 'id'> = {
+                    const newTeam: Omit<Team, 'id'> = {
                         name: data.name,
                         dateAdded: new Date(),
                         aliases: data.aliases,
@@ -164,34 +183,32 @@ export function withTeamsCoreFeature<_>() {
                         externalUrl: data.siteUrl,
                         publisherId: publisherId,
                         summary: data.summary,
-                        image: image,
                     };
 
-                    return await this.addTeam(newChar, characterIds);
+                    return await this.addTeam(newTeam, image, characterIds);
                 },
 
                 async addTeam(
-                    team: Omit<Team, 'id'>,
+                    team: Omit<Team, 'id' | 'dateAdded'>,
+                    image: Blob | undefined,
                     characterIds: number[],
                 ): Promise<number> {
-                    const existingId =
-                        store.names()[team.name.trim().toLocaleLowerCase()];
+                    const existing = await teamsApiService.findForImport(
+                        null,
+                        team.name,
+                    );
 
-                    if (existingId) {
-                        return existingId;
+                    if (existing) {
+                        return existing.id;
                     }
 
-                    const added = await teamsApiService.insertTeam(
+                    const added = await teamsApiService.create(
                         team,
+                        image,
                         characterIds,
                     );
 
-                    patchState(store, addEntity(added), {
-                        names: {
-                            ...store.names(),
-                            [added.name.trim().toLocaleLowerCase()]: added.id,
-                        },
-                    });
+                    patchState(store, addEntity(added));
 
                     return added.id;
                 },
@@ -199,11 +216,20 @@ export function withTeamsCoreFeature<_>() {
                 async updateTeam(
                     id: number,
                     team: Partial<Team>,
+                    image: Blob | undefined,
                     characterIds: number[],
                 ) {
-                    await teamsApiService.updateTeam(id, team, characterIds);
+                    const updatedTeam = await teamsApiService.updateTeam(
+                        id,
+                        team,
+                        image,
+                        characterIds,
+                    );
 
-                    patchState(store, updateEntity({ id: id, changes: team }));
+                    patchState(
+                        store,
+                        updateEntity({ id: id, changes: updatedTeam }),
+                    );
                 },
 
                 async addTeamsByName(commaDelimitedTeams: string | undefined) {
@@ -220,25 +246,16 @@ export function withTeamsCoreFeature<_>() {
                     const teamIds: number[] = [];
 
                     for (let name of names) {
-                        const id = await this.addTeam(
-                            {
-                                name,
-                                dateAdded: new Date(),
-                            },
-                            [],
-                        );
+                        const team: Omit<Team, 'id' | 'dateAdded'> = {
+                            name: name!,
+                        };
+                        const id = await this.addTeam(team, undefined, []);
                         teamIds.push(id);
                     }
 
                     return teamIds;
                 },
             };
-        }),
-
-        withHooks({
-            async onInit(store) {
-                await store.loadTeams();
-            },
         }),
     );
 }

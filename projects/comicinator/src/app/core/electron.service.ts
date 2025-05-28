@@ -14,56 +14,15 @@ export class ElectronService {
         return this.electron.unzip(filePath);
     }
 
-    public async sqlRun<T>(sql: string, ...params: any[]): Promise<any>;
-    public async sqlRun<T>(stmt: SqlStatement): Promise<any>;
-
-    public async sqlRun(
-        sqlOrStmt: string | SqlStatement,
-        ...params: any[]
-    ): Promise<any> {
-        if (typeof sqlOrStmt === 'object') {
-            return this.electron.sqlRun(sqlOrStmt.sql, sqlOrStmt.args);
-        } else {
-            return this.electron.sqlRun(sqlOrStmt, ...params);
+    public async run<T>(command: string, ...args: any[]): Promise<T> {
+        if (this.electron[command] == null) {
+            throw new Error(`No method ${command} exists as a passthrough`);
         }
+        return await this.electron[command](...args);
     }
 
-    public async sqlSelectAll<T>(sql: string, ...params: any[]): Promise<T[]>;
-    public async sqlSelectAll<T>(stmt: SqlStatement): Promise<T[]>;
-
-    public async sqlSelectAll<T>(
-        sqlOrStmt: string | SqlStatement,
-        ...params: any[]
-    ): Promise<T[]> {
-        if (typeof sqlOrStmt === 'object') {
-            return this.electron.sqlSelectAll(sqlOrStmt.sql, sqlOrStmt.args);
-        } else {
-            return this.electron.sqlSelectAll(sqlOrStmt, ...params);
-        }
-    }
-
-    public async sqlSelect<T>(sql: string, ...params: any[]): Promise<T>;
-    public async sqlSelect<T>(stmt: SqlStatement): Promise<T>;
-
-    public async sqlSelect<T>(
-        sqlOrStmt: string | SqlStatement,
-        ...params: any[]
-    ): Promise<T | undefined> {
-        if (typeof sqlOrStmt === 'object') {
-            return this.electron.sqlSelect(sqlOrStmt.sql, sqlOrStmt.args);
-        } else {
-            return this.electron.sqlSelect(sqlOrStmt, ...params);
-        }
-    }
-
-    public async sqlTransact(
-        statements: (SqlStatement | string)[],
-    ): Promise<void> {
-        return await this.electron.sqlTransaction(statements);
-    }
-
-    public async sqlDeleteBook(bookId: number, deleteFile: boolean) {
-        return await this.electron.sqlDeleteBook(bookId, deleteFile);
+    public async abortImageQueue() {
+        return await this.electron.cbxAbortImageQueue();
     }
 
     public async zipImportBook(

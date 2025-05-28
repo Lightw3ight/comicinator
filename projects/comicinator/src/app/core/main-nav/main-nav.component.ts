@@ -8,6 +8,9 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FileSystemService } from '../file-system.service';
 import { ImportBooksComponent } from '../../import-books/import-books.component';
 import { SettingsStore } from '../store/settings/settings.store';
+import { firstValueFrom } from 'rxjs';
+import { BooksStore } from '../store/books/books.store';
+import { BookGroupStore } from '../store/book-group/book-group.store';
 
 @Component({
     selector: 'cbx-main-nav',
@@ -25,6 +28,8 @@ export class MainNavComponent {
     private dialog = inject(MatDialog);
     private fileSystemService = inject(FileSystemService);
     private settingsStore = inject(SettingsStore);
+    private booksStore = inject(BooksStore);
+    private bookGroupStore = inject(BookGroupStore);
 
     protected loaded = this.settingsStore.loaded;
 
@@ -46,10 +51,23 @@ export class MainNavComponent {
         const files = await this.fileSystemService.openFile(true);
 
         if (files.length) {
-            this.dialog.open(ImportBooksComponent, {
+            const ref = this.dialog.open(ImportBooksComponent, {
                 minWidth: 800,
                 data: files,
             });
+
+            await firstValueFrom(ref.afterClosed());
+
+            if (this.booksStore.searchText()) {
+                await this.booksStore.search(this.booksStore.searchText()!);
+            } else {
+                await this.booksStore.runQuickSearch(
+                    this.booksStore.quickSearch(),
+                    true,
+                );
+            }
+
+            await this.bookGroupStore.reloadGroups();
         }
     }
 }

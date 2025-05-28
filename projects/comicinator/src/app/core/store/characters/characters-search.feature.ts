@@ -5,37 +5,45 @@ import {
     type,
     withMethods,
 } from '@ngrx/signals';
-import { withEntities } from '@ngrx/signals/entities';
+import { addEntities, EntityState } from '@ngrx/signals/entities';
 import { CharactersApiService } from '../../api/characters/characters-api.service';
 import { Character } from '../../models/character.interface';
 import { CharactersState } from './characters-state.interface';
 
 export function withCharactersSearchFeature() {
     return signalStoreFeature(
-        { state: type<CharactersState>() },
+        { state: type<CharactersState & EntityState<Character>>() },
 
         withMethods((store) => {
             const charactersApiService = inject(CharactersApiService);
 
             return {
-                async search(query: string) {
-                    const ids =
-                        await charactersApiService.searchCharacters(query);
+                async searchByTeam(teamId: number) {
+                    const characters =
+                        await charactersApiService.selectByTeam(teamId);
+                    patchState(store, addEntities(characters));
+                    return characters;
+                },
 
-                    patchState(store, {
-                        activeSearch: {
-                            query,
-                            results: ids,
-                        },
+                async search(query: string) {
+                    const items = await charactersApiService.search(query);
+                    patchState(store, addEntities(items));
+                    return items;
+                },
+
+                async setActiveSearch(query: string) {
+                    const results = await this.search(query);
+
+                    patchState(store, addEntities(results), {
+                        search: query,
+                        activeDisplayIds: results.map((o) => o.id),
                     });
                 },
 
                 clearSearch() {
                     patchState(store, {
-                        activeSearch: {
-                            query: undefined,
-                            results: [],
-                        },
+                        search: undefined,
+                        activeDisplayIds: [],
                     });
                 },
             };

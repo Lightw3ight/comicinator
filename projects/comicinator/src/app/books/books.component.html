@@ -1,6 +1,14 @@
 <cbx-books-view-bar />
+
+@if (!search()) {
+    <cbx-quick-filter
+        [activeFilter]="quickSearch()"
+        (activeFilterChange)="setQuickFilter($event)"
+    />
+}
+
 @if (showGroupedBooks()) {
-    <cbx-group-list [search]="searchValue()" />
+    <cbx-group-list [search]="search()" [quickSearch]="quickSearch()" />
 } @else {
     <cbx-book-list [books]="books()" />
 }

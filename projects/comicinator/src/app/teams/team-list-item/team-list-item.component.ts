@@ -1,16 +1,10 @@
-import {
-    Component,
-    computed,
-    effect,
-    inject,
-    input,
-    signal,
-    untracked,
-} from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { firstValueFrom } from 'rxjs';
 import { Team } from '../../core/models/team.interface';
-import { TeamFormComponent } from '../team-form/team-form.component';
+import { generateImageCssSrc } from '../../shared/generate-image-path';
 import { IconButtonComponent } from '../../shared/icon-button/icon-button.component';
+import { TeamFormComponent } from '../team-form/team-form.component';
 
 @Component({
     selector: 'cbx-team-list-item',
@@ -25,51 +19,28 @@ export class TeamListItemComponent {
     public team = input.required<Team>();
     private dialog = inject(MatDialog);
 
-    protected imageUrl = signal<string | undefined>(undefined);
     protected imageCssUrl = this.computeImageUrlSrc();
+    private timeStamp = signal<Date | undefined>(undefined);
 
-    constructor() {
-        effect(() => {
-            const team = this.team();
-
-            untracked(() => {
-                this.setImage(team.image);
-            });
-        });
-    }
-
-    public ngOnDestroy(): void {
-        this.disposeImage();
-    }
-
-    public onEditClick(args: MouseEvent) {
+    public async onEditClick(args: MouseEvent) {
         args.stopPropagation();
-        this.dialog.open(TeamFormComponent, {
+        const ref = this.dialog.open(TeamFormComponent, {
             data: this.team(),
             minWidth: 700,
             disableClose: true,
         });
-    }
+        await firstValueFrom(ref.afterClosed());
 
-    private setImage(image: Blob | undefined) {
-        this.disposeImage();
-
-        if (image && typeof image !== 'string') {
-            const url = URL.createObjectURL(image);
-            this.imageUrl.set(url);
-        }
-    }
-
-    private disposeImage() {
-        const url = this.imageUrl();
-        if (url) {
-            URL.revokeObjectURL(url);
-        }
+        this.timeStamp.set(new Date());
     }
 
     private computeImageUrlSrc() {
         return computed(() => {
-            return this.imageUrl() ? `url('${this.imageUrl()}')` : undefined;
+            return generateImageCssSrc(
+                this.team().id,
+                'team',
+                this.timeStamp() ?? this.team().lastUpdated,
+            );
         });
     }
 }

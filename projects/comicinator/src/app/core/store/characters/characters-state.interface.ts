@@ -1,19 +1,20 @@
 import { Dictionary } from '../../models/dictionary.interface';
+import { LoadState } from '../../models/load-state.enum';
 
 export interface CharactersState {
-    loaded: boolean;
-    names: Dictionary<number>;
-    activeCharacter: {
-        teamIds: number[];
-        bookIds: number[];
-        characterId: number | undefined;
-    };
-    activeSearch: { query: string | undefined; results: number[] };
+    loadState: LoadState;
+
+    search: string | undefined;
+    quickSearch: string;
+    quickSearchResultCache: Dictionary<number[]>;
+
+    activeDisplayIds: number[];
 }
 
 export const CHARACTERS_INITIAL_STATE: CharactersState = {
-    loaded: false,
-    names: {},
-    activeCharacter: { teamIds: [], bookIds: [], characterId: undefined },
-    activeSearch: { query: undefined, results: [] },
+    loadState: LoadState.Initial,
+    search: undefined,
+    quickSearch: 'a',
+    quickSearchResultCache: {},
+    activeDisplayIds: [],
 };

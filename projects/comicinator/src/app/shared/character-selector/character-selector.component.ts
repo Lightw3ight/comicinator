@@ -1,4 +1,13 @@
-import { Component, computed, inject, model } from '@angular/core';
+import {
+    Component,
+    computed,
+    effect,
+    inject,
+    model,
+    OnInit,
+    signal,
+    untracked,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
@@ -35,7 +44,31 @@ export class CharacterSelectorComponent {
     protected selectedCharacters = this.computeSelectedCharacters();
     protected searchControl = new FormControl();
     protected filterValue = toSignal(this.searchControl.valueChanges);
-    protected searchResults = this.computeSearchResults();
+    protected searchResults = signal<Character[]>([]);
+
+    constructor() {
+        let timeStamp: number;
+
+        effect(() => {
+            const filterValue =
+                this.filterValue()?.toLocaleLowerCase()?.trim() ?? '';
+            timeStamp = new Date().getTime();
+            const current = timeStamp;
+
+            untracked(async () => {
+                if (filterValue.length < 1) {
+                    this.searchResults.set([]);
+                    return;
+                }
+
+                const results = await this.charactersStore.search(filterValue);
+
+                if (timeStamp === current) {
+                    this.searchResults.set(results);
+                }
+            });
+        });
+    }
 
     protected removeItem(item: Character) {
         this.selection.set(this.selection().filter((o) => o !== item.id));
@@ -48,28 +81,10 @@ export class CharacterSelectorComponent {
 
     private computeSelectedCharacters() {
         return computed(() => {
-            return this.selection().map(
-                (id) => this.charactersStore.entityMap()[id]
-            );
-        });
-    }
-
-    private computeSearchResults() {
-        return computed(() => {
-            const filterValue = this.filterValue()?.toLocaleLowerCase() ?? '';
-
-            if (filterValue.length < 1) {
-                return [];
-            }
-
-            return this.charactersStore.entities().filter((o) => {
-                return (
-                    !this.selection().includes(o.id) &&
-                    (o.name + (o.aliases ?? ''))
-                        .toLocaleLowerCase()
-                        .includes(filterValue)
-                );
-            });
+            const items = this.selection()
+                .map((id) => this.charactersStore.entityMap()[id])
+                .filter((val) => val != null);
+            return items;
         });
     }
 }

@@ -4,10 +4,10 @@ import {
     signalStoreFeature,
     type,
     withComputed,
-    withHooks,
     withMethods,
 } from '@ngrx/signals';
 import {
+    addEntities,
     addEntity,
     removeEntity,
     setAllEntities,
@@ -15,15 +15,15 @@ import {
     withEntities,
 } from '@ngrx/signals/entities';
 import { BooksApiService } from '../../api/books/books-api.service';
+import { ElectronService } from '../../electron.service';
 import { Book } from '../../models/book.interface';
 import { ComicInfoXml } from '../../models/comic-info-xml.interface';
-import { BooksState } from './books-state.interface';
+import { LoadState } from '../../models/load-state.enum';
 import { CharactersStore } from '../characters/characters.store';
-import { TeamsStore } from '../teams/teams.store';
-import { PublishersStore } from '../publishers/publishers.store';
-import { ElectronService } from '../../electron.service';
-import { Publisher } from '../../models/publisher.interface';
 import { LocationsStore } from '../locations/locations.store';
+import { PublishersStore } from '../publishers/publishers.store';
+import { TeamsStore } from '../teams/teams.store';
+import { BooksState } from './books-state.interface';
 
 export function withBooksCoreFeature() {
     return signalStoreFeature(
@@ -33,20 +33,18 @@ export function withBooksCoreFeature() {
 
         withComputed((store) => {
             return {
-                searchResults: computed(() => {
-                    const entityMap = store.entityMap();
-                    return store.searchResultIds().map((id) => entityMap[id]);
-                }),
+                displayItems: computed(() => {
+                    const search = store.searchText();
+                    const em = store.entityMap();
+                    let bookIds =
+                        store.quickSearchResultCache()[store.quickSearch()] ??
+                        [];
 
-                pageView: computed(() => {
-                    const search = store.activeSearch.query();
-
-                    if (search == null || search === '') {
-                        return store.entities();
+                    if (search?.length) {
+                        bookIds = store.activeDisplayIds();
                     }
 
-                    const em = store.entityMap();
-                    return store.activeSearch.results().map((id) => em[id]);
+                    return bookIds.map((id) => em[id]);
                 }),
             };
         }),
@@ -60,24 +58,51 @@ export function withBooksCoreFeature() {
             const electron = inject(ElectronService);
 
             return {
-                checkComicAdded(filePath: string) {
-                    return store.paths()[filePath.toLocaleLowerCase()] ?? false;
+                async checkComicAdded(filePath: string) {
+                    const existing =
+                        await booksApiService.selectByFilePath(filePath);
+                    return existing != null;
+                },
+
+                async loadByGroup(groupField: string, value: string) {
+                    const books = await booksApiService.selectByGroup(
+                        groupField,
+                        value,
+                    );
+                    patchState(store, addEntities(books));
+                    return books.map((o) => o.id);
+                },
+
+                async runQuickSearch(filter: string, clearCache = false) {
+                    patchState(store, { quickSearch: filter });
+
+                    if (
+                        store.quickSearchResultCache()[filter] != null &&
+                        clearCache === false
+                    ) {
+                        return;
+                    }
+
+                    const books = await booksApiService.startsWith(filter);
+
+                    patchState(store, addEntities(books), {
+                        quickSearch: filter,
+                        quickSearchResultCache: {
+                            ...store.quickSearchResultCache(),
+                            [filter]: books.map((o) => o.id),
+                        },
+                    });
                 },
 
                 async loadBooks() {
-                    const books = await booksApiService.fetchAllBooks();
-                    const paths = books.reduce(
-                        (acc, b) => ({
-                            ...acc,
-                            [b.filePath.toLocaleLowerCase()]: true,
-                        }),
-                        {},
-                    );
+                    if (store.loadState() !== LoadState.Initial) {
+                        return;
+                    }
 
-                    patchState(store, setAllEntities(books), {
-                        loaded: true,
-                        paths,
-                    });
+                    patchState(store, { loadState: LoadState.Loading });
+                    const books = await booksApiService.selectAll();
+
+                    patchState(store, setAllEntities(books));
                 },
 
                 async updateBook(
@@ -86,7 +111,7 @@ export function withBooksCoreFeature() {
                     teamIds: number[],
                     locationIds: number[],
                 ) {
-                    await booksApiService.updateBook(
+                    await booksApiService.update(
                         book,
                         characterIds,
                         teamIds,
@@ -105,28 +130,20 @@ export function withBooksCoreFeature() {
                     teamIds: number[],
                     locationIds: number[],
                 ) {
-                    const newBook = await booksApiService.insertBook(
+                    const newBook = await booksApiService.create(
                         book,
                         characterIds,
                         teamIds,
                         locationIds,
                     );
 
-                    patchState(store, addEntity(newBook), {
-                        paths: {
-                            ...store.paths(),
-                            [newBook.filePath.toLocaleLowerCase()]: true,
-                        },
-                    });
+                    patchState(store, addEntity(newBook));
                 },
 
                 async deleteBook(bookId: number, removeFile: boolean) {
-                    const book = store.entityMap()[bookId];
-                    const paths = { ...store.paths() };
-                    delete paths[book.filePath];
-                    await electron.sqlDeleteBook(bookId, removeFile);
+                    await booksApiService.remove(bookId, removeFile);
 
-                    patchState(store, removeEntity(bookId), { paths });
+                    patchState(store, removeEntity(bookId));
                 },
 
                 async saveComicInfoXml(book: Book) {
@@ -177,7 +194,10 @@ export function withBooksCoreFeature() {
                 },
 
                 async importBook(filePath: string, xml?: ComicInfoXml) {
-                    if (store.paths()[filePath.toLocaleLowerCase()]) {
+                    const existing =
+                        await booksApiService.selectByFilePath(filePath);
+
+                    if (existing) {
                         return;
                     }
 
@@ -247,26 +267,16 @@ export function withBooksCoreFeature() {
                         externalUrl: xml?.Web,
                     };
 
-                    const newBook = await booksApiService.insertBook(
+                    const newBook = await booksApiService.create(
                         book,
                         characterIds,
                         teamIds,
                         locationIds,
                     );
 
-                    patchState(store, addEntity(newBook), {
-                        paths: {
-                            ...store.paths(),
-                            [newBook.filePath.toLocaleLowerCase()]: true,
-                        },
-                    });
+                    patchState(store, addEntity(newBook));
                 },
             };
-        }),
-        withHooks({
-            async onInit(store) {
-                await store.loadBooks();
-            },
         }),
     );
 }

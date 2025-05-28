@@ -104,18 +104,18 @@ export class BookFormComponent implements OnInit {
 
     public async ngOnInit() {
         if (this.book) {
-            const characterIds = await this.charactersStore.selectIdsByBook(
+            const characters = await this.charactersStore.selectByBook(
                 this.book.id,
             );
-            const teamIds = await this.teamsStore.selectIdsByBook(this.book.id);
-            const locationIds = await this.locationsStore.selectIdsByBook(
+            const teams = await this.teamsStore.selectByBook(this.book.id);
+            const locations = await this.locationsStore.searchByBook(
                 this.book.id,
             );
 
             this.form.patchValue({
-                characterIds: characterIds,
-                teamIds: teamIds,
-                locationIds: locationIds,
+                characterIds: characters.map((c) => c.id),
+                teamIds: teams.map((o) => o.id),
+                locationIds: locations.map((o) => o.id),
             });
             this.form.markAsPristine();
         }
@@ -228,6 +228,19 @@ export class BookFormComponent implements OnInit {
                             volume,
                             (progress) => this.progressText.set(progress),
                         );
+
+                    if (ids.teamIds.length) {
+                        await this.teamsStore.loadByIds(ids.teamIds);
+                    }
+
+                    if (ids.characterIds.length) {
+                        await this.charactersStore.loadByIds(ids.characterIds);
+                    }
+
+                    if (ids.locationIds.length) {
+                        await this.locationsStore.loadByIds(ids.locationIds);
+                    }
+
                     this.form.patchValue({
                         ...book,
                         ...ids,

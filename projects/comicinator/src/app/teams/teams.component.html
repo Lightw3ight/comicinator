@@ -1,4 +1,4 @@
-@if (searchValue()) {
+@if (search()) {
     <cbx-page-header [title]="searchTitle()">
         <button mat-icon-button (click)="clearSearch()" title="Clear search">
             <mat-icon>close</mat-icon>
@@ -8,6 +8,11 @@
     @if (teams().length === 0) {
         <p class="teams__no-search-results">No search results.</p>
     }
+} @else {
+    <cbx-quick-filter
+        [activeFilter]="quickSearch()"
+        (activeFilterChange)="setQuickSearch($event)"
+    />
 }
 
 <cbx-team-list [teams]="teams()" />

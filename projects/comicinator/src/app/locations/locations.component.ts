@@ -7,6 +7,7 @@ import { MatIcon } from '@angular/material/icon';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
+import { QuickFilterComponent } from '../shared/quick-filter/quick-filter.component';
 
 @Component({
     selector: 'cbx-locations',
@@ -17,6 +18,7 @@ import { map } from 'rxjs';
         PageHeaderComponent,
         MatIcon,
         MatIconButton,
+        QuickFilterComponent,
     ],
 })
 export class LocationsComponent {
@@ -24,21 +26,23 @@ export class LocationsComponent {
     private route = inject(ActivatedRoute);
     private router = inject(Router);
 
-    protected locations = this.locationsStore.pageView;
-    protected searchValue = toSignal(
-        this.route.queryParamMap.pipe(map((pMap) => pMap.get('search'))),
-    );
+    protected readonly locations = this.locationsStore.displayItems;
+    protected readonly quickSearch = this.locationsStore.quickSearch;
+    protected readonly search = this.getSearchFromQuerystring();
     protected searchTitle = this.computeSearchTitle();
 
     constructor() {
-        effect(() => {
-            const search = this.searchValue();
+        effect(async () => {
+            const search = this.search();
             window.scrollTo(0, 0);
 
             if (search?.length) {
-                this.locationsStore.search(search);
+                await this.locationsStore.setActiveSearch(search);
             } else {
                 this.locationsStore.clearSearch();
+                this.locationsStore.runQuickSearch(
+                    this.locationsStore.quickSearch(),
+                );
             }
         });
     }
@@ -47,9 +51,21 @@ export class LocationsComponent {
         this.router.navigateByUrl('/locations');
     }
 
+    protected async setQuickSearch(filter: string) {
+        await this.locationsStore.runQuickSearch(filter);
+    }
+
     protected computeSearchTitle() {
         return computed(() => {
-            return `Search Results: ${this.searchValue()}`;
+            return `Search Results: ${this.search()}`;
         });
+    }
+
+    private getSearchFromQuerystring() {
+        return toSignal(
+            this.route.queryParamMap.pipe(
+                map((pMap) => pMap.get('search') ?? undefined),
+            ),
+        );
     }
 }

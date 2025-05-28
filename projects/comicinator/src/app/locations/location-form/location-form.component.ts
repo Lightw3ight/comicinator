@@ -1,5 +1,5 @@
 import { CdkDrag } from '@angular/cdk/drag-drop';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import {
     NonNullableFormBuilder,
     ReactiveFormsModule,
@@ -55,7 +55,7 @@ import { LocationSearchResultsComponent } from './location-search-results/locati
         CdkDrag,
     ],
 })
-export class LocationFormComponent {
+export class LocationFormComponent implements OnInit {
     private dialog = inject(MatDialog);
     private locationsStore = inject(LocationsStore);
     private settingsStore = inject(SettingsStore);
@@ -77,16 +77,33 @@ export class LocationFormComponent {
         () => !!this.settingsStore.settings.apiKey(),
     );
 
+    public async ngOnInit() {
+        if (this.location) {
+            this.loadImage(this.location.id);
+        }
+    }
+
+    private async loadImage(teamId: number) {
+        const img = await this.locationsStore.selectImage(teamId);
+
+        if (img) {
+            this.setImage(img);
+        }
+    }
+
     protected async save() {
         if (this.location != null) {
-            const { image, dateAdded, ...location } = this.location;
+            const { dateAdded, ...location } = this.location;
 
-            await this.locationsStore.updateLocation(this.location.id, {
-                ...location,
-                ...this.form.value,
-                image: this.imageBlob(),
-                id: this.location.id,
-            });
+            await this.locationsStore.updateLocation(
+                this.location.id,
+                {
+                    ...location,
+                    ...this.form.value,
+                    id: this.location.id,
+                },
+                this.imageBlob(),
+            );
             this.dialogRef.close();
         }
     }
@@ -164,7 +181,6 @@ export class LocationFormComponent {
         });
 
         if (this.location) {
-            this.setImage(this.location.image);
             form.patchValue(this.location);
             form.markAsPristine();
         }

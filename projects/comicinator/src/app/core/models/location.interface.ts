@@ -5,5 +5,5 @@ export interface Location {
     dateAdded: Date;
     externalUrl?: string;
     externalId?: number;
-    image?: Blob;
+    lastUpdated?: Date;
 }

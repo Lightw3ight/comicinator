@@ -48,9 +48,9 @@ export class LocationSelectorComponent {
 
     private computeSelectedLocations() {
         return computed(() => {
-            return this.selection().map(
-                (id) => this.locationsStore.entityMap()[id],
-            );
+            return this.selection()
+                .map((id) => this.locationsStore.entityMap()[id])
+                .filter((val) => val != null);
         });
     }
 

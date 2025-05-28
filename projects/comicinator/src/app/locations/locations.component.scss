@@ -1,5 +1,13 @@
 :host {
     display: block;
-    padding: 16px;
     color: white;
+}
+
+cbx-location-list {
+    padding: 8px;
+}
+
+.locations__no-search-results {
+    margin: 24px;
+    font-style: italic;
 }

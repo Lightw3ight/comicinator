@@ -85,14 +85,24 @@ export class TeamFormComponent {
 
     public async ngOnInit() {
         if (this.team) {
-            const characterIds = await this.charactersStore.loadIdsByTeam(
+            this.loadImage(this.team.id);
+
+            const characters = await this.charactersStore.searchByTeam(
                 this.team.id,
             );
 
             this.form.patchValue({
-                characterIds: characterIds,
+                characterIds: characters.map((c) => c.id),
             });
             this.form.markAsPristine();
+        }
+    }
+
+    private async loadImage(teamId: number) {
+        const img = await this.teamsStore.selectImage(teamId);
+
+        if (img) {
+            this.setImage(img);
         }
     }
 
@@ -100,16 +110,16 @@ export class TeamFormComponent {
         const { characterIds, ...formValue } = this.form.value;
 
         if (this.team != null) {
-            const { image, dateAdded, ...team } = this.team;
+            const { dateAdded, ...team } = this.team;
 
             await this.teamsStore.updateTeam(
                 this.team.id,
                 {
                     ...team,
                     ...formValue,
-                    image: this.imageBlob(),
                     id: this.team.id,
                 },
+                this.imageBlob(),
                 characterIds ?? [],
             );
             this.dialogRef.close();
@@ -153,6 +163,10 @@ export class TeamFormComponent {
                     (progress) => this.progressText.set(progress),
                 );
             this.setImage(image);
+
+            if (characterIds?.length) {
+                await this.charactersStore.loadByIds(characterIds);
+            }
 
             this.form.patchValue({
                 ...team,
@@ -201,7 +215,6 @@ export class TeamFormComponent {
         });
 
         if (this.team) {
-            this.setImage(this.team.image);
             form.patchValue(this.team);
             form.markAsPristine();
         }

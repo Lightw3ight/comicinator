@@ -8,6 +8,7 @@ import { CharacterListComponent } from './character-list/character-list.componen
 import { PageHeaderComponent } from '../shared/page-header/page-header.component';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
+import { QuickFilterComponent } from '../shared/quick-filter/quick-filter.component';
 
 @Component({
     selector: 'cbx-characters',
@@ -18,6 +19,7 @@ import { MatIconButton } from '@angular/material/button';
         PageHeaderComponent,
         MatIcon,
         MatIconButton,
+        QuickFilterComponent,
     ],
 })
 export class CharactersComponent {
@@ -25,21 +27,23 @@ export class CharactersComponent {
     private route = inject(ActivatedRoute);
     private router = inject(Router);
 
-    protected characters = this.charactersStore.pageView;
-    protected searchValue = toSignal(
-        this.route.queryParamMap.pipe(map((pMap) => pMap.get('search'))),
-    );
+    protected readonly characters = this.charactersStore.displayItems;
+    protected readonly quickSearch = this.charactersStore.quickSearch;
+    protected readonly search = this.getSearchFromQuerystring();
     protected searchTitle = this.computeSearchTitle();
 
     constructor() {
-        effect(() => {
-            const search = this.searchValue();
+        effect(async () => {
+            const search = this.search();
             window.scrollTo(0, 0);
 
             if (search?.length) {
-                this.charactersStore.search(search);
+                await this.charactersStore.setActiveSearch(search);
             } else {
                 this.charactersStore.clearSearch();
+                this.charactersStore.runQuickSearch(
+                    this.charactersStore.quickSearch(),
+                );
             }
         });
     }
@@ -50,7 +54,19 @@ export class CharactersComponent {
 
     protected computeSearchTitle() {
         return computed(() => {
-            return `Search Results: ${this.searchValue()}`;
+            return `Search Results: ${this.search()}`;
         });
+    }
+
+    protected async setQuickSearch(filter: string) {
+        await this.charactersStore.runQuickSearch(filter);
+    }
+
+    private getSearchFromQuerystring() {
+        return toSignal(
+            this.route.queryParamMap.pipe(
+                map((pMap) => pMap.get('search') ?? undefined),
+            ),
+        );
     }
 }

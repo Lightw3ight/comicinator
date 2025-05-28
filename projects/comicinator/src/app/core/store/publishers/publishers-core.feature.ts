@@ -35,44 +35,29 @@ export function withPublishersCoreFeature() {
                             .find(
                                 (o) =>
                                     o.name.toLocaleLowerCase() ===
-                                    name.toLocaleLowerCase()
+                                    name.toLocaleLowerCase(),
                             );
 
                     return result;
                 },
 
                 async loadPublishers() {
-                    const publishers =
-                        await publishersApiService.fetchPublishers();
-                    const names = publishers.reduce(
-                        (acc, c) => ({
-                            ...acc,
-                            [c.name.trim().toLocaleLowerCase()]: c.id,
-                        }),
-                        {}
-                    );
+                    const publishers = await publishersApiService.selectAll();
 
                     patchState(store, setAllEntities(publishers), {
                         loaded: true,
-                        names,
                     });
                 },
 
                 async addPublisher(
-                    publisher: Omit<Publisher, 'id' | 'dateAdded'>
+                    publisher: Omit<Publisher, 'id' | 'dateAdded'>,
                 ): Promise<number> {
-                    const added =
-                        await await publishersApiService.insertPublisher({
-                            ...publisher,
-                            dateAdded: new Date(),
-                        });
-
-                    patchState(store, addEntity(added), {
-                        names: {
-                            ...store.names(),
-                            [added.name.trim().toLocaleLowerCase()]: added.id,
-                        },
+                    const added = await await publishersApiService.create({
+                        ...publisher,
+                        dateAdded: new Date(),
                     });
+
+                    patchState(store, addEntity(added));
 
                     return added.id;
                 },
@@ -80,6 +65,15 @@ export function withPublishersCoreFeature() {
                 async addPublisherByName(name: string | undefined) {
                     if (name == null || name.trim().length === 0) {
                         return undefined;
+                    }
+
+                    const existing = await publishersApiService.findForImport(
+                        null,
+                        name,
+                    );
+
+                    if (existing) {
+                        return existing.id;
                     }
 
                     const id = await this.addPublisher({
@@ -95,6 +89,6 @@ export function withPublishersCoreFeature() {
             async onInit(store) {
                 await store.loadPublishers();
             },
-        })
+        }),
     );
 }

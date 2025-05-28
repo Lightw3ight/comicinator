@@ -4,23 +4,20 @@ import {
     signalStoreFeature,
     type,
     withComputed,
-    withHooks,
     withMethods,
 } from '@ngrx/signals';
 import {
+    addEntities,
     addEntity,
     setAllEntities,
     updateEntity,
     withEntities,
 } from '@ngrx/signals/entities';
-import { LocationsApiService } from '../../api/locations/locations-api.service';
-import { Location } from '../../models/location.interface';
-import { Team } from '../../models/team.interface';
-import { CharactersStore } from '../characters/characters.store';
-import { PublishersStore } from '../publishers/publishers.store';
-import { LocationsState } from './locations-state.interface';
-import { BooksApiService } from '../../api/books/books-api.service';
 import { LocationResult } from '../../api/comic-vine/models/location-result.interface';
+import { LocationsApiService } from '../../api/locations/locations-api.service';
+import { LoadState } from '../../models/load-state.enum';
+import { Location } from '../../models/location.interface';
+import { LocationsState } from './locations-state.interface';
 
 export function withLocationsCoreFeature() {
     return signalStoreFeature(
@@ -30,62 +27,79 @@ export function withLocationsCoreFeature() {
 
         withComputed((store) => {
             return {
-                pageView: computed(() => {
-                    const search = store.activeSearch.query();
+                displayItems: computed(() => {
+                    const search = store.search();
+                    const em = store.entityMap();
+                    let bookIds =
+                        store.quickSearchResultCache()[store.quickSearch()] ??
+                        [];
 
-                    if (search == null || search === '') {
-                        return store.entities();
+                    if (search?.length) {
+                        bookIds = store.activeDisplayIds();
                     }
 
-                    const em = store.entityMap();
-                    return store.activeSearch.results().map((id) => em[id]);
+                    return bookIds.map((id) => em[id]);
                 }),
             };
         }),
 
         withMethods((store) => {
             const locationsApiService = inject(LocationsApiService);
-            const booksApiService = inject(BooksApiService);
-            const publishersStore = inject(PublishersStore);
-            const charactersStore = inject(CharactersStore);
 
             return {
-                async loadLocations() {
-                    const locations =
-                        await locationsApiService.fetchLocations();
-                    const names = locations.reduce(
-                        (acc, c) => ({
-                            ...acc,
-                            [c.name.trim().toLocaleLowerCase()]: c.id,
-                        }),
-                        {},
-                    );
+                async runQuickSearch(filter: string) {
+                    patchState(store, { quickSearch: filter });
 
-                    patchState(store, setAllEntities(locations), {
-                        loaded: true,
-                        names,
-                    });
-                },
+                    if (store.quickSearchResultCache()[filter] != null) {
+                        return;
+                    }
 
-                async setActiveLocation(locationId: number) {
-                    const bookIds =
-                        await booksApiService.selectByLocation(locationId);
+                    const items = await locationsApiService.startsWith(filter);
 
-                    patchState(store, {
-                        activeLocation: {
-                            locationId,
-                            bookIds,
+                    patchState(store, addEntities(items), {
+                        quickSearch: filter,
+                        quickSearchResultCache: {
+                            ...store.quickSearchResultCache(),
+                            [filter]: items.map((o) => o.id),
                         },
                     });
                 },
 
-                async selectIdsByBook(bookId: number): Promise<number[]> {
-                    return await locationsApiService.selectByBook(bookId);
+                async loadLocation(id: number) {
+                    if (store.entityMap()[id] != null) {
+                        return;
+                    }
+
+                    const char = await locationsApiService.selectById(id);
+                    patchState(store, addEntity(char));
                 },
 
-                async selectByBook(bookId: number): Promise<Team[]> {
-                    const ids = await locationsApiService.selectByBook(bookId);
-                    return ids.map((id) => store.entityMap()[id]);
+                async loadByIds(ids: number[]) {
+                    const toLoad = ids.filter(
+                        (id) => store.entityMap()[id] == null,
+                    );
+                    if (toLoad.length > 0) {
+                        const items =
+                            await locationsApiService.selectByIds(toLoad);
+                        patchState(store, addEntities(items));
+                    }
+                },
+
+                async loadLocations() {
+                    if (store.loadState() !== LoadState.Initial) {
+                        return;
+                    }
+
+                    patchState(store, { loadState: LoadState.Loading });
+                    const locations = await locationsApiService.selectAll();
+
+                    patchState(store, setAllEntities(locations), {
+                        loadState: LoadState.Loaded,
+                    });
+                },
+
+                async selectImage(teamId: number): Promise<Blob | undefined> {
+                    return await locationsApiService.selectImage(teamId);
                 },
 
                 async importLocation(data: LocationResult): Promise<number> {
@@ -100,41 +114,48 @@ export function withLocationsCoreFeature() {
                         description: data.description,
                         externalId: data.id,
                         externalUrl: data.siteUrl,
-                        image: image,
                     };
 
-                    return await this.addLocation(newChar);
+                    return await this.addLocation(newChar, image);
                 },
 
                 async addLocation(
                     location: Omit<Location, 'id' | 'dateAdded'>,
+                    image: Blob | undefined,
                 ): Promise<number> {
-                    const existingId =
-                        store.names()[location.name.trim().toLocaleLowerCase()];
+                    const existing = await locationsApiService.findForImport(
+                        null,
+                        location.name,
+                    );
 
-                    if (existingId) {
-                        return existingId;
+                    if (existing) {
+                        return existing.id;
                     }
 
-                    const added =
-                        await locationsApiService.insertLocation(location);
+                    const added = await locationsApiService.create(
+                        location,
+                        image,
+                    );
 
-                    patchState(store, addEntity(added), {
-                        names: {
-                            ...store.names(),
-                            [added.name.trim().toLocaleLowerCase()]: added.id,
-                        },
-                    });
+                    patchState(store, addEntity(added));
 
                     return added.id;
                 },
 
-                async updateLocation(id: number, location: Partial<Team>) {
-                    await locationsApiService.updateLocation(id, location);
+                async updateLocation(
+                    id: number,
+                    location: Partial<Location>,
+                    image: Blob | undefined,
+                ) {
+                    const updatedLocation = await locationsApiService.update(
+                        id,
+                        location,
+                        image,
+                    );
 
                     patchState(
                         store,
-                        updateEntity({ id: id, changes: location }),
+                        updateEntity({ id: id, changes: updatedLocation }),
                     );
                 },
 
@@ -152,21 +173,18 @@ export function withLocationsCoreFeature() {
                     const locationIds: number[] = [];
 
                     for (let name of names) {
-                        const id = await this.addLocation({
-                            name,
-                        });
+                        const id = await this.addLocation(
+                            {
+                                name,
+                            },
+                            undefined,
+                        );
                         locationIds.push(id);
                     }
 
                     return locationIds;
                 },
             };
-        }),
-
-        withHooks({
-            async onInit(store) {
-                await store.loadLocations();
-            },
         }),
     );
 }

@@ -11,7 +11,6 @@ const FILE_SYSTEM_METHODS = [
     'moveFile',
     'showItemInFolder',
 ];
-const SQL_METHODS = ['select', 'selectAll', 'transaction', 'deleteBook'];
 const ZIP_METHODS = [
     'readText',
     'readData',
@@ -21,9 +20,81 @@ const ZIP_METHODS = [
     'readImages',
     'importBook',
 ];
-const GENERIC_METHODS = ['removeThumbCache'];
+const GENERIC_METHODS = ['removeThumbCache', 'abortImageQueue'];
 
-const CHARACTER_METHODS = ['selectAll', 'update', 'create', 'remove', 'search'];
+const CHARACTER_METHODS = [
+    'selectAll',
+    'update',
+    'create',
+    'remove',
+    'search',
+    'startsWith',
+    'selectByBook',
+    'selectByTeam',
+    'selectById',
+    'selectImage',
+    'findForImport',
+    'selectByIds',
+];
+
+const TEAM_METHODS = [
+    'selectAll',
+    'update',
+    'create',
+    'remove',
+    'search',
+    'startsWith',
+    'selectByBook',
+    'selectByCharacter',
+    'selectById',
+    'selectImage',
+    'findForImport',
+    'selectByIds',
+];
+
+const LOCATION_METHODS = [
+    'selectAll',
+    'update',
+    'create',
+    'remove',
+    'search',
+    'startsWith',
+    'selectByBook',
+    'selectById',
+    'selectImage',
+    'findForImport',
+    'selectByIds',
+];
+
+const PUBLISHER_METHODS = [
+    'selectAll',
+    'update',
+    'create',
+    'remove',
+    'search',
+    'startsWith',
+    'selectById',
+    'selectImage',
+    'findForImport',
+];
+
+const BOOK_METHODS = [
+    'selectById',
+    'selectAll',
+    'search',
+    'startsWith',
+    'update',
+    'create',
+    'remove',
+    'selectByCharacter',
+    'selectByTeam',
+    'selectByLocation',
+    'groupBy',
+    'selectByGroup',
+    'selectByFilePath',
+];
+
+const SETTING_METHODS = ['selectAll', 'saveAll'];
 
 function createHandlerPassthroughs(prefix: string, names: string[]) {
     return names.reduce((acc, name) => {
@@ -42,9 +113,13 @@ contextBridge.exposeInMainWorld('electron', {
     readFile: (filePath: string) => ipcRenderer.invoke('read-file', filePath),
     unzip: (filePath: string) => ipcRenderer.invoke('unzip', filePath),
 
+    ...createHandlerPassthroughs('book', BOOK_METHODS),
+    ...createHandlerPassthroughs('pub', PUBLISHER_METHODS),
+    ...createHandlerPassthroughs('setting', SETTING_METHODS),
+    ...createHandlerPassthroughs('loc', LOCATION_METHODS),
+    ...createHandlerPassthroughs('team', TEAM_METHODS),
     ...createHandlerPassthroughs('char', CHARACTER_METHODS),
     ...createHandlerPassthroughs('fs', FILE_SYSTEM_METHODS),
-    ...createHandlerPassthroughs('sql', SQL_METHODS),
     ...createHandlerPassthroughs('zip', ZIP_METHODS),
     ...createHandlerPassthroughs('cbx', GENERIC_METHODS),
     sqlRun: async (sql: string, ...args: any[]) => {

@@ -19,11 +19,20 @@ import { BookImportResult } from './book-import-result.interface';
 import { CharacterImportResult } from './character-import-result.interface';
 import { LocationImportResult } from './location-import-result.interface';
 import { TeamImportResult } from './team-import-result.interface';
+import { TeamsApiService } from '../api/teams/teams-api.service';
+import { CharactersApiService } from '../api/characters/characters-api.service';
+import { LocationsApiService } from '../api/locations/locations-api.service';
+import { PublishersApiService } from '../api/publishers/publishers-api.service';
 
 type ProgressReporter = (progress: string) => void;
 
 @Injectable({ providedIn: 'root' })
 export class ImporterService {
+    private teamsApiService = inject(TeamsApiService);
+    private charactersApiService = inject(CharactersApiService);
+    private locationsApiService = inject(LocationsApiService);
+    private publishersApiService = inject(PublishersApiService);
+
     private charactersStore = inject(CharactersStore);
     private comicVineService = inject(ComicVineService);
     private publishersStore = inject(PublishersStore);
@@ -188,19 +197,11 @@ export class ImporterService {
         const ids: number[] = [];
 
         for (let item of characters ?? []) {
-            let existing = this.charactersStore
-                .entities()
-                .find((o) => o.externalId === item.id);
-            if (!existing) {
-                const name = item.name.toLocaleLowerCase();
-                existing = this.charactersStore
-                    .entities()
-                    .find(
-                        (o) =>
-                            o.name.toLocaleLowerCase() === name &&
-                            o.externalId == null,
-                    );
-            }
+            progress?.(`Checking for existing character: ${item.name}`);
+            const existing = await this.charactersApiService.findForImport(
+                item.id,
+                item.name,
+            );
 
             if (existing) {
                 ids.push(existing.id);
@@ -218,7 +219,19 @@ export class ImporterService {
                     throw new AbortedImport('Aborted at character import');
                 }
 
-                const newId = await this.charactersStore.importCharacter(char);
+                let teamIds = char.teams
+                    ?.map(
+                        (item) =>
+                            this.teamsStore
+                                .entities()
+                                .find((o) => o.externalId === item.id)?.id,
+                    )
+                    .filter((o) => o != null);
+
+                const newId = await this.charactersStore.importCharacter(
+                    char,
+                    teamIds ?? [],
+                );
                 ids.push(newId);
             }
         }
@@ -234,18 +247,12 @@ export class ImporterService {
             return undefined;
         }
 
-        let publisherId: number | undefined =
-            this.publishersStore.entityMap()[publisher.id]?.id;
-
-        if (publisherId == null) {
-            publisherId = this.publishersStore
-                .entities()
-                .find(
-                    (o) =>
-                        o.name.toLocaleLowerCase() ===
-                        publisher.name.toLocaleLowerCase(),
-                )?.id;
-        }
+        let publisherId = (
+            await this.publishersApiService.findForImport(
+                publisher.id,
+                publisher.name,
+            )
+        )?.id;
 
         if (publisherId == null) {
             progress?.(`Importing publisher: ${publisher.name}`);
@@ -268,19 +275,11 @@ export class ImporterService {
         const ids: number[] = [];
 
         for (let item of teams ?? []) {
-            let existing = this.teamsStore
-                .entities()
-                .find((o) => o.externalId === item.id);
-            if (!existing) {
-                const name = item.name.toLocaleLowerCase();
-                existing = this.teamsStore
-                    .entities()
-                    .find(
-                        (o) =>
-                            o.name.toLocaleLowerCase() === name &&
-                            o.externalId == null,
-                    );
-            }
+            progress?.(`Checking for existing team: ${item.name}`);
+            const existing = await this.teamsApiService.findForImport(
+                item.id,
+                item.name,
+            );
 
             if (existing) {
                 ids.push(existing.id);
@@ -313,15 +312,11 @@ export class ImporterService {
         const ids: number[] = [];
 
         for (let item of locations ?? []) {
-            let existing = this.locationsStore
-                .entities()
-                .find((o) => o.externalId === item.id);
-            if (!existing) {
-                const name = item.name.toLocaleLowerCase();
-                existing = this.locationsStore
-                    .entities()
-                    .find((o) => o.name.toLocaleLowerCase() === name);
-            }
+            progress?.(`Checking for existing location: ${item.name}`);
+            const existing = await this.locationsApiService.findForImport(
+                item.id,
+                item.name,
+            );
 
             if (existing) {
                 ids.push(existing.id);

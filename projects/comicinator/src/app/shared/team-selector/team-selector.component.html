@@ -12,9 +12,9 @@
             (optionSelected)="addItem($event)"
         >
             @for (item of searchResults(); track item.id) {
-            <mat-option [value]="item.id">
-                {{ item.name }}
-            </mat-option>
+                <mat-option [value]="item.id">
+                    {{ item.name }}
+                </mat-option>
             }
         </mat-autocomplete>
         <mat-hint>Type at least one character to search</mat-hint>
@@ -22,7 +22,7 @@
 </div>
 
 <div>
-    @for(team of selectedTeams(); track team.id) {
-    <cbx-team-selector-item [team]="team" (remove)="removeItem(team)" />
+    @for (team of selectedTeams(); track team.id) {
+        <cbx-team-selector-item [team]="team" (remove)="removeItem(team)" />
     }
 </div>

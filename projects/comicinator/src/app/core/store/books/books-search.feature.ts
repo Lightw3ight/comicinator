@@ -7,7 +7,7 @@ import {
 } from '@ngrx/signals';
 import { BooksApiService } from '../../api/books/books-api.service';
 import { BooksState } from './books-state.interface';
-import { EntityState } from '@ngrx/signals/entities';
+import { addEntities, EntityState } from '@ngrx/signals/entities';
 import { Book } from '../../models/book.interface';
 
 export function withBooksSearchFeature() {
@@ -19,27 +19,31 @@ export function withBooksSearchFeature() {
 
             return {
                 async searchByCharacter(charId: number) {
-                    const ids = await booksApiService.searchByCharacter(charId);
-                    patchState(store, { searchResultIds: ids });
+                    const books =
+                        await booksApiService.selectByCharacter(charId);
+                    patchState(store, addEntities(books));
+                    return books;
+                },
+
+                async searchByTeam(charId: number) {
+                    const books = await booksApiService.selectByTeam(charId);
+                    patchState(store, addEntities(books));
+                    return books;
                 },
 
                 async search(query: string) {
-                    const ids = await booksApiService.search(query);
+                    const books = await booksApiService.search(query);
 
-                    patchState(store, {
-                        activeSearch: {
-                            query,
-                            results: ids,
-                        },
+                    patchState(store, addEntities(books), {
+                        searchText: query,
+                        activeDisplayIds: books.map((o) => o.id),
                     });
                 },
 
                 clearSearch() {
                     patchState(store, {
-                        activeSearch: {
-                            query: undefined,
-                            results: [],
-                        },
+                        searchText: undefined,
+                        activeDisplayIds: [],
                     });
                 },
             };

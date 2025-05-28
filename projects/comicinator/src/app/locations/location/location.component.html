@@ -1,4 +1,4 @@
-@if (location()) {
+@if (location(); as loc) {
     <div class="location__banner">
         <div>
             <img [attr.src]="imageUrl()" />
@@ -6,7 +6,7 @@
 
         <div>
             <header>
-                <h1>{{ location().name }}</h1>
+                <h1>{{ loc.name }}</h1>
                 <div>
                     <button icon-button (click)="edit()">
                         <i class="bi bi-pencil"></i>
@@ -14,15 +14,13 @@
                 </div>
             </header>
             <div class="location__details">
-                <p>{{ location().description ?? "No Description" }}</p>
+                <p>{{ loc.description ?? "No Description" }}</p>
 
-                @if (location().externalUrl) {
+                @if (loc.externalUrl) {
                     <a>
-                        <a
-                            [attr.href]="location().externalUrl"
-                            target="_blank"
-                            >{{ location().externalUrl }}</a
-                        >
+                        <a [attr.href]="loc.externalUrl" target="_blank">{{
+                            loc.externalUrl
+                        }}</a>
                     </a>
                 }
             </div>

@@ -1,4 +1,4 @@
-@if (team()) {
+@if (team(); as tm) {
     <div class="team__banner">
         <div>
             <img [attr.src]="imageUrl()" />
@@ -6,9 +6,9 @@
 
         <div>
             <header>
-                <h1>{{ team().name }}</h1>
-                @if (team().aliases) {
-                    <small>AKA: {{ team().aliases }}</small>
+                <h1>{{ tm.name }}</h1>
+                @if (tm.aliases) {
+                    <small>AKA: {{ tm.aliases }}</small>
                 }
 
                 <div>
@@ -18,12 +18,12 @@
                 </div>
             </header>
             <div class="team__details">
-                <p>{{ team().summary ?? "No Description" }}</p>
+                <p>{{ tm.summary ?? "No Description" }}</p>
 
-                @if (team().externalUrl) {
+                @if (tm.externalUrl) {
                     <a>
-                        <a [attr.href]="team().externalUrl" target="_blank">{{
-                            team().externalUrl
+                        <a [attr.href]="tm.externalUrl" target="_blank">{{
+                            tm.externalUrl
                         }}</a>
                     </a>
                 }

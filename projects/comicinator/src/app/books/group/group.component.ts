@@ -9,6 +9,8 @@ import {
 import { BooksStore } from '../../core/store/books/books.store';
 import { BookListComponent } from '../book-list/book-list.component';
 import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
+import { BookGroupStore } from '../../core/store/book-group/book-group.store';
+import { Book } from '../../core/models/book.interface';
 
 @Component({
     selector: 'cbx-group',
@@ -18,27 +20,39 @@ import { PageHeaderComponent } from '../../shared/page-header/page-header.compon
 })
 export class GroupComponent {
     private booksStore = inject(BooksStore);
-    public groupField = input.required<string>();
-    public groupValue = input.required<string>();
+    private bookGroupStore = inject(BookGroupStore);
 
-    protected books = this.booksStore.groupedBooks;
-    protected title = this.computeTitle();
+    public readonly groupField = input.required<keyof Book>();
+    public readonly groupValue = input.required<string>();
+
+    protected readonly books = this.computeBooks();
+    protected readonly title = this.computeTitle();
 
     constructor() {
         effect(() => {
             const field = this.groupField();
             const value = this.groupValue();
 
-            untracked(() => {
-                this.booksStore.loadGroupedBooks(field, value);
+            untracked(async () => {
+                this.bookGroupStore.setActiveGroupBy(field);
+                await this.bookGroupStore.loadGroupBooks(value);
             });
+        });
+    }
+
+    private computeBooks() {
+        return computed(() => {
+            const ids =
+                this.bookGroupStore.selectGroupBooks(this.groupValue())() ?? [];
+            const em = this.booksStore.entityMap();
+            return ids.map((id) => em[id]);
         });
     }
 
     private computeTitle() {
         return computed(() => {
             return `${this.capitalizeFirstLetter(
-                this.groupField()
+                this.groupField(),
             )}: ${this.groupValue()}`;
         });
     }

@@ -1,6 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { BooksStore } from '../../core/store/books/books.store';
+import { BookGroupStore } from '../../core/store/book-group/book-group.store';
+import { Book } from '../../core/models/book.interface';
 
 @Component({
     selector: 'cbx-books-view-bar',
@@ -9,11 +11,15 @@ import { BooksStore } from '../../core/store/books/books.store';
     imports: [MatMenuModule],
 })
 export class BooksViewBarComponent {
-    private booksStore = inject(BooksStore);
+    private bookGroupStore = inject(BookGroupStore);
 
-    protected groupedField = this.booksStore.activeGroupField;
+    protected groupedField = this.bookGroupStore.groupField;
 
-    protected async changeGrouping(field: string | undefined) {
-        await this.booksStore.setActiveGroupBy(field);
+    protected async changeGrouping(field: keyof Book | undefined) {
+        if (field == null) {
+            this.bookGroupStore.clearGrouping();
+        } else {
+            this.bookGroupStore.setActiveGroupBy(field);
+        }
     }
 }

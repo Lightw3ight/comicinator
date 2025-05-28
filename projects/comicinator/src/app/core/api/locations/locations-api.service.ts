@@ -1,69 +1,86 @@
 import { inject, Injectable } from '@angular/core';
 import { ElectronService } from '../../electron.service';
 import { Location } from '../../models/location.interface';
-import { QueryGenerator } from '../../sql/query-generator';
-import { BookLocation } from '../books/book-location.table';
-import { LocationDto } from './dtos/locations-dto.interface';
-import { LocationTable } from './location-table';
 
 @Injectable({ providedIn: 'root' })
 export class LocationsApiService {
     private electron = inject(ElectronService);
-    private query = new QueryGenerator(LocationTable);
-    private bookLocationQuery = new QueryGenerator(BookLocation);
 
-    public async fetchLocations(): Promise<Location[]> {
-        const stmt = this.query.select('*');
-        const results = await this.electron.sqlSelectAll<LocationDto>(stmt);
-        return results.map((t) => this.mapToModel(t));
+    public async selectAll(): Promise<Location[]> {
+        return await this.electron.run<Location[]>('locSelectAll');
     }
 
-    public async search(query: string): Promise<number[]> {
-        const stmt = this.query.select(['id'], { name: `%${query}%` });
-        const results = await this.electron.sqlSelectAll<{ id: number }>(stmt);
-        return results.map((t) => t.id);
+    public async search(query: string): Promise<Location[]> {
+        return await this.electron.run<Location[]>('locSearch', query);
     }
 
-    public async fetchLocation(id: number): Promise<Location> {
-        const stmt = this.query.select('*', { id });
-        const location = await this.electron.sqlSelect<LocationDto>(stmt);
+    public async startsWith(filter: string): Promise<Location[]> {
+        return await this.electron.run<Location[]>('locStartsWith', filter);
+    }
 
-        if (!location) {
-            throw new Error(`Location with id ${id} not found`);
+    public async selectById(id: number): Promise<Location> {
+        return await this.electron.run<Location>('locSelectById', id);
+    }
+
+    public async selectByIds(ids: number[]): Promise<Location[]> {
+        return await this.electron.run<Location[]>('locSelectByIds', ids);
+    }
+
+    public async selectByBook(bookId: number): Promise<Location[]> {
+        return await this.electron.run<Location[]>('locSelectByBook', bookId);
+    }
+
+    public async findForImport(
+        externalId: number | null,
+        name: string,
+    ): Promise<Location | undefined> {
+        return await this.electron.run<Location>(
+            'locFindForImport',
+            externalId,
+            name,
+        );
+    }
+
+    public async selectImage(locationId: number): Promise<Blob | undefined> {
+        const img = await this.electron.run<ArrayBuffer>(
+            'locSelectImage',
+            locationId,
+        );
+
+        if (img) {
+            return new Blob([new Uint8Array(img)], { type: 'image/jpeg' });
         }
 
-        return this.mapToModel(location);
+        return undefined;
     }
 
-    public async selectByBook(bookId: number): Promise<number[]> {
-        const stmt = this.bookLocationQuery.select(['locationId'], { bookId });
-        const results = await this.electron.sqlSelectAll<{
-            locationId: number;
-        }>(stmt);
-        return results.map((o) => o.locationId);
+    public async create(
+        location: Omit<Location, 'id' | 'dateAdded'>,
+        imageBlob: Blob | undefined,
+    ) {
+        const img = await this.blobToArray(imageBlob);
+        return await this.electron.run<Location>('locCreate', location, img);
     }
 
-    public async insertLocation(location: Omit<Location, 'id' | 'dateAdded'>) {
-        const stmt = this.query.insert({ ...location, dateAdded: new Date() });
-
-        const id = await this.electron.sqlRun(stmt);
-        return await this.fetchLocation(id);
+    public async update(
+        id: number,
+        location: Partial<Location>,
+        imageBlob: Blob | undefined,
+    ) {
+        const img = await this.blobToArray(imageBlob);
+        return await this.electron.run<Location>(
+            'locUpdate',
+            id,
+            location,
+            img,
+        );
     }
 
-    public async updateLocation(id: number, location: Partial<Location>) {
-        const stmt = this.query.update({ id }, location);
-        await this.electron.sqlRun(stmt);
-    }
-
-    private mapToModel(dto: LocationDto): Location {
-        const { image, dateAdded, ...rest } = dto;
-
-        return {
-            ...rest,
-            dateAdded: new Date(dateAdded),
-            image: image
-                ? new Blob([new Uint8Array(image)], { type: 'image/jpeg' })
-                : undefined,
-        };
+    private async blobToArray(blob: Blob | undefined) {
+        if (blob == null) {
+            return blob;
+        }
+        const buffer = await blob.arrayBuffer();
+        return new Uint8Array(buffer);
     }
 }

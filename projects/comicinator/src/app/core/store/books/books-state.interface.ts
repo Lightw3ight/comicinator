@@ -1,24 +1,20 @@
-import { BookGroup } from '../../models/book-group.interface';
-import { Book } from '../../models/book.interface';
 import { Dictionary } from '../../models/dictionary.interface';
+import { LoadState } from '../../models/load-state.enum';
 
 export interface BooksState {
-    loaded: boolean;
-    paths: Dictionary<boolean>;
-    searchResultIds: number[];
-    activeGroupField: string | undefined;
-    activeGroups: BookGroup[];
-    activeGroupedBookIds: number[];
+    loadState: LoadState;
 
-    activeSearch: { query: string | undefined; results: number[] };
+    searchText: string | undefined;
+    quickSearch: string;
+    quickSearchResultCache: Dictionary<number[]>;
+
+    activeDisplayIds: number[];
 }
 
 export const BOOKS_INITIAL_STATE: BooksState = {
-    loaded: false,
-    paths: {},
-    searchResultIds: [],
-    activeGroupField: undefined,
-    activeGroups: [],
-    activeGroupedBookIds: [],
-    activeSearch: { query: undefined, results: [] },
+    loadState: LoadState.Initial,
+    searchText: undefined,
+    quickSearch: 'a',
+    quickSearchResultCache: {},
+    activeDisplayIds: [],
 };

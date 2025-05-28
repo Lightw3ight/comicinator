@@ -4,7 +4,7 @@ import {
     signalStoreFeature,
     type,
     withHooks,
-    withMethods
+    withMethods,
 } from '@ngrx/signals';
 import { SettingsApiService } from '../../api/settings/settings-api.service';
 import { AppSettings } from '../../models/app-settings.interface';
@@ -19,23 +19,25 @@ export function withSettingsCoreFeature() {
 
             return {
                 async loadSettings() {
-                    const settings = await settingsApiService.fetchSettings();
+                    const settings = await settingsApiService.selectAll();
                     patchState(store, { settings, loaded: true });
                 },
 
                 async saveSettings(settings: Partial<AppSettings>) {
                     await settingsApiService.saveSettings(settings);
-                    patchState(store, { settings: {
-                        ...store.settings(),
-                        ...settings
-                    } });
+                    patchState(store, {
+                        settings: {
+                            ...store.settings(),
+                            ...settings,
+                        },
+                    });
                 },
             };
         }),
         withHooks({
             async onInit(store) {
                 await store.loadSettings();
-            }
-        })
+            },
+        }),
     );
 }

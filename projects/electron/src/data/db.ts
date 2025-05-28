@@ -6,7 +6,7 @@ const dataPath = app.isPackaged
     ? path.join(app.getAppPath(), 'data')
     : path.join(app.getAppPath(), 'debug-data');
 
-const filePath = path.join(dataPath, 'cdb2.db');
+const filePath = path.join(dataPath, 'cdb.db');
 
 console.log('DATA PATH', filePath);
 

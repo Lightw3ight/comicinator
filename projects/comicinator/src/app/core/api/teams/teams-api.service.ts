@@ -1,140 +1,113 @@
 import { inject, Injectable } from '@angular/core';
 import { ElectronService } from '../../electron.service';
-import { Dictionary } from '../../models/dictionary.interface';
-import { SqlStatement } from '../../models/sql-statement.interface';
 import { Team } from '../../models/team.interface';
-import { TeamDto } from './dtos/team-dto.interface';
-import { QueryGenerator } from '../../sql/query-generator';
-import { TeamCharacterTable } from './team-character-table';
-import { BookTeam } from '../books/book-team.table';
-import { TeamTable } from './team-table';
 
 @Injectable({ providedIn: 'root' })
 export class TeamsApiService {
     private electron = inject(ElectronService);
-    private query = new QueryGenerator(TeamTable);
-    private teamCharacterQuery = new QueryGenerator(TeamCharacterTable);
-    private bookTeamQuery = new QueryGenerator(BookTeam);
 
-    public async search(search: string): Promise<number[]> {
-        const stmt = this.query.select('id', { name: `%${search}%` }, 'name');
-        const results = await this.electron.sqlSelectAll<{ id: number }>(stmt);
-        return results.map((o) => o.id);
+    public async search(query: string): Promise<Team[]> {
+        return await this.electron.run<Team[]>('teamSearch', query);
     }
 
-    public async fetchTeams(): Promise<Team[]> {
-        const sql = `SELECT * FROM team`;
-        const results = await this.electron.sqlSelectAll<TeamDto>(sql);
-        return results.map((t) => this.mapToModel(t));
+    public async selectAll(): Promise<Team[]> {
+        return await this.electron.run<Team[]>('teamSelectAll');
+    }
+
+    public async startsWith(filter: string): Promise<Team[]> {
+        return await this.electron.run<Team[]>('teamStartsWith', filter);
+    }
+
+    public async selectById(id: number): Promise<Team> {
+        return await this.electron.run<Team>('teamSelectById', id);
+    }
+
+    public async selectByIds(ids: number[]): Promise<Team[]> {
+        return await this.electron.run<Team[]>('teamSelectByIds', ids);
     }
 
     public async fetchTeam(id: number): Promise<Team> {
-        const sql = `SELECT * FROM team where id = ?`;
-        const team = await this.electron.sqlSelect<TeamDto>(sql, id);
+        const team = await this.electron.run<Team>('teamSelectById', id);
 
         if (!team) {
             throw new Error(`Team with id ${id} not found`);
         }
 
-        return this.mapToModel(team);
+        return team;
     }
 
-    public async selectByCharacter(characterId: number): Promise<number[]> {
-        const stmt = this.teamCharacterQuery.select(['teamId'], {
+    public async selectByCharacter(characterId: number): Promise<Team[]> {
+        const results = await this.electron.run<Team[]>(
+            'teamSelectByCharacter',
             characterId,
-        });
+        );
 
-        const results = await this.electron.sqlSelectAll<{
-            teamId: number;
-        }>(stmt);
-        return results.map((o) => o.teamId);
+        return results;
     }
 
-    public async selectByBook(bookId: number): Promise<number[]> {
-        const stmt = this.bookTeamQuery.select(['teamId'], { bookId });
-
-        const results = await this.electron.sqlSelectAll<{
-            teamId: number;
-        }>(stmt);
-        return results.map((o) => o.teamId);
+    public async selectByBook(bookId: number): Promise<Team[]> {
+        return await this.electron.run<Team[]>('teamSelectByBook', bookId);
     }
 
-    public async insertTeam(team: Omit<Team, 'id'>, characterIds: number[]) {
-        const fields = Object.keys(team);
+    public async findForImport(
+        externalId: number | null,
+        name: string,
+    ): Promise<Team | undefined> {
+        return await this.electron.run<Team>(
+            'teamFindForImport',
+            externalId,
+            name,
+        );
+    }
 
-        const columnProps = fields.map((c) => `@${c}`);
-        const sql = `INSERT INTO team (${fields.join(
-            ', ',
-        )}) VALUES (${columnProps.join(', ')})`;
+    public async selectImage(teamId: number): Promise<Blob | undefined> {
+        const img = await this.electron.run<ArrayBuffer>(
+            'teamSelectImage',
+            teamId,
+        );
 
-        const params = createSqlParams(this.mapToDto(team as Team));
-        const id = await this.electron.sqlRun(sql, params);
-        await this.addTeamCharacterLinks(id, characterIds);
-        return await this.fetchTeam(id);
+        if (img) {
+            return new Blob([new Uint8Array(img)], { type: 'image/jpeg' });
+        }
+
+        return undefined;
+    }
+
+    public async create(
+        team: Omit<Team, 'id' | 'dateAdded'>,
+        imageBlob: Blob | undefined,
+        characterIds: number[],
+    ) {
+        const img = await this.blobToArray(imageBlob);
+        return await this.electron.run<Team>(
+            'teamCreate',
+            team,
+            img,
+            characterIds,
+        );
     }
 
     public async updateTeam(
         id: number,
         team: Partial<Team>,
+        imageBlob: Blob | undefined,
         characterIds: number[],
     ) {
-        const fields = Object.keys(team).filter((v) => v !== 'id');
-
-        const sqlValueSets = fields.map((field) => `${field} = @${field}`);
-        const sql = `UPDATE Team SET ${sqlValueSets.join(',')} WHERE id = @id`;
-
-        const params = createSqlParams({ ...team, id });
-
-        await this.electron.sqlRun(sql, params);
-        await this.addTeamCharacterLinks(id, characterIds);
+        const img = await this.blobToArray(imageBlob);
+        return await this.electron.run<Team>(
+            'teamUpdate',
+            id,
+            team,
+            img,
+            characterIds,
+        );
     }
 
-    private async addTeamCharacterLinks(
-        teamId: number,
-        characterIds: number[],
-    ) {
-        const characterInserts = characterIds.map<SqlStatement>((id) => ({
-            sql: `INSERT INTO TeamCharacter(teamId, characterId) VALUES(?,?)`,
-            args: [teamId, id],
-        }));
-
-        const deleteExistingCharacterLinks: SqlStatement = {
-            sql: 'DELETE FROM TeamCharacter WHERE teamId = ?',
-            args: [teamId],
-        };
-
-        await this.electron.sqlTransact([
-            deleteExistingCharacterLinks,
-            ...characterInserts,
-        ]);
+    private async blobToArray(blob: Blob | undefined) {
+        if (blob == null) {
+            return blob;
+        }
+        const buffer = await blob.arrayBuffer();
+        return new Uint8Array(buffer);
     }
-
-    private mapToModel(dto: TeamDto): Team {
-        const { image, dateAdded, ...rest } = dto;
-
-        return {
-            ...rest,
-            dateAdded: new Date(dateAdded),
-            image: image
-                ? new Blob([new Uint8Array(image)], { type: 'image/jpeg' })
-                : undefined,
-        };
-    }
-
-    private mapToDto(model: Team): TeamDto {
-        const { dateAdded, image, ...rest } = model;
-
-        return {
-            ...rest,
-            dateAdded: dateAdded.toISOString(),
-            image: image as any,
-        };
-    }
-}
-
-function createSqlParams(obj: Dictionary): { [key: string]: any } {
-    return Object.keys(obj).reduce(
-        (acc, key) => ({ ...acc, [`@${key}`]: obj[key] }),
-        {},
-    );
 }

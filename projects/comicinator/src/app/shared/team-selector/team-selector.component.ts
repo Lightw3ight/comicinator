@@ -1,4 +1,12 @@
-import { Component, computed, inject, model } from '@angular/core';
+import {
+    Component,
+    computed,
+    effect,
+    inject,
+    model,
+    signal,
+    untracked,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
@@ -33,9 +41,33 @@ export class TeamSelectorComponent {
     public readonly selection = model<number[]>([]);
 
     protected selectedTeams = this.computeSelectedTeams();
-    protected searchControl = new FormControl();
+    protected searchControl = new FormControl<string>('');
     protected filterValue = toSignal(this.searchControl.valueChanges);
-    protected searchResults = this.computeSearchResults();
+    protected searchResults = signal<Team[]>([]);
+
+    constructor() {
+        let timeStamp: number;
+
+        effect(() => {
+            const filterValue =
+                this.filterValue()?.toLocaleLowerCase()?.trim() ?? '';
+            timeStamp = new Date().getTime();
+            const current = timeStamp;
+
+            untracked(async () => {
+                if (filterValue.length < 1) {
+                    this.searchResults.set([]);
+                    return;
+                }
+
+                const results = await this.teamsStore.search(filterValue);
+
+                if (timeStamp === current) {
+                    this.searchResults.set(results);
+                }
+            });
+        });
+    }
 
     protected removeItem(item: Team) {
         this.selection.set(this.selection().filter((o) => o !== item.id));
@@ -48,28 +80,9 @@ export class TeamSelectorComponent {
 
     private computeSelectedTeams() {
         return computed(() => {
-            return this.selection().map(
-                (id) => this.teamsStore.entityMap()[id]
-            );
-        });
-    }
-
-    private computeSearchResults() {
-        return computed(() => {
-            const filterValue = this.filterValue()?.toLocaleLowerCase() ?? '';
-
-            if (filterValue.length < 1) {
-                return [];
-            }
-
-            return this.teamsStore.entities().filter((o) => {
-                return (
-                    !this.selection().includes(o.id) &&
-                    (o.name + (o.aliases ?? ''))
-                        .toLocaleLowerCase()
-                        .includes(filterValue)
-                );
-            });
+            return this.selection()
+                .map((id) => this.teamsStore.entityMap()[id])
+                .filter((val) => val != null);
         });
     }
 }

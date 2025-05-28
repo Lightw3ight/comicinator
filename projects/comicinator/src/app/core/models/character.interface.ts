@@ -14,7 +14,7 @@ export interface Character {
     realName?: string;
     externalUrl?: string;
     externalId?: number;
-    image?: Blob;
     birthDate?: Date;
     dateAdded: Date;
+    lastUpdated?: Date;
 }

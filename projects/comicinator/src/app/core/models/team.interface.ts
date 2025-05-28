@@ -8,5 +8,5 @@ export interface Team {
     publisherId?: number;
     externalUrl?: string;
     externalId?: number;
-    image?: Blob;
+    lastUpdated?: Date;
 }
