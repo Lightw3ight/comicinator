@@ -2,6 +2,7 @@ import { Op, Transaction } from 'sequelize';
 import { Book } from '../book/book';
 import { Character } from '../character/character';
 import { db } from '../db';
+import { SelectOptions } from '../select-options.interface';
 import { Team } from './team';
 import { TeamCharacter } from './team-character';
 
@@ -40,24 +41,38 @@ export class TeamController {
         return results.map((o) => o.get({ plain: true }));
     }
 
-    public static async selectAll() {
+    public static async selectMany(options: SelectOptions<Book>) {
+        let where = {};
+
+        if (options.filter) {
+            where = {
+                name: { [Op.like]: `%${options.filter}%` },
+            };
+        }
+
         const results = await Team.findAll({
-            order: [['name', 'ASC']],
+            order: [
+                [options.sortField ?? 'name', options.sortDirection ?? 'ASC'],
+            ],
             attributes: { exclude: ['image'] },
+            where,
+            limit: options.limit,
+            offset: options.offset,
         });
 
         return results.map((r) => r.get({ plain: true }));
     }
 
-    public static async search(query: string, order = 'name', dir = 'ASC') {
-        const results = await Team.findAll({
-            order: [[order, dir]],
-            where: {
-                name: { [Op.like]: `%${query}%` },
-            },
-        });
+    public static async selectManyCount(filter: string) {
+        let where = {};
 
-        return results.map((o) => o.get({ plain: true }));
+        if (filter) {
+            where = {
+                name: { [Op.like]: `%${filter}%` },
+            };
+        }
+
+        return await Team.count({ where });
     }
 
     public static async findForImport(externalId: number | null, name: string) {
@@ -85,21 +100,6 @@ export class TeamController {
             },
         });
         return result?.get({ plain: true });
-    }
-
-    public static async startsWith(
-        query: string,
-        order = 'name',
-        dir = 'ASC',
-    ): Promise<{ id: number }[]> {
-        const results = await Team.findAll({
-            order: [[order, dir]],
-            where: {
-                name: { [Op.startsWith]: query },
-            },
-        });
-
-        return results.map((o) => o.get({ plain: true }));
     }
 
     public static async selectImage(

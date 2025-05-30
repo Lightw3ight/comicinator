@@ -61,7 +61,8 @@ export class CharacterSelectorComponent {
                     return;
                 }
 
-                const results = await this.charactersStore.search(filterValue);
+                const results =
+                    await this.charactersStore.quickFind(filterValue);
 
                 if (timeStamp === current) {
                     this.searchResults.set(results);

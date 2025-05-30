@@ -1,4 +1,12 @@
-import { Component, computed, inject, model } from '@angular/core';
+import {
+    Component,
+    computed,
+    effect,
+    inject,
+    model,
+    signal,
+    untracked,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
@@ -35,7 +43,32 @@ export class LocationSelectorComponent {
     protected selectedLocations = this.computeSelectedLocations();
     protected searchControl = new FormControl();
     protected filterValue = toSignal(this.searchControl.valueChanges);
-    protected searchResults = this.computeSearchResults();
+    protected searchResults = signal<Location[]>([]);
+
+    constructor() {
+        let timeStamp: number;
+
+        effect(() => {
+            const filterValue =
+                this.filterValue()?.toLocaleLowerCase()?.trim() ?? '';
+            timeStamp = new Date().getTime();
+            const current = timeStamp;
+
+            untracked(async () => {
+                if (filterValue.length < 1) {
+                    this.searchResults.set([]);
+                    return;
+                }
+
+                const results =
+                    await this.locationsStore.quickFind(filterValue);
+
+                if (timeStamp === current) {
+                    this.searchResults.set(results);
+                }
+            });
+        });
+    }
 
     protected removeItem(location: Location) {
         this.selection.set(this.selection().filter((o) => o !== location.id));
@@ -54,20 +87,20 @@ export class LocationSelectorComponent {
         });
     }
 
-    private computeSearchResults() {
-        return computed(() => {
-            const filterValue = this.filterValue()?.toLocaleLowerCase() ?? '';
+    // private computeSearchResults() {
+    //     return computed(() => {
+    //         const filterValue = this.filterValue()?.toLocaleLowerCase() ?? '';
 
-            if (filterValue.length < 1) {
-                return [];
-            }
+    //         if (filterValue.length < 1) {
+    //             return [];
+    //         }
 
-            return this.locationsStore.entities().filter((o) => {
-                return (
-                    !this.selection().includes(o.id) &&
-                    o.name.toLocaleLowerCase().includes(filterValue)
-                );
-            });
-        });
-    }
+    //         return this.locationsStore.entities().filter((o) => {
+    //             return (
+    //                 !this.selection().includes(o.id) &&
+    //                 o.name.toLocaleLowerCase().includes(filterValue)
+    //             );
+    //         });
+    //     });
+    // }
 }

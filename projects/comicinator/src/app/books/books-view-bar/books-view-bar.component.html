@@ -1,11 +1,51 @@
-Group by:
-<a href="javascript:void(0)" [matMenuTriggerFor]="menuGroupBy">{{
-    groupedField() ?? "None"
-}}</a>
+<cbx-page-header [title]="title()">
+    <div class="bar__actions">
+        <button
+            mat-button
+            [matMenuTriggerFor]="menuGroupBy"
+            class="bar__group-button"
+            title="Group by"
+        >
+            <mat-icon>collections</mat-icon> {{ groupedField() ?? "None" }}
+        </button>
 
-<mat-menu #menuGroupBy="matMenu">
-    <button mat-menu-item (click)="changeGrouping(undefined)">None</button>
-    <button mat-menu-item (click)="changeGrouping('series')">Series</button>
-    <button mat-menu-item (click)="changeGrouping('volume')">Volume</button>
-    <button mat-menu-item (click)="changeGrouping('writer')">Writer</button>
-</mat-menu>
+        <cbx-sort-selector
+            [activeSort]="sortConfig()"
+            (activeSortChange)="setSorting($event)"
+        >
+            <cbx-sort-item field="coverDate" label="Cover date" />
+            <cbx-sort-item field="series" label="Series" />
+            <cbx-sort-item field="title" label="Title" />
+            <cbx-sort-item field="volume" label="Volume" />
+            <cbx-sort-item field="number" label="Number" />
+            <cbx-sort-item field="dateAdded" label="Date added" />
+            <cbx-sort-item field="lastUpdated" label="Last updated" />
+        </cbx-sort-selector>
+
+        <mat-menu #menuGroupBy="matMenu">
+            <button mat-menu-item (click)="changeGrouping(undefined)">
+                None
+            </button>
+            <button mat-menu-item (click)="changeGrouping('series')">
+                Series
+            </button>
+            <button mat-menu-item (click)="changeGrouping('volume')">
+                Volume
+            </button>
+            <button mat-menu-item (click)="changeGrouping('writer')">
+                Writer
+            </button>
+        </mat-menu>
+
+        @if (showClearSearch()) {
+            <div class="bar__action-divider"></div>
+            <button
+                mat-icon-button
+                (click)="clearSearch()"
+                title="Clear search"
+            >
+                <mat-icon>close</mat-icon>
+            </button>
+        }
+    </div>
+</cbx-page-header>

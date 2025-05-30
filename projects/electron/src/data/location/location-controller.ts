@@ -1,5 +1,6 @@
 import { Op } from 'sequelize';
 import { Book } from '../book/book';
+import { SelectOptions } from '../select-options.interface';
 import { Location } from './location';
 
 export class LocationController {
@@ -11,21 +12,46 @@ export class LocationController {
         return model.get({ plain: true });
     }
 
+    public static async selectMany(options: SelectOptions<Location>) {
+        let where = {};
+
+        if (options.filter) {
+            where = {
+                name: { [Op.like]: `%${options.filter}%` },
+            };
+        }
+
+        const results = await Location.findAll({
+            order: [
+                [options.sortField ?? 'name', options.sortDirection ?? 'ASC'],
+            ],
+            attributes: { exclude: ['image'] },
+            where,
+            limit: options.limit,
+            offset: options.offset,
+        });
+
+        return results.map((r) => r.get({ plain: true }));
+    }
+
+    public static async selectManyCount(filter: string) {
+        let where = {};
+
+        if (filter) {
+            where = {
+                name: { [Op.like]: `%${filter}%` },
+            };
+        }
+
+        return await Location.count({ where });
+    }
+
     public static async selectByIds(ids: number[]) {
         const results = await Location.findAll({
             where: { id: ids },
             order: [['name', 'ASC']],
         });
         return results.map((o) => o.get({ plain: true }));
-    }
-
-    public static async selectAll() {
-        const results = await Location.findAll({
-            order: [['name', 'ASC']],
-            attributes: { exclude: ['image'] },
-        });
-
-        return results.map((r) => r.get({ plain: true }));
     }
 
     public static async selectImage(
@@ -35,17 +61,6 @@ export class LocationController {
             attributes: ['image'],
         });
         return item.dataValues.image;
-    }
-
-    public static async search(query: string, order = 'name', dir = 'ASC') {
-        const results = await Location.findAll({
-            order: [[order, dir]],
-            where: {
-                name: { [Op.like]: `%${query}%` },
-            },
-        });
-
-        return results.map((o) => o.get({ plain: true }));
     }
 
     public static async findForImport(externalId: number | null, name: string) {
@@ -73,21 +88,6 @@ export class LocationController {
             },
         });
         return result?.get({ plain: true });
-    }
-
-    public static async startsWith(
-        query: string,
-        order = 'name',
-        dir = 'ASC',
-    ): Promise<{ id: number }[]> {
-        const results = await Location.findAll({
-            order: [[order, dir]],
-            where: {
-                name: { [Op.startsWith]: query },
-            },
-        });
-
-        return results.map((o) => o.get({ plain: true }));
     }
 
     public static async selectByBook(

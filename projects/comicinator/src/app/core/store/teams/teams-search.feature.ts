@@ -18,26 +18,10 @@ export function withTeamsSearchFeature<_>() {
             const teamsApiService = inject(TeamsApiService);
 
             return {
-                async search(query: string) {
-                    const teams = await teamsApiService.search(query);
-                    patchState(store, addEntities(teams));
-                    return teams;
-                },
-
-                async setActiveSearch(query: string) {
-                    const teams = await this.search(query);
-
-                    patchState(store, addEntities(teams), {
-                        search: query,
-                        activeDisplayIds: teams.map((o) => o.id),
-                    });
-                },
-
-                clearSearch() {
-                    patchState(store, {
-                        search: undefined,
-                        activeDisplayIds: [],
-                    });
+                async quickFind(query: string) {
+                    const items = await teamsApiService.selectMany(query);
+                    patchState(store, addEntities(items));
+                    return items;
                 },
             };
         }),

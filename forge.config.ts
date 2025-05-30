@@ -7,7 +7,10 @@ import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-nati
 
 const config: ForgeConfig = {
     packagerConfig: {
-        asar: true,
+        asar: {
+            unpack: '**/node_modules/{sharp,@img}/**/*',
+        },
+        extraResource: ['./resources/cdb.db', './resources/no-image.jpg'],
     },
     rebuildConfig: {},
     makers: [

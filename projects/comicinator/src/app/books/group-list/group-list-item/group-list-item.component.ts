@@ -1,6 +1,7 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { BookGroup } from '../../../core/models/book-group.interface';
 import { bookThumbCssSrc } from '../../../shared/book-thumb-path';
+import { BookGroupStore } from '../../../core/store/book-group/book-group.store';
 
 @Component({
     selector: 'cbx-group-list-item',
@@ -8,13 +9,23 @@ import { bookThumbCssSrc } from '../../../shared/book-thumb-path';
     styleUrl: 'group-list-item.component.scss',
 })
 export class GroupListItemComponent {
-    public group = input.required<BookGroup>();
+    private bookGroupStore = inject(BookGroupStore);
 
-    protected thumbSrc = this.computeThumbSrc();
+    public groupName = input.required<string>();
+
+    protected readonly group = this.computeGroup();
+
+    protected readonly thumbSrc = this.computeThumbSrc();
 
     private computeThumbSrc() {
         return computed(() => {
             return bookThumbCssSrc(this.group().firstFilePath);
+        });
+    }
+
+    private computeGroup() {
+        return computed(() => {
+            return this.bookGroupStore.entityMap()[this.groupName()];
         });
     }
 }

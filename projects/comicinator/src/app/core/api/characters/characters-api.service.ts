@@ -1,13 +1,32 @@
 import { inject, Injectable } from '@angular/core';
 import { ElectronService } from '../../electron.service';
 import { Character } from '../../models/character.interface';
+import { SortDirection } from '../../models/sort-direction.type';
+import { SelectOptions } from '../select-options.interface';
 
 @Injectable({ providedIn: 'root' })
 export class CharactersApiService {
     private electron = inject(ElectronService);
 
-    public async selectAll(): Promise<Character[]> {
-        return await this.electron.run<Character[]>('charSelectAll');
+    public async selectMany(
+        filter: string | undefined,
+        offset?: number,
+        limit?: number,
+        sortField: keyof Character = 'name',
+        sortDirection: SortDirection = 'ASC',
+    ): Promise<Character[]> {
+        const options: SelectOptions<Character> = {
+            filter,
+            offset,
+            limit,
+            sortField,
+            sortDirection,
+        };
+        return await this.electron.run<Character[]>('charSelectMany', options);
+    }
+
+    public async selectManyCount(filter?: string) {
+        return await this.electron.run<number>('charSelectManyCount', filter);
     }
 
     public async selectById(id: number): Promise<Character> {
@@ -19,15 +38,7 @@ export class CharactersApiService {
     }
 
     public async remove(characterId: number) {
-        await this.electron.run<Character[]>('charRemove', characterId);
-    }
-
-    public async search(query: string): Promise<Character[]> {
-        return await this.electron.run<Character[]>('charSearch', query);
-    }
-
-    public async startsWith(filter: string): Promise<Character[]> {
-        return await this.electron.run<Character[]>('charStartsWith', filter);
+        await this.electron.run('charRemove', characterId);
     }
 
     public async selectByBook(bookId: number): Promise<Character[]> {

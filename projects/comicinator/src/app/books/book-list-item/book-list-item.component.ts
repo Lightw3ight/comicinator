@@ -4,6 +4,7 @@ import { Book } from '../../core/models/book.interface';
 import { IconButtonComponent } from '../../shared/icon-button/icon-button.component';
 import { BookFormComponent } from '../book-form/book-form.component';
 import { bookThumbCssSrc } from '../../shared/book-thumb-path';
+import { BooksStore } from '../../core/store/books/books.store';
 
 @Component({
     selector: 'cmx-book-list-item',
@@ -13,23 +14,32 @@ import { bookThumbCssSrc } from '../../shared/book-thumb-path';
 })
 export class BookListItemComponent {
     private dialog = inject(MatDialog);
+    private booksStore = inject(BooksStore);
 
-    public readonly book = input.required<Book>();
+    public readonly book = input<Book>();
+    public readonly bookId = input<number>();
 
     protected thumbSrc = this.computeThumbSrc();
+    protected bookData = this.computeBookData();
 
     private computeThumbSrc() {
         return computed(() => {
-            return bookThumbCssSrc(this.book().filePath);
+            return bookThumbCssSrc(this.bookData().filePath);
         });
     }
 
-    public onEditClick(args: MouseEvent) {
+    protected onEditClick(args: MouseEvent) {
         args.stopPropagation();
 
         this.dialog.open(BookFormComponent, {
-            data: this.book(),
+            data: this.bookData(),
             minWidth: 800,
+        });
+    }
+
+    private computeBookData() {
+        return computed(() => {
+            return this.book() ?? this.booksStore.entityMap()[this.bookId()!];
         });
     }
 }

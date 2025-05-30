@@ -1,24 +1,28 @@
-import { Component, computed, effect, inject } from '@angular/core';
-import { LocationsStore } from '../core/store/locations/locations.store';
-import { LocationListComponent } from './location-list/location-list.component';
-import { PageHeaderComponent } from '../shared/page-header/page-header.component';
+import { Component, computed, inject, Signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { ActivatedRoute, Router } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
-import { QuickFilterComponent } from '../shared/quick-filter/quick-filter.component';
+import { Location } from '../core/models/location.interface';
+import { LocationsStore } from '../core/store/locations/locations.store';
+import { PageHeaderComponent } from '../shared/page-header/page-header.component';
+import { SortConfig } from '../shared/sort-selector/sort-config.interface';
+import { SortItemComponent } from '../shared/sort-selector/sort-item/sort-item.component';
+import { SortSelectorComponent } from '../shared/sort-selector/sort-selector.component';
+import { MainLocationListComponent } from './main-location-list/main-location-list.component';
 
 @Component({
     selector: 'cbx-locations',
     templateUrl: 'locations.component.html',
     styleUrl: 'locations.component.scss',
     imports: [
-        LocationListComponent,
         PageHeaderComponent,
         MatIcon,
         MatIconButton,
-        QuickFilterComponent,
+        MainLocationListComponent,
+        SortSelectorComponent,
+        SortItemComponent,
     ],
 })
 export class LocationsComponent {
@@ -26,38 +30,26 @@ export class LocationsComponent {
     private route = inject(ActivatedRoute);
     private router = inject(Router);
 
-    protected readonly locations = this.locationsStore.displayItems;
-    protected readonly quickSearch = this.locationsStore.quickSearch;
     protected readonly search = this.getSearchFromQuerystring();
-    protected searchTitle = this.computeSearchTitle();
-
-    constructor() {
-        effect(async () => {
-            const search = this.search();
-            window.scrollTo(0, 0);
-
-            if (search?.length) {
-                await this.locationsStore.setActiveSearch(search);
-            } else {
-                this.locationsStore.clearSearch();
-                this.locationsStore.runQuickSearch(
-                    this.locationsStore.quickSearch(),
-                );
-            }
-        });
-    }
+    protected readonly pageTitle = this.computePageTitle();
+    protected readonly sortConfig = this.computeSortConfig();
 
     protected clearSearch() {
-        this.router.navigateByUrl('/locations');
+        this.router.navigateByUrl('/locations', { replaceUrl: true });
     }
 
-    protected async setQuickSearch(filter: string) {
-        await this.locationsStore.runQuickSearch(filter);
+    protected setSorting(sorting: SortConfig) {
+        this.locationsStore.setSorting(
+            sorting.field as keyof Location,
+            sorting.dir,
+        );
     }
 
-    protected computeSearchTitle() {
+    private computePageTitle() {
         return computed(() => {
-            return `Search Results: ${this.search()}`;
+            return this.search()
+                ? `Search Results: ${this.search()}`
+                : 'Locations';
         });
     }
 
@@ -67,5 +59,14 @@ export class LocationsComponent {
                 map((pMap) => pMap.get('search') ?? undefined),
             ),
         );
+    }
+
+    private computeSortConfig(): Signal<SortConfig> {
+        return computed(() => {
+            return {
+                field: this.locationsStore.sortField(),
+                dir: this.locationsStore.sortDirection(),
+            };
+        });
     }
 }

@@ -1,20 +1,14 @@
-import { Dictionary } from '../../models/dictionary.interface';
-import { LoadState } from '../../models/load-state.enum';
+import { Team } from '../../models/team.interface';
+import { EntityBaseState } from '../entity-base-state.interface';
 
-export interface TeamsState {
-    loadState: LoadState;
-
-    search: string | undefined;
-    quickSearch: string;
-    quickSearchResultCache: Dictionary<number[]>;
-
-    activeDisplayIds: number[];
-}
+export interface TeamsState extends EntityBaseState<Team, number> {}
 
 export const TEAMS_INITIAL_STATE: TeamsState = {
-    loadState: LoadState.Initial,
-    search: undefined,
-    quickSearch: 'a',
-    quickSearchResultCache: {},
-    activeDisplayIds: [],
+    sortField: 'name',
+    sortDirection: 'ASC',
+    searchText: undefined,
+    pagesLoaded: {},
+    pagedData: [],
+    itemCount: 0,
+    columnCount: 0,
 };

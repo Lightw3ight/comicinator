@@ -5,6 +5,7 @@ import { TeamCharacter } from '../team/team-character';
 import { Character } from './character';
 import { Book } from '../book/book';
 import { Team } from '../team/team';
+import { SelectOptions } from '../select-options.interface';
 
 async function assignTeams(
     characterId: number,
@@ -40,39 +41,38 @@ export class CharacterController {
         return results.map((o) => o.get({ plain: true }));
     }
 
-    public static async selectAll() {
+    public static async selectMany(options: SelectOptions<Book>) {
+        let where = {};
+
+        if (options.filter) {
+            where = {
+                name: { [Op.like]: `%${options.filter}%` },
+            };
+        }
+
         const results = await Character.findAll({
-            order: [['name', 'ASC']],
+            order: [
+                [options.sortField ?? 'name', options.sortDirection ?? 'ASC'],
+            ],
             attributes: { exclude: ['image'] },
+            where,
+            limit: options.limit,
+            offset: options.offset,
         });
 
         return results.map((r) => r.get({ plain: true }));
     }
 
-    public static async search(query: string, order = 'name', dir = 'ASC') {
-        const results = await Character.findAll({
-            order: [[order, dir]],
-            where: {
-                name: { [Op.like]: `%${query}%` },
-            },
-        });
+    public static async selectManyCount(filter: string) {
+        let where = {};
 
-        return results.map((o) => o.get({ plain: true }));
-    }
+        if (filter) {
+            where = {
+                name: { [Op.like]: `%${filter}%` },
+            };
+        }
 
-    public static async startsWith(
-        query: string,
-        order = 'name',
-        dir = 'ASC',
-    ): Promise<{ id: number }[]> {
-        const results = await Character.findAll({
-            order: [[order, dir]],
-            where: {
-                name: { [Op.startsWith]: query },
-            },
-        });
-
-        return results.map((o) => o.get({ plain: true }));
+        return await Character.count({ where });
     }
 
     public static async selectImage(

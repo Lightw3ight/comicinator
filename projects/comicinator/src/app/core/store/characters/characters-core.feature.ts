@@ -1,26 +1,31 @@
-import { computed, inject } from '@angular/core';
+import { inject } from '@angular/core';
 import {
     patchState,
     signalStoreFeature,
     type,
-    withComputed,
+    withHooks,
     withMethods,
 } from '@ngrx/signals';
 import {
     addEntities,
     addEntity,
     removeEntity,
-    setAllEntities,
     updateEntity,
     withEntities,
 } from '@ngrx/signals/entities';
 import { CharactersApiService } from '../../api/characters/characters-api.service';
 import { CharacterResult } from '../../api/comic-vine/models/character-result.interface';
 import { Character } from '../../models/character.interface';
-import { LoadState } from '../../models/load-state.enum';
+import { PAGE_SCROLL_SIZE } from '../../models/page-scroll-size.const';
 import { Publisher } from '../../models/publisher.interface';
+import { SortDirection } from '../../models/sort-direction.type';
+import { chunkItems } from '../chunk-items';
 import { PublishersStore } from '../publishers/publishers.store';
 import { CharactersState } from './characters-state.interface';
+import store2 from 'store2';
+import { SortState } from '../models/sort-state.interface';
+
+const CHARACTER_STATE_KEY = 'cbx-character-state';
 
 export function withCharactersCoreFeature() {
     return signalStoreFeature(
@@ -28,45 +33,107 @@ export function withCharactersCoreFeature() {
 
         withEntities<Character>(),
 
-        withComputed((store) => {
-            return {
-                displayItems: computed(() => {
-                    const search = store.search();
-                    const em = store.entityMap();
-                    let bookIds =
-                        store.quickSearchResultCache()[store.quickSearch()] ??
-                        [];
-
-                    if (search?.length) {
-                        bookIds = store.activeDisplayIds();
-                    }
-
-                    return bookIds.map((id) => em[id]);
-                }),
-            };
-        }),
-
         withMethods((store) => {
             const charactersApiService = inject(CharactersApiService);
             const publishersStore = inject(PublishersStore);
 
             return {
-                async runQuickSearch(filter: string) {
-                    patchState(store, { quickSearch: filter });
+                persistState() {
+                    const state: SortState<Character> = {
+                        sortField: store.sortField(),
+                        sortDirection: store.sortDirection(),
+                    };
 
-                    if (store.quickSearchResultCache()[filter] != null) {
+                    store2(CHARACTER_STATE_KEY, state);
+                },
+
+                setColumnCount(count: number) {
+                    if (count !== store.columnCount()) {
+                        patchState(store, { columnCount: count });
+                    }
+                },
+
+                setSorting(field: keyof Character, dir: SortDirection) {
+                    patchState(store, {
+                        sortField: field,
+                        sortDirection: dir,
+                    });
+                    this.persistState();
+                },
+
+                async resetPageData() {
+                    const columnCount = store.columnCount();
+                    const itemCount =
+                        await charactersApiService.selectManyCount(
+                            store.searchText(),
+                        );
+
+                    if (itemCount === 0 || columnCount === 0) {
+                        patchState(store, {
+                            pagedData: [],
+                            pagesLoaded: {},
+                            itemCount,
+                            columnCount,
+                        });
+                    } else {
+                        const rowCount = Math.ceil(itemCount / columnCount);
+                        const pagedData = Array.from<number[]>({
+                            length: rowCount,
+                        });
+                        patchState(store, {
+                            pagedData,
+                            pagesLoaded: {},
+                            itemCount,
+                            columnCount,
+                        });
+                    }
+                },
+
+                setSearch(query: string) {
+                    if (query !== store.searchText()) {
+                        patchState(store, {
+                            searchText: query,
+                        });
+                    }
+                },
+
+                clearSearch() {
+                    if (store.searchText() != null) {
+                        patchState(store, {
+                            searchText: undefined,
+                        });
+                    }
+                },
+
+                async loadPage(pageIndex: number) {
+                    if (store.pagesLoaded()[pageIndex]) {
                         return;
                     }
 
-                    const items = await charactersApiService.startsWith(filter);
-
-                    patchState(store, addEntities(items), {
-                        quickSearch: filter,
-                        quickSearchResultCache: {
-                            ...store.quickSearchResultCache(),
-                            [filter]: items.map((o) => o.id),
+                    patchState(store, {
+                        pagesLoaded: {
+                            ...store.pagesLoaded(),
+                            [pageIndex]: true,
                         },
                     });
+
+                    const offset = pageIndex * PAGE_SCROLL_SIZE;
+                    const books = await charactersApiService.selectMany(
+                        store.searchText(),
+                        offset,
+                        PAGE_SCROLL_SIZE * store.columnCount(),
+                        store.sortField(),
+                        store.sortDirection(),
+                    );
+                    const ids = books.map((o) => o.id);
+                    const chunkedIds = chunkItems(ids, store.columnCount());
+                    const pagedData = [...store.pagedData()];
+                    pagedData.splice(
+                        pageIndex * PAGE_SCROLL_SIZE,
+                        PAGE_SCROLL_SIZE,
+                        ...chunkedIds,
+                    );
+                    patchState(store, addEntities(books), { pagedData });
                 },
 
                 async loadCharacter(id: number) {
@@ -100,20 +167,6 @@ export function withCharactersCoreFeature() {
                             await charactersApiService.selectByIds(toLoad);
                         patchState(store, addEntities(items));
                     }
-                },
-
-                async loadCharacters() {
-                    if (store.loadState() !== LoadState.Initial) {
-                        return;
-                    }
-
-                    patchState(store, { loadState: LoadState.Loading });
-
-                    const characters = await charactersApiService.selectAll();
-
-                    patchState(store, setAllEntities(characters), {
-                        loadState: LoadState.Loaded,
-                    });
                 },
 
                 async removeCharacter(characterId: number) {
@@ -237,6 +290,24 @@ export function withCharactersCoreFeature() {
                     }
 
                     return characterIds;
+                },
+            };
+        }),
+
+        withHooks((store) => {
+            return {
+                async onInit() {
+                    const state = store2(
+                        CHARACTER_STATE_KEY,
+                    ) as SortState<Character>;
+
+                    if (state) {
+                        patchState(store, {
+                            sortField: state.sortField ?? store.sortField(),
+                            sortDirection:
+                                state.sortDirection ?? store.sortDirection(),
+                        });
+                    }
                 },
             };
         }),

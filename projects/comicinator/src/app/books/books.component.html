@@ -1,14 +1,9 @@
-<cbx-books-view-bar />
+<cbx-books-view-bar [title]="pageTitle()" />
 
-@if (!search()) {
-    <cbx-quick-filter
-        [activeFilter]="quickSearch()"
-        (activeFilterChange)="setQuickFilter($event)"
-    />
-}
-
-@if (showGroupedBooks()) {
-    <cbx-group-list [search]="search()" [quickSearch]="quickSearch()" />
-} @else {
-    <cbx-book-list [books]="books()" />
-}
+<div class="books__list-container">
+    @if (groupingActive()) {
+        <cbx-group-list [search]="search()" />
+    } @else {
+        <cbx-main-book-list [search]="search()" />
+    }
+</div>

@@ -1,6 +1,7 @@
 import { Component, model, OnInit, signal } from '@angular/core';
 
 const LETTERS = [
+    '#',
     'a',
     'b',
     'c',

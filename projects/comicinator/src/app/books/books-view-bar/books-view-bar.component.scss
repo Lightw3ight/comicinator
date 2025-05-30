@@ -1,3 +1,17 @@
 :host {
     display: block;
 }
+
+.bar__actions {
+    display: flex;
+}
+
+.bar__action-divider {
+    width: 1px;
+    background-color: rgba(255, 255, 255, 0.3);
+    margin: 0 16px;
+}
+
+.bar__group-button {
+    text-transform: capitalize;
+}

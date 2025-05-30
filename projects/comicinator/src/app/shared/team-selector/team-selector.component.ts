@@ -60,7 +60,7 @@ export class TeamSelectorComponent {
                     return;
                 }
 
-                const results = await this.teamsStore.search(filterValue);
+                const results = await this.teamsStore.quickFind(filterValue);
 
                 if (timeStamp === current) {
                     this.searchResults.set(results);

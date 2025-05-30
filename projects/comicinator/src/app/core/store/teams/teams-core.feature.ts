@@ -1,26 +1,32 @@
-import { computed, inject } from '@angular/core';
+import { inject } from '@angular/core';
 import {
     patchState,
     signalStoreFeature,
     type,
-    withComputed,
+    withHooks,
     withMethods,
 } from '@ngrx/signals';
 import {
     addEntities,
     addEntity,
-    setAllEntities,
+    removeEntity,
     updateEntity,
     withEntities,
 } from '@ngrx/signals/entities';
 import { TeamResult } from '../../api/comic-vine/models/team-result.interface';
 import { TeamsApiService } from '../../api/teams/teams-api.service';
-import { LoadState } from '../../models/load-state.enum';
+import { PAGE_SCROLL_SIZE } from '../../models/page-scroll-size.const';
 import { Publisher } from '../../models/publisher.interface';
+import { SortDirection } from '../../models/sort-direction.type';
 import { Team } from '../../models/team.interface';
 import { CharactersStore } from '../characters/characters.store';
+import { chunkItems } from '../chunk-items';
 import { PublishersStore } from '../publishers/publishers.store';
 import { TeamsState } from './teams-state.interface';
+import { SortState } from '../models/sort-state.interface';
+import store2 from 'store2';
+
+const TEAM_STATE_KEY = 'cbx-team-state';
 
 export function withTeamsCoreFeature<_>() {
     return signalStoreFeature(
@@ -28,67 +34,107 @@ export function withTeamsCoreFeature<_>() {
 
         withEntities<Team>(),
 
-        withComputed((store) => {
-            return {
-                displayItems: computed(() => {
-                    const search = store.search();
-                    const em = store.entityMap();
-                    let bookIds =
-                        store.quickSearchResultCache()[store.quickSearch()] ??
-                        [];
-
-                    if (search?.length) {
-                        bookIds = store.activeDisplayIds();
-                    }
-
-                    return bookIds.map((id) => em[id]);
-                }),
-            };
-        }),
-
         withMethods((store) => {
             const teamsApiService = inject(TeamsApiService);
             const publishersStore = inject(PublishersStore);
             const charactersStore = inject(CharactersStore);
 
             return {
-                async runQuickSearch(filter: string) {
-                    patchState(store, { quickSearch: filter });
+                persistState() {
+                    const state: SortState<Team> = {
+                        sortField: store.sortField(),
+                        sortDirection: store.sortDirection(),
+                    };
 
-                    if (store.quickSearchResultCache()[filter] != null) {
-                        return;
-                    }
-
-                    const teams = await teamsApiService.startsWith(filter);
-
-                    patchState(store, addEntities(teams), {
-                        quickSearch: filter,
-                        quickSearchResultCache: {
-                            ...store.quickSearchResultCache(),
-                            [filter]: teams.map((o) => o.id),
-                        },
-                    });
+                    store2(TEAM_STATE_KEY, state);
                 },
 
-                async loadTeams() {
-                    if (store.loadState() !== LoadState.Initial) {
+                setColumnCount(count: number) {
+                    if (count !== store.columnCount()) {
+                        patchState(store, { columnCount: count });
+                    }
+                },
+
+                setSorting(field: keyof Team, dir: SortDirection) {
+                    patchState(store, {
+                        sortField: field,
+                        sortDirection: dir,
+                    });
+                    this.persistState();
+                },
+
+                async resetPageData() {
+                    const columnCount = store.columnCount();
+                    const itemCount = await teamsApiService.selectManyCount(
+                        store.searchText(),
+                    );
+
+                    if (itemCount === 0 || columnCount === 0) {
+                        patchState(store, {
+                            pagedData: [],
+                            pagesLoaded: {},
+                            itemCount,
+                            columnCount,
+                        });
+                    } else {
+                        const rowCount = Math.ceil(itemCount / columnCount);
+                        const pagedData = Array.from<number[]>({
+                            length: rowCount,
+                        });
+                        patchState(store, {
+                            pagedData,
+                            pagesLoaded: {},
+                            itemCount,
+                            columnCount,
+                        });
+                    }
+                },
+
+                setSearch(query: string) {
+                    if (query !== store.searchText()) {
+                        patchState(store, {
+                            searchText: query,
+                        });
+                    }
+                },
+
+                clearSearch() {
+                    if (store.searchText() != null) {
+                        patchState(store, {
+                            searchText: undefined,
+                        });
+                    }
+                },
+
+                async loadPage(pageIndex: number) {
+                    if (store.pagesLoaded()[pageIndex]) {
                         return;
                     }
 
-                    patchState(store, { loadState: LoadState.Loading });
-
-                    const teams = await teamsApiService.selectAll();
-                    const names = teams.reduce(
-                        (acc, c) => ({
-                            ...acc,
-                            [c.name.trim().toLocaleLowerCase()]: c.id,
-                        }),
-                        {},
-                    );
-
-                    patchState(store, setAllEntities(teams), {
-                        loadState: LoadState.Loaded,
+                    patchState(store, {
+                        pagesLoaded: {
+                            ...store.pagesLoaded(),
+                            [pageIndex]: true,
+                        },
                     });
+
+                    const offset = pageIndex * PAGE_SCROLL_SIZE;
+                    const books = await teamsApiService.selectMany(
+                        store.searchText(),
+                        offset,
+                        PAGE_SCROLL_SIZE * store.columnCount(),
+                        store.sortField(),
+                        store.sortDirection(),
+                    );
+                    const ids = books.map((o) => o.id);
+                    const chunkedIds = chunkItems(ids, store.columnCount());
+                    const pagedData = [...store.pagedData()];
+                    pagedData.splice(
+                        pageIndex * PAGE_SCROLL_SIZE,
+                        PAGE_SCROLL_SIZE,
+                        ...chunkedIds,
+                    );
+                    patchState(store, addEntities(books), { pagedData });
                 },
 
                 async loadTeam(id: number) {
@@ -96,8 +142,8 @@ export function withTeamsCoreFeature<_>() {
                         return;
                     }
 
-                    const char = await teamsApiService.selectById(id);
-                    patchState(store, addEntity(char));
+                    const item = await teamsApiService.selectById(id);
+                    patchState(store, addEntity(item));
                 },
 
                 async loadByIds(ids: number[]) {
@@ -232,6 +278,11 @@ export function withTeamsCoreFeature<_>() {
                     );
                 },
 
+                async removeTeam(teamId: number) {
+                    await teamsApiService.remove(teamId);
+                    patchState(store, removeEntity(teamId));
+                },
+
                 async addTeamsByName(commaDelimitedTeams: string | undefined) {
                     if (
                         commaDelimitedTeams == null ||
@@ -254,6 +305,22 @@ export function withTeamsCoreFeature<_>() {
                     }
 
                     return teamIds;
+                },
+            };
+        }),
+
+        withHooks((store) => {
+            return {
+                async onInit() {
+                    const state = store2(TEAM_STATE_KEY) as SortState<Team>;
+
+                    if (state) {
+                        patchState(store, {
+                            sortField: state.sortField ?? store.sortField(),
+                            sortDirection:
+                                state.sortDirection ?? store.sortDirection(),
+                        });
+                    }
                 },
             };
         }),

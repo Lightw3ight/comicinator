@@ -5,7 +5,6 @@ import {
     inject,
     input,
     numberAttribute,
-    OnDestroy,
     signal,
     untracked,
 } from '@angular/core';
@@ -14,6 +13,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { BookListComponent } from '../../books/book-list/book-list.component';
 import { MessagingService } from '../../core/messaging/messaging.service';
 import { CharactersStore } from '../../core/store/characters/characters.store';
@@ -79,11 +79,14 @@ export class CharacterComponent {
         }
     }
 
-    public edit() {
-        this.dialog.open(CharacterFormComponent, {
+    public async edit() {
+        const ref = this.dialog.open(CharacterFormComponent, {
             data: this.id(),
             minWidth: 700,
         });
+
+        await firstValueFrom(ref.afterClosed());
+        this.characterDetailsStore.updateItem();
     }
 
     private computePublisher() {

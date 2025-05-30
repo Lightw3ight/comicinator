@@ -25,26 +25,10 @@ export function withCharactersSearchFeature() {
                     return characters;
                 },
 
-                async search(query: string) {
-                    const items = await charactersApiService.search(query);
+                async quickFind(query: string) {
+                    const items = await charactersApiService.selectMany(query);
                     patchState(store, addEntities(items));
                     return items;
-                },
-
-                async setActiveSearch(query: string) {
-                    const results = await this.search(query);
-
-                    patchState(store, addEntities(results), {
-                        search: query,
-                        activeDisplayIds: results.map((o) => o.id),
-                    });
-                },
-
-                clearSearch() {
-                    patchState(store, {
-                        search: undefined,
-                        activeDisplayIds: [],
-                    });
                 },
             };
         }),

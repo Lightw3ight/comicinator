@@ -14,7 +14,7 @@ export class ElectronService {
         return this.electron.unzip(filePath);
     }
 
-    public async run<T>(command: string, ...args: any[]): Promise<T> {
+    public async run<T = void>(command: string, ...args: any[]): Promise<T> {
         if (this.electron[command] == null) {
             throw new Error(`No method ${command} exists as a passthrough`);
         }

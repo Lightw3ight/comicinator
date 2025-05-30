@@ -1,16 +1,16 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
-import { AppSettingsComponent } from '../../app-settings/app-settings.component';
-import { LibraryScannerComponent } from '../../library-scanner/library-scanner.component';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { FileSystemService } from '../file-system.service';
-import { ImportBooksComponent } from '../../import-books/import-books.component';
-import { SettingsStore } from '../store/settings/settings.store';
 import { firstValueFrom } from 'rxjs';
-import { BooksStore } from '../store/books/books.store';
+import { AppSettingsComponent } from '../../app-settings/app-settings.component';
+import { ImportBooksComponent } from '../../import-books/import-books.component';
+import { LibraryScannerComponent } from '../../library-scanner/library-scanner.component';
+import { FileSystemService } from '../file-system.service';
 import { BookGroupStore } from '../store/book-group/book-group.store';
+import { BooksStore } from '../store/books/books.store';
+import { SettingsStore } from '../store/settings/settings.store';
 
 @Component({
     selector: 'cbx-main-nav',
@@ -58,16 +58,16 @@ export class MainNavComponent {
 
             await firstValueFrom(ref.afterClosed());
 
-            if (this.booksStore.searchText()) {
-                await this.booksStore.search(this.booksStore.searchText()!);
-            } else {
-                await this.booksStore.runQuickSearch(
-                    this.booksStore.quickSearch(),
-                    true,
-                );
-            }
+            // if (this.booksStore.searchText()) {
+            //     await this.booksStore.search(this.booksStore.searchText()!);
+            // } else {
+            //     await this.booksStore.runQuickSearch(
+            //         this.booksStore.quickSearch(),
+            //         true,
+            //     );
+            // }
 
-            await this.bookGroupStore.reloadGroups();
+            // await this.bookGroupStore.reloadGroups();
         }
     }
 }

@@ -1,23 +1,29 @@
-import { computed, inject } from '@angular/core';
+import { inject } from '@angular/core';
 import {
     patchState,
     signalStoreFeature,
     type,
-    withComputed,
+    withHooks,
     withMethods,
 } from '@ngrx/signals';
 import {
     addEntities,
     addEntity,
-    setAllEntities,
+    removeEntity,
     updateEntity,
     withEntities,
 } from '@ngrx/signals/entities';
 import { LocationResult } from '../../api/comic-vine/models/location-result.interface';
 import { LocationsApiService } from '../../api/locations/locations-api.service';
-import { LoadState } from '../../models/load-state.enum';
 import { Location } from '../../models/location.interface';
+import { PAGE_SCROLL_SIZE } from '../../models/page-scroll-size.const';
+import { SortDirection } from '../../models/sort-direction.type';
+import { chunkItems } from '../chunk-items';
 import { LocationsState } from './locations-state.interface';
+import { SortState } from '../models/sort-state.interface';
+import store2 from 'store2';
+
+const LOCATION_STATE_KEY = 'cbx-location-state';
 
 export function withLocationsCoreFeature() {
     return signalStoreFeature(
@@ -25,44 +31,105 @@ export function withLocationsCoreFeature() {
 
         withEntities<Location>(),
 
-        withComputed((store) => {
-            return {
-                displayItems: computed(() => {
-                    const search = store.search();
-                    const em = store.entityMap();
-                    let bookIds =
-                        store.quickSearchResultCache()[store.quickSearch()] ??
-                        [];
-
-                    if (search?.length) {
-                        bookIds = store.activeDisplayIds();
-                    }
-
-                    return bookIds.map((id) => em[id]);
-                }),
-            };
-        }),
-
         withMethods((store) => {
             const locationsApiService = inject(LocationsApiService);
 
             return {
-                async runQuickSearch(filter: string) {
-                    patchState(store, { quickSearch: filter });
+                persistState() {
+                    const state: SortState<Location> = {
+                        sortField: store.sortField(),
+                        sortDirection: store.sortDirection(),
+                    };
 
-                    if (store.quickSearchResultCache()[filter] != null) {
+                    store2(LOCATION_STATE_KEY, state);
+                },
+
+                setColumnCount(count: number) {
+                    if (count !== store.columnCount()) {
+                        patchState(store, { columnCount: count });
+                    }
+                },
+
+                setSorting(field: keyof Location, dir: SortDirection) {
+                    patchState(store, {
+                        sortField: field,
+                        sortDirection: dir,
+                    });
+                    this.persistState();
+                },
+
+                async resetPageData() {
+                    const columnCount = store.columnCount();
+                    const itemCount = await locationsApiService.selectManyCount(
+                        store.searchText(),
+                    );
+
+                    if (itemCount === 0 || columnCount === 0) {
+                        patchState(store, {
+                            pagedData: [],
+                            pagesLoaded: {},
+                            itemCount,
+                            columnCount,
+                        });
+                    } else {
+                        const rowCount = Math.ceil(itemCount / columnCount);
+                        const pagedData = Array.from<number[]>({
+                            length: rowCount,
+                        });
+                        patchState(store, {
+                            pagedData,
+                            pagesLoaded: {},
+                            itemCount,
+                            columnCount,
+                        });
+                    }
+                },
+
+                setSearch(query: string) {
+                    if (query !== store.searchText()) {
+                        patchState(store, {
+                            searchText: query,
+                        });
+                    }
+                },
+
+                clearSearch() {
+                    if (store.searchText() != null) {
+                        patchState(store, {
+                            searchText: undefined,
+                        });
+                    }
+                },
+
+                async loadPage(pageIndex: number) {
+                    if (store.pagesLoaded()[pageIndex]) {
                         return;
                     }
 
-                    const items = await locationsApiService.startsWith(filter);
-
-                    patchState(store, addEntities(items), {
-                        quickSearch: filter,
-                        quickSearchResultCache: {
-                            ...store.quickSearchResultCache(),
-                            [filter]: items.map((o) => o.id),
+                    patchState(store, {
+                        pagesLoaded: {
+                            ...store.pagesLoaded(),
+                            [pageIndex]: true,
                         },
                     });
+
+                    const offset = pageIndex * PAGE_SCROLL_SIZE;
+                    const books = await locationsApiService.selectMany(
+                        store.searchText(),
+                        offset,
+                        PAGE_SCROLL_SIZE * store.columnCount(),
+                        store.sortField(),
+                        store.sortDirection(),
+                    );
+                    const ids = books.map((o) => o.id);
+                    const chunkedIds = chunkItems(ids, store.columnCount());
+                    const pagedData = [...store.pagedData()];
+                    pagedData.splice(
+                        pageIndex * PAGE_SCROLL_SIZE,
+                        PAGE_SCROLL_SIZE,
+                        ...chunkedIds,
+                    );
+                    patchState(store, addEntities(books), { pagedData });
                 },
 
                 async loadLocation(id: number) {
@@ -85,21 +152,13 @@ export function withLocationsCoreFeature() {
                     }
                 },
 
-                async loadLocations() {
-                    if (store.loadState() !== LoadState.Initial) {
-                        return;
-                    }
-
-                    patchState(store, { loadState: LoadState.Loading });
-                    const locations = await locationsApiService.selectAll();
-
-                    patchState(store, setAllEntities(locations), {
-                        loadState: LoadState.Loaded,
-                    });
-                },
-
                 async selectImage(teamId: number): Promise<Blob | undefined> {
                     return await locationsApiService.selectImage(teamId);
+                },
+
+                async removeLocation(locationId: number) {
+                    await locationsApiService.remove(locationId);
+                    patchState(store, removeEntity(locationId));
                 },
 
                 async importLocation(data: LocationResult): Promise<number> {
@@ -183,6 +242,24 @@ export function withLocationsCoreFeature() {
                     }
 
                     return locationIds;
+                },
+            };
+        }),
+
+        withHooks((store) => {
+            return {
+                async onInit() {
+                    const state = store2(
+                        LOCATION_STATE_KEY,
+                    ) as SortState<Location>;
+
+                    if (state) {
+                        patchState(store, {
+                            sortField: state.sortField ?? store.sortField(),
+                            sortDirection:
+                                state.sortDirection ?? store.sortDirection(),
+                        });
+                    }
                 },
             };
         }),

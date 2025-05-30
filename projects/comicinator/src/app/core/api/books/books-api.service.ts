@@ -2,21 +2,32 @@ import { inject, Injectable } from '@angular/core';
 import { ElectronService } from '../../electron.service';
 import { BookGroup } from '../../models/book-group.interface';
 import { Book } from '../../models/book.interface';
+import { SortDirection } from '../../models/sort-direction.type';
+import { SelectOptions } from '../select-options.interface';
 
 @Injectable({ providedIn: 'root' })
 export class BooksApiService {
     private electron = inject(ElectronService);
 
-    public async selectAll(): Promise<Book[]> {
-        return await this.electron.run<Book[]>('bookSelectAll');
+    public async selectMany(
+        filter: string | undefined,
+        offset: number,
+        limit = 100,
+        sortField: keyof Book = 'coverDate',
+        sortDirection: SortDirection = 'DESC',
+    ): Promise<Book[]> {
+        const options: SelectOptions<Book> = {
+            filter,
+            offset,
+            limit,
+            sortField,
+            sortDirection,
+        };
+        return await this.electron.run<Book[]>('bookSelectMany', options);
     }
 
-    public async search(query: string): Promise<Book[]> {
-        return await this.electron.run<Book[]>('bookSearch', query);
-    }
-
-    public async startsWith(filter: string): Promise<Book[]> {
-        return await this.electron.run<Book[]>('bookStartsWith', filter);
+    public async selectManyCount(filter?: string) {
+        return await this.electron.run<number>('bookSelectManyCount', filter);
     }
 
     public async create(
@@ -90,16 +101,34 @@ export class BooksApiService {
         );
     }
 
-    public async groupBy(
-        field: keyof Book,
-        filter: string,
-        fullSearch = false,
-    ): Promise<BookGroup[]> {
-        return await this.electron.run<BookGroup[]>(
-            'bookGroupBy',
+    public async selectGroupedTotal(field: keyof Book, filter?: string) {
+        return await this.electron.run<number>(
+            'bookSelectGroupedCount',
             field,
             filter,
-            fullSearch,
+        );
+    }
+
+    public async selectGrouped(
+        field: keyof Book,
+        filter: string | undefined,
+        offset: number,
+        limit = 100,
+        sortField: keyof Book = 'coverDate',
+        sortDirection: SortDirection = 'DESC',
+    ): Promise<BookGroup[]> {
+        const options: SelectOptions<Book> = {
+            filter,
+            offset,
+            limit,
+            sortField,
+            sortDirection,
+        };
+
+        return await this.electron.run<BookGroup[]>(
+            'bookSelectGrouped',
+            field,
+            options,
         );
     }
 

@@ -21,6 +21,11 @@ export const TeamDetailsStore = signalStore(
 
                 patchState(store, { team, characters, books });
             },
+
+            async updateItem() {
+                const team = teamsStore.entityMap()[store.team()!.id];
+                patchState(store, { team });
+            },
         };
     }),
 );

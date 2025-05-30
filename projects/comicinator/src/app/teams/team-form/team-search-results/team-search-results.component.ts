@@ -47,7 +47,7 @@ export class TeamSearchResultsComponent {
     protected selectedItem = signal<TeamResult | undefined>(undefined);
     private sort = viewChild(MatSort);
     protected preparingData = signal(false);
-    protected importTeamMembers = signal(true);
+    protected importTeamMembers = signal(false);
 
     constructor() {
         effect(async () => {

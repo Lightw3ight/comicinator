@@ -1,18 +1,27 @@
-@if (search()) {
-    <cbx-page-header [title]="searchTitle()">
-        <button mat-icon-button (click)="clearSearch()" title="Clear search">
-            <mat-icon>close</mat-icon>
-        </button>
-    </cbx-page-header>
+<cbx-page-header [title]="pageTitle()">
+    <div class="characters__actions">
+        <cbx-sort-selector
+            [activeSort]="sortConfig()"
+            (activeSortChange)="setSorting($event)"
+        >
+            <cbx-sort-item field="name" label="Name" />
+            <cbx-sort-item field="realName" label="Real name" />
+            <cbx-sort-item field="aliases" label="Aliases" />
+            <cbx-sort-item field="dateAdded" label="Date added" />
+            <cbx-sort-item field="lastUpdated" label="Last updated" />
+        </cbx-sort-selector>
 
-    @if (characters().length === 0) {
-        <p class="characters__no-search-results">No search results.</p>
-    }
-} @else {
-    <cbx-quick-filter
-        [activeFilter]="quickSearch()"
-        (activeFilterChange)="setQuickSearch($event)"
-    />
-}
+        @if (search()) {
+            <div class="characters__action-divider"></div>
+            <button
+                mat-icon-button
+                (click)="clearSearch()"
+                title="Clear search"
+            >
+                <mat-icon>close</mat-icon>
+            </button>
+        }
+    </div>
+</cbx-page-header>
 
-<cbx-character-list [characters]="characters()" />
+<cbx-main-character-list [search]="search()" />

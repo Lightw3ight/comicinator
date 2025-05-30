@@ -1,10 +1,11 @@
 import { app, BrowserWindow, ipcMain, net, protocol, shell } from 'electron';
 import { fileTypeFromBuffer } from 'file-type';
-import * as fs from 'fs';
 import path from 'path';
+import { NO_IMAGE_PATH, THUMB_CACHE_PATH } from './app-paths';
 import { BookController } from './data/book/book-controller';
 import { CharacterController } from './data/character/character-controller';
 import { db } from './data/db';
+import { initializeModelRelationships } from './data/initialize-models';
 import { LocationController } from './data/location/location-controller';
 import { PublisherController } from './data/publisher/publisher-controller';
 import { SettingController } from './data/setting/setting-controller';
@@ -14,12 +15,6 @@ import { getGenericHandlers } from './helpers/generic-handlers';
 import { getZipThumbnail } from './helpers/get-zip-thumbnail';
 import { createLazyValue } from './helpers/lazy-value';
 import { getZipHandlers } from './zip/zip-handlers';
-import { initializeModelRelationships } from './data/initialize-models';
-// import blocked from 'blocked-at';
-
-// blocked((time, stack) => {
-//     console.log(`Blocked for ${time}ms, operation started here:`, stack);
-// });
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -27,21 +22,6 @@ if (require('electron-squirrel-startup')) {
 }
 
 const mainWindow = createLazyValue<BrowserWindow>();
-const dataPath = app.isPackaged
-    ? path.join(__dirname, 'data')
-    : path.join(
-          __dirname.substring(0, __dirname.lastIndexOf('\\')),
-          'debug-data',
-      );
-const THUMB_PATH = path.join(dataPath, 'thumb-cache');
-const noThumbAvailablePath = path.join(dataPath, 'no-thumbnail.jpg');
-const NO_HERO_THUMB = path.join(dataPath, 'no-hero-thumbnail1.jpg');
-
-try {
-    fs.accessSync(THUMB_PATH);
-} catch {
-    fs.mkdirSync(THUMB_PATH, { recursive: true });
-}
 
 const createWindow = (): void => {
     initializeModelRelationships();
@@ -65,7 +45,7 @@ const createWindow = (): void => {
     });
 
     const startURL = app.isPackaged
-        ? `file://${path.join(__dirname, 'comicinator', 'index.html')}`
+        ? `file://${path.join(__dirname, 'comicinator/browser/index.html')}`
         : `http://localhost:4200`;
 
     const filter = {
@@ -105,8 +85,8 @@ app.on('ready', () => {
 
         return await getZipThumbnail(
             normalizedPath,
-            THUMB_PATH,
-            noThumbAvailablePath,
+            THUMB_CACHE_PATH,
+            NO_IMAGE_PATH,
         );
     });
 
@@ -115,7 +95,7 @@ app.on('ready', () => {
         const id = Number(match[0]);
         const buffer = await CharacterController.selectImage(id);
 
-        return await handleEntityImageRequest(buffer, NO_HERO_THUMB);
+        return await handleEntityImageRequest(buffer);
     });
 
     protocol.handle('team-img', async (request) => {
@@ -123,7 +103,7 @@ app.on('ready', () => {
         const id = Number(match[0]);
         const buffer = await TeamController.selectImage(id);
 
-        return await handleEntityImageRequest(buffer, NO_HERO_THUMB);
+        return await handleEntityImageRequest(buffer);
     });
 
     protocol.handle('loc-img', async (request) => {
@@ -131,16 +111,13 @@ app.on('ready', () => {
         const id = Number(match[0]);
         const buffer = await LocationController.selectImage(id);
 
-        return await handleEntityImageRequest(buffer, NO_HERO_THUMB);
+        return await handleEntityImageRequest(buffer);
     });
 
     createWindow();
 });
 
-async function handleEntityImageRequest(
-    buffer: Buffer<ArrayBufferLike>,
-    noImagePlaceholder: string,
-) {
+async function handleEntityImageRequest(buffer: Buffer<ArrayBufferLike>) {
     if (buffer) {
         // Detect file type dynamically
         const fileType = await fileTypeFromBuffer(buffer);
@@ -153,16 +130,15 @@ async function handleEntityImageRequest(
         });
     }
 
-    return net.fetch(`file:///${noImagePlaceholder}`);
+    return net.fetch(`file:///${NO_IMAGE_PATH}`);
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
     if (process.platform !== 'darwin') {
-        db.close();
-        // dbLoader.then((db) => db.close());
+        await db.close();
         app.quit();
     }
 });
@@ -175,13 +151,8 @@ app.on('activate', () => {
     }
 });
 
-// ipcMain.handle('read-file', async (_evt, filePath) => {
-//     return await fs.promises.readFile(filePath);
-// });
-
 function registerHandlers(prefix: string, handlers: Object) {
     Object.entries(handlers).forEach(([name, fn]: [string, any]) => {
-        console.log('register', prefix, name);
         if (typeof fn === 'function') {
             ipcMain.handle(
                 `${prefix}-${name}`,
@@ -208,9 +179,9 @@ function registerControllerHandlers(prefix: string, controller: any) {
 
 registerHandlers('fs', getFileSystemMethods(mainWindow));
 
-registerHandlers('zip', getZipHandlers(THUMB_PATH));
+registerHandlers('zip', getZipHandlers(THUMB_CACHE_PATH));
 
-registerHandlers('cbx', getGenericHandlers(THUMB_PATH));
+registerHandlers('cbx', getGenericHandlers(THUMB_CACHE_PATH));
 
 registerControllerHandlers('char', CharacterController);
 registerControllerHandlers('team', TeamController);
@@ -218,6 +189,3 @@ registerControllerHandlers('loc', LocationController);
 registerControllerHandlers('setting', SettingController);
 registerControllerHandlers('pub', PublisherController);
 registerControllerHandlers('book', BookController);
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.

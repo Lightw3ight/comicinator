@@ -4,26 +4,32 @@ import {
     signalStoreFeature,
     type,
     withComputed,
+    withHooks,
     withMethods,
 } from '@ngrx/signals';
 import {
     addEntities,
     addEntity,
     removeEntity,
-    setAllEntities,
     updateEntity,
     withEntities,
 } from '@ngrx/signals/entities';
+import store2 from 'store2';
 import { BooksApiService } from '../../api/books/books-api.service';
 import { ElectronService } from '../../electron.service';
 import { Book } from '../../models/book.interface';
 import { ComicInfoXml } from '../../models/comic-info-xml.interface';
-import { LoadState } from '../../models/load-state.enum';
+import { PAGE_SCROLL_SIZE } from '../../models/page-scroll-size.const';
+import { SortDirection } from '../../models/sort-direction.type';
 import { CharactersStore } from '../characters/characters.store';
+import { chunkItems } from '../chunk-items';
 import { LocationsStore } from '../locations/locations.store';
 import { PublishersStore } from '../publishers/publishers.store';
 import { TeamsStore } from '../teams/teams.store';
 import { BooksState } from './books-state.interface';
+import { SortState } from '../models/sort-state.interface';
+
+const BOOK_STATE_KEY = 'cbx-book-state';
 
 export function withBooksCoreFeature() {
     return signalStoreFeature(
@@ -33,18 +39,8 @@ export function withBooksCoreFeature() {
 
         withComputed((store) => {
             return {
-                displayItems: computed(() => {
-                    const search = store.searchText();
-                    const em = store.entityMap();
-                    let bookIds =
-                        store.quickSearchResultCache()[store.quickSearch()] ??
-                        [];
-
-                    if (search?.length) {
-                        bookIds = store.activeDisplayIds();
-                    }
-
-                    return bookIds.map((id) => em[id]);
+                rowCount: computed(() => {
+                    return Math.ceil(store.itemCount() / PAGE_SCROLL_SIZE);
                 }),
             };
         }),
@@ -58,10 +54,30 @@ export function withBooksCoreFeature() {
             const electron = inject(ElectronService);
 
             return {
+                persistState() {
+                    const state: SortState<Book> = {
+                        sortField: store.sortField(),
+                        sortDirection: store.sortDirection(),
+                    };
+
+                    store2(BOOK_STATE_KEY, state);
+                },
+
                 async checkComicAdded(filePath: string) {
                     const existing =
                         await booksApiService.selectByFilePath(filePath);
                     return existing != null;
+                },
+
+                async setSorting(
+                    field: keyof Book | undefined,
+                    dir: SortDirection | undefined,
+                ) {
+                    patchState(store, {
+                        sortField: field ?? store.sortField(),
+                        sortDirection: dir ?? store.sortDirection(),
+                    });
+                    this.persistState();
                 },
 
                 async loadByGroup(groupField: string, value: string) {
@@ -73,36 +89,88 @@ export function withBooksCoreFeature() {
                     return books.map((o) => o.id);
                 },
 
-                async runQuickSearch(filter: string, clearCache = false) {
-                    patchState(store, { quickSearch: filter });
-
-                    if (
-                        store.quickSearchResultCache()[filter] != null &&
-                        clearCache === false
-                    ) {
-                        return;
+                setColumnCount(count: number) {
+                    if (count !== store.columnCount()) {
+                        patchState(store, { columnCount: count });
                     }
-
-                    const books = await booksApiService.startsWith(filter);
-
-                    patchState(store, addEntities(books), {
-                        quickSearch: filter,
-                        quickSearchResultCache: {
-                            ...store.quickSearchResultCache(),
-                            [filter]: books.map((o) => o.id),
-                        },
-                    });
                 },
 
-                async loadBooks() {
-                    if (store.loadState() !== LoadState.Initial) {
+                async resetPageData() {
+                    const columnCount = store.columnCount();
+                    const itemCount = await booksApiService.selectManyCount(
+                        store.searchText(),
+                    );
+
+                    if (itemCount === 0 || columnCount === 0) {
+                        patchState(store, {
+                            pagedData: [],
+                            pagesLoaded: {},
+                            itemCount,
+                            columnCount,
+                        });
+                    } else {
+                        const rowCount = Math.ceil(itemCount / columnCount);
+                        const pagedData = Array.from<number[]>({
+                            length: rowCount,
+                        });
+                        patchState(store, {
+                            pagedData,
+                            pagesLoaded: {},
+                            itemCount,
+                            columnCount,
+                        });
+                    }
+                },
+
+                setSearch(query: string) {
+                    if (query !== store.searchText()) {
+                        patchState(store, {
+                            searchText: query,
+                        });
+                    }
+                },
+
+                clearSearch() {
+                    if (store.searchText() != null) {
+                        patchState(store, {
+                            searchText: undefined,
+                        });
+                    }
+                },
+
+                async clearPageCache() {
+                    patchState(store, { pagedData: [], pagesLoaded: {} });
+                },
+
+                async loadPage(pageIndex: number) {
+                    if (store.pagesLoaded()[pageIndex]) {
                         return;
                     }
 
-                    patchState(store, { loadState: LoadState.Loading });
-                    const books = await booksApiService.selectAll();
+                    patchState(store, {
+                        pagesLoaded: {
+                            ...store.pagesLoaded(),
+                            [pageIndex]: true,
+                        },
+                    });
 
-                    patchState(store, setAllEntities(books));
+                    const offset = pageIndex * PAGE_SCROLL_SIZE;
+                    const books = await booksApiService.selectMany(
+                        store.searchText(),
+                        offset,
+                        PAGE_SCROLL_SIZE * store.columnCount(),
+                        store.sortField(),
+                        store.sortDirection(),
+                    );
+                    const ids = books.map((o) => o.id);
+                    const chunkedIds = chunkItems(ids, store.columnCount());
+                    const pagedData = [...store.pagedData()];
+                    pagedData.splice(
+                        pageIndex * PAGE_SCROLL_SIZE,
+                        PAGE_SCROLL_SIZE,
+                        ...chunkedIds,
+                    );
+                    patchState(store, addEntities(books), { pagedData });
                 },
 
                 async updateBook(
@@ -275,6 +343,22 @@ export function withBooksCoreFeature() {
                     );
 
                     patchState(store, addEntity(newBook));
+                },
+            };
+        }),
+
+        withHooks((store) => {
+            return {
+                async onInit() {
+                    const state = store2(BOOK_STATE_KEY) as SortState<Book>;
+
+                    if (state) {
+                        patchState(store, {
+                            sortField: state.sortField ?? store.sortField(),
+                            sortDirection:
+                                state.sortDirection ?? store.sortDirection(),
+                        });
+                    }
                 },
             };
         }),

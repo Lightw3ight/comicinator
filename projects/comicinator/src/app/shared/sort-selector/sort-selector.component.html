@@ -1,0 +1,19 @@
+<button mat-button [matMenuTriggerFor]="menuSortBy" title="Sort by">
+    {{ activeFieldLabel() }}
+</button>
+
+<button mat-icon-button (click)="toggleSortDirection()">
+    @if (activeSort().dir === "DESC") {
+        <mat-icon>arrow_downward</mat-icon>
+    } @else {
+        <mat-icon>arrow_upward</mat-icon>
+    }
+</button>
+
+<mat-menu #menuSortBy="matMenu">
+    @for (item of sortItems(); track item.field()) {
+        <button mat-menu-item (click)="setActiveField(item.field())">
+            {{ item.label() }}
+        </button>
+    }
+</mat-menu>

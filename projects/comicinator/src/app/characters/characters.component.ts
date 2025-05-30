@@ -1,65 +1,57 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, computed, inject, Signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
+import { Character } from '../core/models/character.interface';
 import { CharactersStore } from '../core/store/characters/characters.store';
-import { IconButtonComponent } from '../shared/icon-button/icon-button.component';
-import { CharacterListComponent } from './character-list/character-list.component';
 import { PageHeaderComponent } from '../shared/page-header/page-header.component';
-import { MatIcon } from '@angular/material/icon';
-import { MatIconButton } from '@angular/material/button';
-import { QuickFilterComponent } from '../shared/quick-filter/quick-filter.component';
+import { SortConfig } from '../shared/sort-selector/sort-config.interface';
+import { SortItemComponent } from '../shared/sort-selector/sort-item/sort-item.component';
+import { SortSelectorComponent } from '../shared/sort-selector/sort-selector.component';
+import { MainCharacterListComponent } from './main-character-list/main-character-list.component';
 
 @Component({
     selector: 'cbx-characters',
     templateUrl: 'characters.component.html',
     styleUrl: 'characters.component.scss',
     imports: [
-        CharacterListComponent,
+        // CharacterListComponent,
         PageHeaderComponent,
         MatIcon,
         MatIconButton,
-        QuickFilterComponent,
+        MainCharacterListComponent,
+        SortSelectorComponent,
+        SortItemComponent,
     ],
 })
 export class CharactersComponent {
-    private charactersStore = inject(CharactersStore);
+    private characterStore = inject(CharactersStore);
     private route = inject(ActivatedRoute);
     private router = inject(Router);
 
-    protected readonly characters = this.charactersStore.displayItems;
-    protected readonly quickSearch = this.charactersStore.quickSearch;
     protected readonly search = this.getSearchFromQuerystring();
-    protected searchTitle = this.computeSearchTitle();
-
-    constructor() {
-        effect(async () => {
-            const search = this.search();
-            window.scrollTo(0, 0);
-
-            if (search?.length) {
-                await this.charactersStore.setActiveSearch(search);
-            } else {
-                this.charactersStore.clearSearch();
-                this.charactersStore.runQuickSearch(
-                    this.charactersStore.quickSearch(),
-                );
-            }
-        });
-    }
+    protected readonly pageTitle = this.computePageTitle();
+    protected readonly sortConfig = this.computeSortConfig();
 
     protected clearSearch() {
-        this.router.navigateByUrl('/characters');
+        this.router.navigateByUrl('/characters', { replaceUrl: true });
     }
 
-    protected computeSearchTitle() {
+    protected setSorting(sorting: SortConfig) {
+        this.characterStore.setSorting(
+            sorting.field as keyof Character,
+            sorting.dir,
+        );
+    }
+
+    private computePageTitle() {
         return computed(() => {
-            return `Search Results: ${this.search()}`;
+            return this.search()
+                ? `Search Results: ${this.search()}`
+                : 'Characters';
         });
-    }
-
-    protected async setQuickSearch(filter: string) {
-        await this.charactersStore.runQuickSearch(filter);
     }
 
     private getSearchFromQuerystring() {
@@ -68,5 +60,14 @@ export class CharactersComponent {
                 map((pMap) => pMap.get('search') ?? undefined),
             ),
         );
+    }
+
+    private computeSortConfig(): Signal<SortConfig> {
+        return computed(() => {
+            return {
+                field: this.characterStore.sortField(),
+                dir: this.characterStore.sortDirection(),
+            };
+        });
     }
 }

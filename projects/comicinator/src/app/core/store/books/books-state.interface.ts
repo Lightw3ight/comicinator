@@ -1,20 +1,17 @@
 import { Dictionary } from '../../models/dictionary.interface';
 import { LoadState } from '../../models/load-state.enum';
+import { Book } from '../../models/book.interface';
+import { SortDirection } from '../../models/sort-direction.type';
+import { EntityBaseState } from '../entity-base-state.interface';
 
-export interface BooksState {
-    loadState: LoadState;
-
-    searchText: string | undefined;
-    quickSearch: string;
-    quickSearchResultCache: Dictionary<number[]>;
-
-    activeDisplayIds: number[];
-}
+export interface BooksState extends EntityBaseState<Book, number> {}
 
 export const BOOKS_INITIAL_STATE: BooksState = {
-    loadState: LoadState.Initial,
+    sortField: 'coverDate',
+    sortDirection: 'DESC',
     searchText: undefined,
-    quickSearch: 'a',
-    quickSearchResultCache: {},
-    activeDisplayIds: [],
+    pagesLoaded: {},
+    pagedData: [],
+    itemCount: 0,
+    columnCount: 0,
 };

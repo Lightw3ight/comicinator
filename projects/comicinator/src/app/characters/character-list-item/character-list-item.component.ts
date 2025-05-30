@@ -5,6 +5,7 @@ import { IconButtonComponent } from '../../shared/icon-button/icon-button.compon
 import { CharacterFormComponent } from '../character-form/character-form.component';
 import { firstValueFrom } from 'rxjs';
 import { generateImageCssSrc } from '../../shared/generate-image-path';
+import { CharactersStore } from '../../core/store/characters/characters.store';
 
 @Component({
     selector: 'cbx-character-list-item',
@@ -16,16 +17,20 @@ import { generateImageCssSrc } from '../../shared/generate-image-path';
     },
 })
 export class CharacterListItemComponent {
-    public character = input.required<Character>();
+    private characterStore = inject(CharactersStore);
     private dialog = inject(MatDialog);
 
+    public readonly character = input<Character>();
+    public readonly characterId = input<number>();
+
     protected imageCssUrl = this.computeImageUrlSrc();
+    protected characterData = this.computeCharacterData();
     private timeStamp = signal<Date | undefined>(undefined);
 
     public async onEditClick(args: MouseEvent) {
         args.stopPropagation();
         const ref = this.dialog.open(CharacterFormComponent, {
-            data: this.character().id,
+            data: this.characterData().id,
             minWidth: 700,
         });
         await firstValueFrom(ref.afterClosed());
@@ -36,9 +41,18 @@ export class CharacterListItemComponent {
     private computeImageUrlSrc() {
         return computed(() => {
             return generateImageCssSrc(
-                this.character().id,
+                this.characterData().id,
                 'char',
-                this.timeStamp() ?? this.character().lastUpdated,
+                this.timeStamp() ?? this.characterData().lastUpdated,
+            );
+        });
+    }
+
+    private computeCharacterData() {
+        return computed(() => {
+            return (
+                this.character() ??
+                this.characterStore.entityMap()[this.characterId()!]
             );
         });
     }

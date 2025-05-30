@@ -1,18 +1,9 @@
-import { app } from 'electron';
-import path from 'path';
 import { Sequelize } from 'sequelize';
-
-const dataPath = app.isPackaged
-    ? path.join(app.getAppPath(), 'data')
-    : path.join(app.getAppPath(), 'debug-data');
-
-const filePath = path.join(dataPath, 'cdb.db');
-
-console.log('DATA PATH', filePath);
+import { DATA_PATH } from '../app-paths';
 
 export const db = new Sequelize({
     dialect: 'sqlite',
-    storage: filePath,
+    storage: DATA_PATH,
     define: {
         freezeTableName: true,
         timestamps: false,

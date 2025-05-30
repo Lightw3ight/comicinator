@@ -1,21 +1,32 @@
 import { inject, Injectable } from '@angular/core';
 import { ElectronService } from '../../electron.service';
 import { Location } from '../../models/location.interface';
+import { SortDirection } from '../../models/sort-direction.type';
+import { SelectOptions } from '../select-options.interface';
 
 @Injectable({ providedIn: 'root' })
 export class LocationsApiService {
     private electron = inject(ElectronService);
 
-    public async selectAll(): Promise<Location[]> {
-        return await this.electron.run<Location[]>('locSelectAll');
+    public async selectMany(
+        filter: string | undefined,
+        offset?: number,
+        limit?: number,
+        sortField: keyof Location = 'name',
+        sortDirection: SortDirection = 'ASC',
+    ): Promise<Location[]> {
+        const options: SelectOptions<Location> = {
+            filter,
+            offset,
+            limit,
+            sortField,
+            sortDirection,
+        };
+        return await this.electron.run<Location[]>('locSelectMany', options);
     }
 
-    public async search(query: string): Promise<Location[]> {
-        return await this.electron.run<Location[]>('locSearch', query);
-    }
-
-    public async startsWith(filter: string): Promise<Location[]> {
-        return await this.electron.run<Location[]>('locStartsWith', filter);
+    public async selectManyCount(filter?: string) {
+        return await this.electron.run<number>('locSelectManyCount', filter);
     }
 
     public async selectById(id: number): Promise<Location> {
@@ -52,6 +63,10 @@ export class LocationsApiService {
         }
 
         return undefined;
+    }
+
+    public async remove(locationId: number) {
+        await this.electron.run('locRemove', locationId);
     }
 
     public async create(

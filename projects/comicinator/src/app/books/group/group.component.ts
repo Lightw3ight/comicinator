@@ -6,11 +6,11 @@ import {
     input,
     untracked,
 } from '@angular/core';
-import { BooksStore } from '../../core/store/books/books.store';
-import { BookListComponent } from '../book-list/book-list.component';
-import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
-import { BookGroupStore } from '../../core/store/book-group/book-group.store';
 import { Book } from '../../core/models/book.interface';
+import { BookGroupStore } from '../../core/store/book-group/book-group.store';
+import { BooksStore } from '../../core/store/books/books.store';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
+import { BookListComponent } from '../book-list/book-list.component';
 
 @Component({
     selector: 'cbx-group',
@@ -34,16 +34,14 @@ export class GroupComponent {
             const value = this.groupValue();
 
             untracked(async () => {
-                this.bookGroupStore.setActiveGroupBy(field);
-                await this.bookGroupStore.loadGroupBooks(value);
+                await this.bookGroupStore.setActiveGroup(field, value);
             });
         });
     }
 
     private computeBooks() {
         return computed(() => {
-            const ids =
-                this.bookGroupStore.selectGroupBooks(this.groupValue())() ?? [];
+            const ids = this.bookGroupStore.activeGroupBooks() ?? [];
             const em = this.booksStore.entityMap();
             return ids.map((id) => em[id]);
         });

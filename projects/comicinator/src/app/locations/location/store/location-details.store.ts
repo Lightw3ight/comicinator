@@ -18,6 +18,12 @@ export const LocationDetailsStore = signalStore(
 
                 patchState(store, { location, books });
             },
+
+            async updateItem() {
+                const location =
+                    locationsStore.entityMap()[store.location()!.id];
+                patchState(store, { location });
+            },
         };
     }),
 );

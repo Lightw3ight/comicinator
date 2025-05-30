@@ -5,14 +5,19 @@
         </div>
 
         <div>
-            <header>
-                <h1>{{ loc.name }}</h1>
-                <div>
-                    <button icon-button (click)="edit()">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                </div>
-            </header>
+            <cbx-page-header [title]="loc.name">
+                <button
+                    mat-icon-button
+                    (click)="deleteLocation()"
+                    title="Delete location"
+                >
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <button mat-icon-button (click)="edit()" title="Edit location">
+                    <mat-icon>edit</mat-icon>
+                </button>
+            </cbx-page-header>
+
             <div class="location__details">
                 <p>{{ loc.description ?? "No Description" }}</p>
 

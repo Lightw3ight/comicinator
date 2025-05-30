@@ -1,20 +1,14 @@
-import { Dictionary } from '../../models/dictionary.interface';
-import { LoadState } from '../../models/load-state.enum';
+import { Location } from '../../models/location.interface';
+import { EntityBaseState } from '../entity-base-state.interface';
 
-export interface LocationsState {
-    loadState: LoadState;
-
-    search: string | undefined;
-    quickSearch: string;
-    quickSearchResultCache: Dictionary<number[]>;
-
-    activeDisplayIds: number[];
-}
+export interface LocationsState extends EntityBaseState<Location, number> {}
 
 export const LOCATIONS_INITIAL_STATE: LocationsState = {
-    loadState: LoadState.Initial,
-    search: undefined,
-    quickSearch: 'a',
-    quickSearchResultCache: {},
-    activeDisplayIds: [],
+    sortField: 'name',
+    sortDirection: 'ASC',
+    searchText: undefined,
+    pagesLoaded: {},
+    pagedData: [],
+    itemCount: 0,
+    columnCount: 0,
 };

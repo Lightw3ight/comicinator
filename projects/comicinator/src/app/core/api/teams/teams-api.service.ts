@@ -1,21 +1,32 @@
 import { inject, Injectable } from '@angular/core';
 import { ElectronService } from '../../electron.service';
+import { SortDirection } from '../../models/sort-direction.type';
 import { Team } from '../../models/team.interface';
+import { SelectOptions } from '../select-options.interface';
 
 @Injectable({ providedIn: 'root' })
 export class TeamsApiService {
     private electron = inject(ElectronService);
 
-    public async search(query: string): Promise<Team[]> {
-        return await this.electron.run<Team[]>('teamSearch', query);
+    public async selectMany(
+        filter: string | undefined,
+        offset?: number,
+        limit?: number,
+        sortField: keyof Team = 'name',
+        sortDirection: SortDirection = 'ASC',
+    ): Promise<Team[]> {
+        const options: SelectOptions<Team> = {
+            filter,
+            offset,
+            limit,
+            sortField,
+            sortDirection,
+        };
+        return await this.electron.run<Team[]>('teamSelectMany', options);
     }
 
-    public async selectAll(): Promise<Team[]> {
-        return await this.electron.run<Team[]>('teamSelectAll');
-    }
-
-    public async startsWith(filter: string): Promise<Team[]> {
-        return await this.electron.run<Team[]>('teamStartsWith', filter);
+    public async selectManyCount(filter?: string) {
+        return await this.electron.run<number>('teamSelectManyCount', filter);
     }
 
     public async selectById(id: number): Promise<Team> {
@@ -71,6 +82,10 @@ export class TeamsApiService {
         }
 
         return undefined;
+    }
+
+    public async remove(teamId: number) {
+        await this.electron.run<void>('teamRemove', teamId);
     }
 
     public async create(

@@ -23,27 +23,25 @@ const ZIP_METHODS = [
 const GENERIC_METHODS = ['removeThumbCache', 'abortImageQueue'];
 
 const CHARACTER_METHODS = [
-    'selectAll',
-    'update',
+    'selectMany',
+    'selectManyCount',
     'create',
+    'update',
     'remove',
-    'search',
-    'startsWith',
     'selectByBook',
     'selectByTeam',
     'selectById',
     'selectImage',
-    'findForImport',
     'selectByIds',
+    'findForImport',
 ];
 
 const TEAM_METHODS = [
-    'selectAll',
-    'update',
+    'selectMany',
+    'selectManyCount',
     'create',
+    'update',
     'remove',
-    'search',
-    'startsWith',
     'selectByBook',
     'selectByCharacter',
     'selectById',
@@ -53,12 +51,11 @@ const TEAM_METHODS = [
 ];
 
 const LOCATION_METHODS = [
-    'selectAll',
-    'update',
+    'selectMany',
+    'selectManyCount',
     'create',
+    'update',
     'remove',
-    'search',
-    'startsWith',
     'selectByBook',
     'selectById',
     'selectImage',
@@ -80,7 +77,7 @@ const PUBLISHER_METHODS = [
 
 const BOOK_METHODS = [
     'selectById',
-    'selectAll',
+    'selectMany',
     'search',
     'startsWith',
     'update',
@@ -89,9 +86,11 @@ const BOOK_METHODS = [
     'selectByCharacter',
     'selectByTeam',
     'selectByLocation',
-    'groupBy',
+    'selectGrouped',
+    'selectGroupedCount',
     'selectByGroup',
     'selectByFilePath',
+    'selectManyCount',
 ];
 
 const SETTING_METHODS = ['selectAll', 'saveAll'];

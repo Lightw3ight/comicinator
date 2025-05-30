@@ -18,30 +18,14 @@ export function withLocationsSearchFeature<_>() {
             const locationsApiService = inject(LocationsApiService);
 
             return {
-                async search(query: string) {
-                    const locations = await locationsApiService.search(query);
-                    patchState(store, addEntities(locations));
-                    return locations;
+                async quickFind(query: string) {
+                    const items = await locationsApiService.selectMany(query);
+                    patchState(store, addEntities(items));
+                    return items;
                 },
 
                 async searchByBook(bookId: number): Promise<Location[]> {
                     return await locationsApiService.selectByBook(bookId);
-                },
-
-                async setActiveSearch(query: string) {
-                    const locations = await this.search(query);
-
-                    patchState(store, addEntities(locations), {
-                        search: query,
-                        activeDisplayIds: locations.map((o) => o.id),
-                    });
-                },
-
-                clearSearch() {
-                    patchState(store, {
-                        search: undefined,
-                        activeDisplayIds: [],
-                    });
                 },
             };
         }),

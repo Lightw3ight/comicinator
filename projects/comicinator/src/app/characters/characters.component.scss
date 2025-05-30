@@ -3,11 +3,21 @@
     color: white;
 }
 
-cbx-character-list {
+cbx-main-character-list {
     padding: 8px;
 }
 
 .characters__no-search-results {
     margin: 24px;
     font-style: italic;
+}
+
+.characters__actions {
+    display: flex;
+}
+
+.characters__action-divider {
+    width: 1px;
+    background-color: rgba(255, 255, 255, 0.3);
+    margin: 0 16px;
 }

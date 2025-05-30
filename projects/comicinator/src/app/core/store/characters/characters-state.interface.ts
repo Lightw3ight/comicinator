@@ -1,20 +1,14 @@
-import { Dictionary } from '../../models/dictionary.interface';
-import { LoadState } from '../../models/load-state.enum';
+import { Character } from '../../models/character.interface';
+import { EntityBaseState } from '../entity-base-state.interface';
 
-export interface CharactersState {
-    loadState: LoadState;
-
-    search: string | undefined;
-    quickSearch: string;
-    quickSearchResultCache: Dictionary<number[]>;
-
-    activeDisplayIds: number[];
-}
+export interface CharactersState extends EntityBaseState<Character, number> {}
 
 export const CHARACTERS_INITIAL_STATE: CharactersState = {
-    loadState: LoadState.Initial,
-    search: undefined,
-    quickSearch: 'a',
-    quickSearchResultCache: {},
-    activeDisplayIds: [],
+    sortField: 'name',
+    sortDirection: 'ASC',
+    searchText: undefined,
+    pagesLoaded: {},
+    pagedData: [],
+    itemCount: 0,
+    columnCount: 0,
 };

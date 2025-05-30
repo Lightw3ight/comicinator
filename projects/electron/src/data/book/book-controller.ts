@@ -3,6 +3,7 @@ import { col, fn, Op, Transaction } from 'sequelize';
 import { Character } from '../character/character';
 import { db } from '../db';
 import { Location } from '../location/location';
+import { SelectOptions } from '../select-options.interface';
 import { Team } from '../team/team';
 import { Book } from './book';
 import { BookCharacter } from './book-character';
@@ -68,59 +69,72 @@ export class BookController {
         return model.get({ plain: true });
     }
 
-    public static async selectByIds(ids: number[]) {
+    public static async selectByIds(
+        ids: number[],
+        order: keyof Book = 'coverDate',
+        dir = 'DESC',
+    ) {
         const results = await Book.findAll({
             where: { id: ids },
-            order: [['title', 'ASC']],
+            order: [[order, dir]],
         });
         return results.map((o) => o.get({ plain: true }));
     }
 
-    public static async selectAll() {
+    public static async selectMany(options: SelectOptions<Book>) {
+        let where = {};
+
+        if (options.filter) {
+            where = {
+                [Op.or]: [
+                    {
+                        title: { [Op.like]: `%${options.filter}%` },
+                    },
+                    {
+                        series: { [Op.like]: `%${options.filter}%` },
+                    },
+                ],
+            };
+        }
+
         const results = await Book.findAll({
-            order: [['coverDate', 'DESC']],
+            order: [
+                [
+                    options.sortField ?? 'coverDate',
+                    options.sortDirection ?? 'DESC',
+                ],
+            ],
             attributes: { exclude: ['image'] },
+            where,
+            limit: options.limit,
+            offset: options.offset,
         });
 
         return results.map((r) => r.get({ plain: true }));
     }
 
-    public static async search(query: string, order = 'title', dir = 'ASC') {
-        const results = await Book.findAll({
-            order: [[order, dir]],
-            where: {
+    public static async selectManyCount(filter: string) {
+        let where = {};
+
+        if (filter) {
+            where = {
                 [Op.or]: [
                     {
-                        title: { [Op.like]: `%${query}%` },
+                        title: { [Op.like]: `%${filter}%` },
                     },
                     {
-                        series: { [Op.like]: `%${query}%` },
+                        series: { [Op.like]: `%${filter}%` },
                     },
                 ],
-            },
-        });
+            };
+        }
 
-        return results.map((o) => o.get({ plain: true }));
-    }
-
-    public static async startsWith(
-        query: string,
-        order = 'coverDate',
-        dir = 'DESC',
-    ): Promise<{ id: number }[]> {
-        const results = await Book.findAll({
-            order: [[order, dir]],
-            where: {
-                series: { [Op.startsWith]: query },
-            },
-        });
-
-        return results.map((o) => o.get({ plain: true }));
+        return await Book.count({ where });
     }
 
     public static async selectByCharacter(
         characterId: number,
-        order = 'coverDate',
+        order: keyof Book = 'coverDate',
         orderDirection = 'DESC',
     ) {
         const results = await Book.findAll({
@@ -137,7 +151,7 @@ export class BookController {
 
     public static async selectByTeam(
         teamId: number,
-        order = 'coverDate',
+        order: keyof Book = 'coverDate',
         orderDirection = 'DESC',
     ) {
         const results = await Book.findAll({
@@ -154,7 +168,7 @@ export class BookController {
 
     public static async selectByLocation(
         locationId: number,
-        order = 'coverDate',
+        order: keyof Book = 'coverDate',
         orderDirection = 'DESC',
     ) {
         const results = await Book.findAll({
@@ -169,16 +183,49 @@ export class BookController {
         return results.map((o) => o.get({ plain: true }));
     }
 
-    public static async groupBy(
+    public static async selectGroupedCount(groupField: string, filter: string) {
+        let where = {};
+
+        if (filter) {
+            where = {
+                [Op.or]: [
+                    {
+                        title: { [Op.like]: `%${filter}%` },
+                    },
+                    {
+                        series: { [Op.like]: `%${filter}%` },
+                    },
+                ],
+            };
+        }
+
+        return await Book.count({
+            where,
+            col: groupField,
+            distinct: true,
+        });
+    }
+
+    public static async selectGrouped(
         field: keyof Book,
-        query: string,
-        fullSearch = false,
+        options: SelectOptions<Book>,
     ) {
-        const parsedQuery = fullSearch ? `%${query}%` : `${query}%`;
+        const where =
+            options.filter == null
+                ? {}
+                : { [field]: { [Op.like]: `%${options.filter}%` } };
 
         const results = await Book.findAll({
             group: field,
-            where: { [field]: { [Op.like]: parsedQuery } },
+            order: [
+                [
+                    options.sortField ?? 'coverDate',
+                    options.sortDirection ?? 'DESC',
+                ],
+            ],
+            where: where,
+            offset: options.offset,
+            limit: options.limit,
             attributes: [
                 [field, 'id'],
                 [field, 'name'],

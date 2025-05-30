@@ -5,19 +5,24 @@
         </div>
 
         <div>
-            <header>
-                <h1>{{ tm.name }}</h1>
+            <cbx-page-header [title]="tm.name">
+                <button
+                    mat-icon-button
+                    (click)="deleteTeam()"
+                    title="Delete team"
+                >
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <button mat-icon-button (click)="edit()" title="Edit team">
+                    <mat-icon>edit</mat-icon>
+                </button>
+            </cbx-page-header>
+
+            <div class="team__details">
                 @if (tm.aliases) {
-                    <small>AKA: {{ tm.aliases }}</small>
+                    <p><label>AKA:</label> {{ tm.aliases }}</p>
                 }
 
-                <div>
-                    <button icon-button (click)="edit()">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                </div>
-            </header>
-            <div class="team__details">
                 <p>{{ tm.summary ?? "No Description" }}</p>
 
                 @if (tm.externalUrl) {

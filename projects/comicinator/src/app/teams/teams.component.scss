@@ -3,11 +3,16 @@
     color: white;
 }
 
-cbx-team-list {
+cbx-main-team-list {
     padding: 8px;
 }
 
-.teams__no-search-results {
-    margin: 24px;
-    font-style: italic;
+.teams__actions {
+    display: flex;
+}
+
+.teams__action-divider {
+    width: 1px;
+    background-color: rgba(255, 255, 255, 0.3);
+    margin: 0 16px;
 }
