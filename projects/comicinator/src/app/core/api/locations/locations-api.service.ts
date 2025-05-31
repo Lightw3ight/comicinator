@@ -42,7 +42,7 @@ export class LocationsApiService {
     }
 
     public async findForImport(
-        externalId: number | null,
+        externalId: number | undefined,
         name: string,
     ): Promise<Location | undefined> {
         return await this.electron.run<Location>(

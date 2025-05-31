@@ -175,20 +175,24 @@ export function withLocationsCoreFeature() {
                         externalUrl: data.siteUrl,
                     };
 
-                    return await this.addLocation(newChar, image);
+                    return await this.addLocation(newChar, image, false);
                 },
 
                 async addLocation(
                     location: Omit<Location, 'id' | 'dateAdded'>,
                     image: Blob | undefined,
+                    checkForExisting = true,
                 ): Promise<number> {
-                    const existing = await locationsApiService.findForImport(
-                        null,
-                        location.name,
-                    );
+                    if (checkForExisting) {
+                        const existing =
+                            await locationsApiService.findForImport(
+                                undefined,
+                                location.name,
+                            );
 
-                    if (existing) {
-                        return existing.id;
+                        if (existing) {
+                            return existing.id;
+                        }
                     }
 
                     const added = await locationsApiService.create(

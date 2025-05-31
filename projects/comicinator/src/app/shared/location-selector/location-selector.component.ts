@@ -86,21 +86,4 @@ export class LocationSelectorComponent {
                 .filter((val) => val != null);
         });
     }
-
-    // private computeSearchResults() {
-    //     return computed(() => {
-    //         const filterValue = this.filterValue()?.toLocaleLowerCase() ?? '';
-
-    //         if (filterValue.length < 1) {
-    //             return [];
-    //         }
-
-    //         return this.locationsStore.entities().filter((o) => {
-    //             return (
-    //                 !this.selection().includes(o.id) &&
-    //                 o.name.toLocaleLowerCase().includes(filterValue)
-    //             );
-    //         });
-    //     });
-    // }
 }

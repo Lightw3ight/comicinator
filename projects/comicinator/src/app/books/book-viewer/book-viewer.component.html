@@ -80,17 +80,7 @@
             [class.book__viewer--fit-width]="currentFit() === 'width'"
             [class.book__viewer--fit-all]="currentFit() === 'all'"
         >
-            <img
-                [attr.src]="activeImageUrl()"
-                (click)="onPageClick($event)"
-                tabindex="0"
-                (keydown.space)="nextPage()"
-                (keydown.arrowDown)="nextPage()"
-                (keydown.arrowRight)="nextPage()"
-                (keydown.shift.space)="prevPage()"
-                (keydown.arrowUp)="prevPage()"
-                (keydown.arrowleft)="prevPage()"
-            />
+            <img [attr.src]="activeImageUrl()" />
         </div>
     </div>
 }

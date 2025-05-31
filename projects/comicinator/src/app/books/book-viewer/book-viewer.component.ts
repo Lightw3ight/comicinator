@@ -116,7 +116,7 @@ export class BookViewerComponent implements OnDestroy, OnInit {
             viewer.offsetHeight === viewer.scrollHeight ||
             viewer.scrollTop === 0
         ) {
-            this.prevPage();
+            this.prevPage(true);
         } else {
             viewer.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -162,14 +162,6 @@ export class BookViewerComponent implements OnDestroy, OnInit {
             });
     }
 
-    protected onPageClick(args: MouseEvent) {
-        if (args.shiftKey) {
-            this.prevPage();
-        } else {
-            this.nextPage();
-        }
-    }
-
     protected nextPage() {
         if (this.imageIndex() < this.imageUrls().length - 1) {
             this.viewer()!.scrollTo({ behavior: 'smooth', top: 0 });
@@ -177,13 +169,17 @@ export class BookViewerComponent implements OnDestroy, OnInit {
         }
     }
 
-    protected prevPage() {
+    protected prevPage(scrollBottom = false) {
         if (this.imageIndex() > 0) {
             this.setPage(this.imageIndex() - 1);
-            this.viewer()!.scrollTo({
-                behavior: 'smooth',
-                top: this.viewer()?.scrollHeight,
-            });
+            if (scrollBottom) {
+                this.viewer()!.scrollTo({
+                    behavior: 'smooth',
+                    top: this.viewer()?.scrollHeight,
+                });
+            } else {
+                this.viewer()!.scrollTo({ behavior: 'smooth', top: 0 });
+            }
         }
     }
 

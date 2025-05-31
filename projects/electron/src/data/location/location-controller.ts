@@ -64,11 +64,7 @@ export class LocationController {
     }
 
     public static async findForImport(externalId: number | null, name: string) {
-        let where: any[] = [
-            {
-                externalId: externalId,
-            },
-        ];
+        let where: any[];
 
         if (externalId != null) {
             where = [
@@ -78,6 +74,12 @@ export class LocationController {
                 {
                     name: { [Op.like]: name },
                     externalId: null,
+                },
+            ];
+        } else {
+            where = [
+                {
+                    name: { [Op.like]: name },
                 },
             ];
         }
@@ -120,7 +122,9 @@ export class LocationController {
 
         const newUser = await Location.create(modelToSave);
 
-        return newUser.dataValues;
+        const data = newUser.get({ plain: true });
+        console.log('created location', data.id);
+        return data;
     }
 
     public static async remove(id: number) {
