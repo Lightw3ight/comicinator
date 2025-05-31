@@ -1,0 +1,51 @@
+:host {
+    flex: 1 1 auto;
+    // background-color: red;
+    display: block;
+    --available-viewer-height: calc(100vh - (var(--page-header-height) + 32px));
+    --image-zoom: 1;
+}
+
+.book-viewer__actions {
+    display: flex;
+}
+
+.book-viewer__action-divider {
+    width: 1px;
+    background-color: rgba(255, 255, 255, 0.3);
+    margin: 0 16px;
+}
+
+img {
+    max-width: 100%;
+    height: 100%;
+}
+
+.book__progress {
+    margin: 16px;
+}
+
+.book__viewer-container {
+    width: 100%;
+    height: var(--available-viewer-height);
+    overflow: auto;
+}
+
+.book__viewer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.book__viewer--fit-height {
+    height: calc(var(--available-viewer-height) * var(--image-zoom));
+}
+
+.book__viewer--fit-all {
+    height: calc(var(--available-viewer-height) * var(--image-zoom));
+    width: 100%;
+}
+
+.book__rotate {
+    transform: rotate(90deg);
+}

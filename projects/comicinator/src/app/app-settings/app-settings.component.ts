@@ -7,7 +7,7 @@ import {
     ReactiveFormsModule,
     Validators,
 } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
+import { MatButton, MatIconButton } from '@angular/material/button';
 import {
     MatDialogActions,
     MatDialogClose,
@@ -15,9 +15,15 @@ import {
     MatDialogRef,
     MatDialogTitle,
 } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatTabsModule } from '@angular/material/tabs';
+import {
+    MatError,
+    MatFormField,
+    MatLabel,
+    MatSuffix,
+} from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
+import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { FileSystemService } from '../core/file-system.service';
 import { AppSettings } from '../core/models/app-settings.interface';
 import { SettingsStore } from '../core/store/settings/settings.store';
@@ -25,17 +31,24 @@ import { SettingsStore } from '../core/store/settings/settings.store';
 @Component({
     selector: 'cmx-app-settings',
     templateUrl: 'app-settings.component.html',
+    styleUrl: 'app-settings.component.scss',
     imports: [
         CommonModule,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
+        MatButton,
+        MatIconButton,
+        MatIcon,
+        MatFormField,
+        MatInput,
+        MatSuffix,
+        MatLabel,
+        MatError,
         ReactiveFormsModule,
         MatDialogTitle,
         MatDialogContent,
         MatDialogActions,
         MatDialogClose,
-        MatTabsModule,
+        MatTabGroup,
+        MatTab,
     ],
 })
 export class AppSettingsComponent {
@@ -54,7 +67,7 @@ export class AppSettingsComponent {
 
     protected async chooseLibraryPath() {
         const path = await this.fileSystemService.openDirectory(
-            this.form.value.libraryPath ?? undefined
+            this.form.value.libraryPath ?? undefined,
         );
 
         if (path) {

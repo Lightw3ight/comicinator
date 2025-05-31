@@ -1,20 +1,23 @@
 import { Component, computed, inject, input } from '@angular/core';
+import { MatIconButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
+import { MatIcon } from '@angular/material/icon';
 import { Book } from '../../core/models/book.interface';
-import { IconButtonComponent } from '../../shared/icon-button/icon-button.component';
-import { BookFormComponent } from '../book-form/book-form.component';
-import { bookThumbCssSrc } from '../../shared/book-thumb-path';
 import { BooksStore } from '../../core/store/books/books.store';
+import { bookThumbCssSrc } from '../../shared/book-thumb-path';
+import { BookFormComponent } from '../book-form/book-form.component';
+import { BookViewerService } from '../book-viewer/book-viewer.service';
 
 @Component({
     selector: 'cmx-book-list-item',
     templateUrl: 'book-list-item.component.html',
     styleUrl: 'book-list-item.component.scss',
-    imports: [IconButtonComponent],
+    imports: [MatIcon, MatIconButton],
 })
 export class BookListItemComponent {
     private dialog = inject(MatDialog);
     private booksStore = inject(BooksStore);
+    private bookViewer = inject(BookViewerService);
 
     public readonly book = input<Book>();
     public readonly bookId = input<number>();
@@ -26,6 +29,15 @@ export class BookListItemComponent {
         return computed(() => {
             return bookThumbCssSrc(this.bookData().filePath);
         });
+    }
+
+    protected openBook() {
+        this.bookViewer.openBook(this.book()!);
+    }
+
+    protected onViewClick(args: MouseEvent) {
+        args.stopPropagation();
+        this.bookViewer.openBook(this.book()!);
     }
 
     protected onEditClick(args: MouseEvent) {

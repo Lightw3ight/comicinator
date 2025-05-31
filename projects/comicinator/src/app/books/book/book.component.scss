@@ -8,30 +8,12 @@
     align-items: center;
     justify-content: center;
 }
-img {
-    max-width: 100%;
-    height: 100%;
+
+cbx-character-list,
+cbx-team-list {
+    margin: 8px;
 }
 
-.book__progress {
-    margin: 16px;
-}
-
-.book__viewer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.book__viewer--fit-height {
-    height: var(--available-viewer-height);
-}
-
-.book__viewer--fit-all {
-    height: var(--available-viewer-height);
-    width: 100%;
-}
-
-.book__rotate {
-    transform: rotate(90deg);
+mat-tab-group {
+    margin-left: 24px;
 }

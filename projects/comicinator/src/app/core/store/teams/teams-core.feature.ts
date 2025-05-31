@@ -231,21 +231,30 @@ export function withTeamsCoreFeature<_>() {
                         summary: data.summary,
                     };
 
-                    return await this.addTeam(newTeam, image, characterIds);
+                    return await this.addTeam(
+                        newTeam,
+                        image,
+                        characterIds,
+                        false,
+                    );
                 },
 
                 async addTeam(
                     team: Omit<Team, 'id' | 'dateAdded'>,
                     image: Blob | undefined,
                     characterIds: number[],
+                    checkForExisting = true,
                 ): Promise<number> {
-                    const existing = await teamsApiService.findForImport(
-                        null,
-                        team.name,
-                    );
+                    if (checkForExisting) {
+                        const existing = await teamsApiService.findForImport(
+                            null,
+                            team.name,
+                            undefined,
+                        );
 
-                    if (existing) {
-                        return existing.id;
+                        if (existing) {
+                            return existing.id;
+                        }
                     }
 
                     const added = await teamsApiService.create(

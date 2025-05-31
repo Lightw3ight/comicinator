@@ -18,6 +18,8 @@ export interface Book {
     editor?: string;
     publisherId?: number;
     pageCount?: number;
+    currentPage?: number;
+    lastOpened?: Date;
     fileSize?: number;
     externalUrl?: string;
     externalId?: number;

@@ -76,6 +76,7 @@ const PUBLISHER_METHODS = [
 ];
 
 const BOOK_METHODS = [
+    'setReadDetails',
     'selectById',
     'selectMany',
     'search',

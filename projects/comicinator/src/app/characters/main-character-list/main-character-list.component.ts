@@ -48,6 +48,7 @@ export class MainCharacterListComponent {
 
             untracked(async () => {
                 if (columnCount > 0) {
+                    console.log('LOADING CHARS');
                     this.charactersStore.setColumnCount(columnCount);
 
                     if (search?.length) {

@@ -6,6 +6,11 @@
         cdkDragHandle
     >
         {{ book?.title ?? "New Book" }}
+        <div class="book-form__file-path">
+            <a href="javascript:void(0)" (click)="openFileLocation()"
+                ><small>{{ book?.filePath }}</small></a
+            >
+        </div>
     </h2>
     <mat-dialog-content>
         @if (importing()) {
@@ -24,13 +29,6 @@
             <div class="book-form__form-container">
                 <mat-tab-group mat-stretch-tabs="false">
                     <mat-tab label="Details">
-                        <div class="book-form__file-path">
-                            <a
-                                href="javascript:void(0)"
-                                (click)="openFileLocation()"
-                                ><small>{{ book?.filePath }}</small></a
-                            >
-                        </div>
                         <mat-form-field subscriptSizing="dynamic">
                             <mat-label>Title</mat-label>
                             <input matInput formControlName="title" />

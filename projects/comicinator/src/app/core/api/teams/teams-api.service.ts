@@ -63,11 +63,13 @@ export class TeamsApiService {
     public async findForImport(
         externalId: number | null,
         name: string,
+        publisherId: number | undefined,
     ): Promise<Team | undefined> {
         return await this.electron.run<Team>(
             'teamFindForImport',
             externalId,
             name,
+            publisherId,
         );
     }
 

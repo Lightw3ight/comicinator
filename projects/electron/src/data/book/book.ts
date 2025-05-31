@@ -27,10 +27,12 @@ class Book extends Model<InferAttributes<Book>, InferCreationAttributes<Book>> {
     declare editor?: string;
     declare publisherId?: number;
     declare pageCount?: number;
+    declare currentPage?: number;
     declare fileSize?: number;
     declare externalUrl?: string;
     declare externalId?: number;
     declare lastUpdated?: Date;
+    declare lastOpened?: Date;
 }
 
 Book.init(
@@ -62,6 +64,7 @@ Book.init(
         editor: DataTypes.TEXT,
         publisherId: DataTypes.INTEGER,
         pageCount: DataTypes.INTEGER,
+        currentPage: DataTypes.INTEGER,
         fileSize: DataTypes.INTEGER,
         dateAdded: {
             type: DataTypes.DATE,
@@ -79,6 +82,12 @@ Book.init(
             type: DataTypes.DATE,
             get() {
                 return parseDate(this.getDataValue('coverDate'));
+            },
+        },
+        lastOpened: {
+            type: DataTypes.DATE,
+            get() {
+                return parseDate(this.getDataValue('lastOpened'));
             },
         },
         externalUrl: DataTypes.TEXT,

@@ -52,11 +52,13 @@ export class CharactersApiService {
     public async findForImport(
         externalId: number | null,
         name: string,
+        publisherId: number | undefined,
     ): Promise<Character | undefined> {
         return await this.electron.run<Character>(
             'charFindForImport',
             externalId,
             name,
+            publisherId,
         );
     }
 

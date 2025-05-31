@@ -1,11 +1,10 @@
 import { Op, Transaction } from 'sequelize';
-import { BookCharacter } from '../book/book-character';
+import { Book } from '../book/book';
 import { db } from '../db';
+import { SelectOptions } from '../select-options.interface';
+import { Team } from '../team/team';
 import { TeamCharacter } from '../team/team-character';
 import { Character } from './character';
-import { Book } from '../book/book';
-import { Team } from '../team/team';
-import { SelectOptions } from '../select-options.interface';
 
 async function assignTeams(
     characterId: number,
@@ -118,29 +117,33 @@ export class CharacterController {
         return results.map((o) => o.get({ plain: true }));
     }
 
-    public static async findForImport(externalId: number | null, name: string) {
-        let where: any[] = [
-            {
-                externalId: externalId,
-            },
-        ];
+    public static async findForImport(
+        externalId: number | null,
+        name: string,
+        publisherId: number | undefined,
+    ) {
+        if (externalId != null) {
+            const result = await Character.findOne({ where: { externalId } });
+
+            if (result) {
+                return result?.get({ plain: true });
+            }
+        }
+
+        const where: any = {
+            name: { [Op.like]: name },
+        };
 
         if (externalId != null) {
-            where = [
-                {
-                    externalId: externalId,
-                },
-                {
-                    name: { [Op.like]: name },
-                    externalId: null,
-                },
-            ];
+            where['externalId'] = null;
+        }
+
+        if (publisherId != null) {
+            where['publisherId'] = publisherId;
         }
 
         const result = await Character.findOne({
-            where: {
-                [Op.or]: where,
-            },
+            where: where,
         });
         return result?.get({ plain: true });
     }

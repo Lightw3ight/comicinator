@@ -80,6 +80,13 @@ export function withBooksCoreFeature() {
                     this.persistState();
                 },
 
+                async loadBook(id: number) {
+                    if (store.entityMap()[id] == null) {
+                        const book = await booksApiService.selectById(id);
+                        patchState(store, addEntity(book));
+                    }
+                },
+
                 async loadByGroup(groupField: string, value: string) {
                     const books = await booksApiService.selectByGroup(
                         groupField,
@@ -173,11 +180,28 @@ export function withBooksCoreFeature() {
                     patchState(store, addEntities(books), { pagedData });
                 },
 
+                async setReadDetails(
+                    id: number,
+                    currentPage: number,
+                    pageCount: number,
+                ) {
+                    const updatedBook = await booksApiService.setReadDetails(
+                        id,
+                        currentPage,
+                        pageCount,
+                    );
+
+                    patchState(
+                        store,
+                        updateEntity({ id, changes: updatedBook }),
+                    );
+                },
+
                 async updateBook(
                     book: Omit<Book, 'dateAdded'>,
-                    characterIds: number[],
-                    teamIds: number[],
-                    locationIds: number[],
+                    characterIds?: number[],
+                    teamIds?: number[],
+                    locationIds?: number[],
                 ) {
                     await booksApiService.update(
                         book,
@@ -222,7 +246,7 @@ export function withBooksCoreFeature() {
                             ? publishersStore.entityMap()[book.publisherId]
                                   ?.name
                             : undefined;
-                    const characters = await charactersStore.selectByBook(
+                    const characters = await charactersStore.searchByBook(
                         book.id,
                     );
                     const teams = await teamsStore.selectByBook(book.id);

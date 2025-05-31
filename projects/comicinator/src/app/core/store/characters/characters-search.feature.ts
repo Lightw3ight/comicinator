@@ -25,6 +25,13 @@ export function withCharactersSearchFeature() {
                     return characters;
                 },
 
+                async searchByBook(bookId: number) {
+                    const books =
+                        await charactersApiService.selectByBook(bookId);
+                    patchState(store, addEntities(books));
+                    return books;
+                },
+
                 async quickFind(query: string) {
                     const items = await charactersApiService.selectMany(query);
                     patchState(store, addEntities(items));

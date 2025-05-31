@@ -151,13 +151,6 @@ export function withCharactersCoreFeature() {
                     return await charactersApiService.selectImage(characterId);
                 },
 
-                async selectByBook(bookId: number) {
-                    const books =
-                        await charactersApiService.selectByBook(bookId);
-                    patchState(store, addEntities(books));
-                    return books;
-                },
-
                 async loadByIds(ids: number[]) {
                     const toLoad = ids.filter(
                         (id) => store.entityMap()[id] == null,
@@ -227,7 +220,12 @@ export function withCharactersCoreFeature() {
                         summary: data.summary,
                     };
 
-                    return await this.addCharacter(newChar, image, teamIds);
+                    return await this.addCharacter(
+                        newChar,
+                        image,
+                        teamIds,
+                        false,
+                    );
                 },
 
                 async updateCharacter(
@@ -252,14 +250,19 @@ export function withCharactersCoreFeature() {
                     character: Omit<Character, 'id'>,
                     image?: Blob,
                     teamIds?: number[],
+                    checkForExisting = true,
                 ): Promise<number> {
-                    const existing = await charactersApiService.findForImport(
-                        null,
-                        character.name,
-                    );
+                    if (checkForExisting) {
+                        const existing =
+                            await charactersApiService.findForImport(
+                                null,
+                                character.name,
+                                undefined,
+                            );
 
-                    if (existing) {
-                        return existing.id;
+                        if (existing) {
+                            return existing.id;
+                        }
                     }
 
                     const added = await await charactersApiService.insert(

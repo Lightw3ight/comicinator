@@ -75,29 +75,33 @@ export class TeamController {
         return await Team.count({ where });
     }
 
-    public static async findForImport(externalId: number | null, name: string) {
-        let where: any[] = [
-            {
-                externalId: externalId,
-            },
-        ];
+    public static async findForImport(
+        externalId: number | null,
+        name: string,
+        publisherId: number | undefined,
+    ) {
+        if (externalId != null) {
+            const result = await Team.findOne({ where: { externalId } });
+
+            if (result) {
+                return result?.get({ plain: true });
+            }
+        }
+
+        const where: any = {
+            name: { [Op.like]: name },
+        };
 
         if (externalId != null) {
-            where = [
-                {
-                    externalId: externalId,
-                },
-                {
-                    name: { [Op.like]: name },
-                    externalId: null,
-                },
-            ];
+            where['externalId'] = null;
+        }
+
+        if (publisherId != null) {
+            where['publisherId'] = publisherId;
         }
 
         const result = await Team.findOne({
-            where: {
-                [Op.or]: where,
-            },
+            where: where,
         });
         return result?.get({ plain: true });
     }

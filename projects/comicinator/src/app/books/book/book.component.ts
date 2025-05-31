@@ -19,12 +19,21 @@ import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ElectronService } from '../../core/electron.service';
 import { FileSystemService } from '../../core/file-system.service';
+import { MessagingService } from '../../core/messaging/messaging.service';
 import { Book } from '../../core/models/book.interface';
 import { BooksStore } from '../../core/store/books/books.store';
 import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 import { BookFormComponent } from '../book-form/book-form.component';
 import { ConfirmDeleteDialogComponent } from '../confirm-delete-dialog/confirm-delete-dialog.component';
-import { MessagingService } from '../../core/messaging/messaging.service';
+import { bookThumbCssSrc, bookThumbSrc } from '../../shared/book-thumb-path';
+import { CharacterListComponent } from '../../characters/character-list/character-list.component';
+import { BookDetailsStore } from './store/book-details.store';
+import { ContentSuperComponent } from '../../shared/content-super/content-super.component';
+import { BookViewerComponent } from '../book-viewer/book-viewer.component';
+import { MatTab, MatTabGroup } from '@angular/material/tabs';
+import { TeamListComponent } from '../../teams/team-list/team-list.component';
+import { LocationListComponent } from '../../locations/location-list/location-list.component';
+import { BookViewerService } from '../book-viewer/book-viewer.service';
 
 export type ImageFit = 'width' | 'height' | 'all';
 
@@ -34,54 +43,58 @@ export const FIT_KEY = 'image-viewer-fit';
     selector: 'cbx-book',
     templateUrl: 'book.component.html',
     styleUrl: 'book.component.scss',
+    providers: [BookDetailsStore],
     imports: [
         MatProgressBarModule,
-        PageHeaderComponent,
         MatIconButton,
         MatIcon,
-        MatMenu,
-        MatMenuTrigger,
-        MatMenuItem,
         MatButtonModule,
+        CharacterListComponent,
+        TeamListComponent,
+        LocationListComponent,
+        ContentSuperComponent,
+        MatTab,
+        MatTabGroup,
     ],
 })
-export class BookComponent implements OnDestroy {
+export class BookComponent {
     private booksStore = inject(BooksStore);
     private electronService = inject(ElectronService);
     private fileSystem = inject(FileSystemService);
     private dialog = inject(MatDialog);
     private router = inject(Router);
     private messagingService = inject(MessagingService);
+    private bookDetailsStore = inject(BookDetailsStore);
+    private bookViewer = inject(BookViewerService);
 
     public readonly id = input.required({ transform: numberAttribute });
 
-    protected readonly book = this.computeBook();
-    protected readonly imageUrls = signal<string[]>([]);
-    protected readonly imageIndex = signal<number>(0);
-    protected readonly activeImageUrl = this.computeActiveImageUrl();
-    protected readonly loading = signal(true);
+    protected readonly book = this.bookDetailsStore.book;
+    protected readonly characters = this.bookDetailsStore.characters;
+    protected readonly teams = this.bookDetailsStore.teams;
+    protected readonly locations = this.bookDetailsStore.locations;
+    protected readonly loading = signal(false);
     protected readonly title = this.computeTitle();
-    protected currentFit = signal<ImageFit>(this.getInitialFit());
-    private disableLoad = false;
+    protected readonly previewImageSrc = this.computeThumbSrc();
+    protected activeTabIndex = signal(0);
 
     constructor() {
         effect(() => {
-            const book = this.book();
+            const id = this.id();
 
-            if (book && !this.disableLoad) {
-                untracked(() => {
-                    this.loadImages(book);
-                });
-            }
+            untracked(() => {
+                this.bookDetailsStore.setActiveBook(id);
+            });
         });
     }
 
-    public ngOnDestroy(): void {
-        this.disposeActiveUrls();
+    protected async openBook() {
+        await this.bookViewer.openBook(this.book()!);
+        this.bookDetailsStore.updateItem();
     }
 
     protected async clearThumbCache() {
-        await this.electronService.removeThumbCache(this.book().filePath);
+        await this.electronService.removeThumbCache(this.book()!.filePath);
         await this.messagingService.message({
             title: 'Thumbnail removed',
             message: 'Successfully removed thumbnail cache',
@@ -90,9 +103,12 @@ export class BookComponent implements OnDestroy {
         });
     }
 
-    protected changeFit(fit: ImageFit) {
-        this.currentFit.set(fit);
-        localStorage.setItem(FIT_KEY, fit);
+    private computeThumbSrc() {
+        return computed(() => {
+            return this.book()
+                ? bookThumbSrc(this.book()!.filePath)
+                : undefined;
+        });
     }
 
     protected async removeBook() {
@@ -100,57 +116,23 @@ export class BookComponent implements OnDestroy {
             ConfirmDeleteDialogComponent,
             string,
             boolean | [boolean, boolean]
-        >(ConfirmDeleteDialogComponent, { data: this.book().title });
+        >(ConfirmDeleteDialogComponent, { data: this.book()!.title });
         const result = await firstValueFrom(ref.afterClosed());
 
         if (Array.isArray(result)) {
-            await this.booksStore.deleteBook(this.book().id, result[1]);
+            await this.booksStore.deleteBook(this.book()!.id, result[1]);
             this.router.navigate(['/books'], { replaceUrl: true });
         }
     }
 
-    protected onPageClick(args: MouseEvent) {
-        if (args.shiftKey) {
-            this.prevPage();
-        } else {
-            this.nextPage();
-        }
-    }
-
-    protected nextPage() {
-        if (this.imageIndex() < this.imageUrls().length - 1) {
-            window.scrollTo({ behavior: 'smooth', top: 0 });
-            this.imageIndex.update((val) => val + 1);
-        }
-    }
-
-    protected prevPage() {
-        if (this.imageIndex() > 0) {
-            this.imageIndex.update((val) => val - 1);
-            setTimeout(() => {
-                window.scrollTo({
-                    behavior: 'smooth',
-                    top: document.body.scrollHeight,
-                });
-            });
-        }
-    }
-
     protected showInExplorer() {
-        this.fileSystem.showItemInFolder(this.book().filePath);
+        this.fileSystem.showItemInFolder(this.book()!.filePath);
     }
 
     protected edit() {
         this.dialog.open(BookFormComponent, {
             data: this.book(),
             minWidth: 800,
-        });
-    }
-
-    private computeBook(): Signal<Book> {
-        return computed(() => {
-            const id = this.id();
-            return this.booksStore.entityMap()[id];
         });
     }
 
@@ -167,51 +149,5 @@ export class BookComponent implements OnDestroy {
 
             return book.title;
         });
-    }
-
-    private computeActiveImageUrl() {
-        return computed(() => {
-            const urls = this.imageUrls();
-            const index = this.imageIndex();
-
-            if (urls.length === 0) {
-                return undefined;
-            }
-
-            if (index > urls.length - 1) {
-                return urls[0];
-            }
-
-            return urls[index];
-        });
-    }
-
-    private disposeActiveUrls() {
-        const oldUrls = this.imageUrls();
-
-        this.imageUrls.set([]);
-        oldUrls.forEach((url) => {
-            URL.revokeObjectURL(url);
-        });
-    }
-
-    private loadImages(book: Book) {
-        this.loading.set(true);
-        this.disposeActiveUrls();
-
-        this.electronService.zipReadImages(book.filePath).then((imageData) => {
-            const urls = imageData.map((item) => {
-                const image = new Blob([item], { type: 'image/jpeg' });
-                return URL.createObjectURL(image);
-            });
-
-            this.imageUrls.set(urls);
-            this.imageIndex.set(0);
-            this.loading.set(false);
-        });
-    }
-
-    private getInitialFit(): ImageFit {
-        return (localStorage.getItem(FIT_KEY) as ImageFit) ?? 'height';
     }
 }

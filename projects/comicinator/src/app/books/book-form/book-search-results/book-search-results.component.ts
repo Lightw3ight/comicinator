@@ -65,7 +65,7 @@ export class BookSearchResultsComponent {
     protected results = signal<MatTableDataSource<BookListItem>>(
         new MatTableDataSource<BookListItem>([]),
     );
-    protected fileName = this.getFileName();
+
     protected loading = signal(true);
     protected selectedItem = signal<VolumeResult | undefined>(undefined);
     private sort = viewChild(MatSort);
@@ -73,14 +73,6 @@ export class BookSearchResultsComponent {
     protected selectedIssue = signal<BookResult | undefined>(undefined);
     protected fileThumbPath = this.getFileThumbPath();
     protected activeSearchValue = signal<string>('');
-
-    private getFileName() {
-        const path = this.searchParams.filePath.replaceAll('/', '\\');
-        return path.substring(
-            path.lastIndexOf('\\') + 1,
-            path.lastIndexOf('.'),
-        );
-    }
 
     private getFileThumbPath() {
         if (this.searchParams.filePath) {

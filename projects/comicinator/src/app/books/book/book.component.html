@@ -1,84 +1,65 @@
-@if (book()) {
-    <cbx-page-header [title]="title()">
-        <button
-            mat-icon-button
-            [matMenuTriggerFor]="viewMenu"
-            title="Change view"
-        >
-            @if (currentFit() === "height") {
-                <mat-icon>unfold_more</mat-icon>
-            }
-            @if (currentFit() === "width") {
-                <mat-icon class="book__rotate">unfold_more</mat-icon>
-            }
-            @if (currentFit() === "all") {
-                <mat-icon>zoom_out_map</mat-icon>
-            }
-        </button>
+@if (book(); as bk) {
+    <cbx-content-super [title]="title()" [imageUrl]="previewImageSrc()">
+        <div cbx-action-buttons>
+            <button mat-icon-button (click)="openBook()">
+                <mat-icon>visibility</mat-icon>
+            </button>
 
-        @if (book().externalUrl) {
-            <a
-                [attr.href]="book().externalUrl"
-                title="Open external URL"
+            @if (bk.externalUrl) {
+                <a
+                    [attr.href]="bk.externalUrl"
+                    title="Open external URL"
+                    mat-icon-button
+                    target="_blank"
+                    ><mat-icon>link</mat-icon></a
+                >
+            }
+
+            <button
                 mat-icon-button
-                target="_blank"
-                ><mat-icon>link</mat-icon></a
+                (click)="clearThumbCache()"
+                title="Clear thumbnail cache"
             >
+                <mat-icon>cancel_presentation</mat-icon>
+            </button>
+
+            <button mat-icon-button (click)="edit()" title="Edit">
+                <mat-icon>edit</mat-icon>
+            </button>
+
+            <button mat-icon-button (click)="removeBook()" title="Delete">
+                <mat-icon>delete</mat-icon>
+            </button>
+
+            <button
+                mat-icon-button
+                (click)="showInExplorer()"
+                title="Open containing folder"
+            >
+                <mat-icon>folder</mat-icon>
+            </button>
+        </div>
+    </cbx-content-super>
+
+    <mat-tab-group
+        animationDuration
+        mat-stretch-tabs="false"
+        (selectedIndexChange)="activeTabIndex.set($event)"
+    >
+        <mat-tab label="Characters"></mat-tab>
+        <mat-tab label="Teams"></mat-tab>
+        <mat-tab label="Locations"></mat-tab>
+    </mat-tab-group>
+
+    <div class="book__lists">
+        @if (activeTabIndex() === 0) {
+            <cbx-character-list [characters]="characters()" />
         }
-
-        <button mat-icon-button (click)="clearThumbCache()" title="Edit">
-            <mat-icon>cancel_presentation</mat-icon>
-        </button>
-
-        <button mat-icon-button (click)="edit()" title="Edit">
-            <mat-icon>edit</mat-icon>
-        </button>
-
-        <button mat-icon-button (click)="removeBook()" title="Delete">
-            <mat-icon>delete</mat-icon>
-        </button>
-
-        <button
-            mat-icon-button
-            (click)="showInExplorer()"
-            title="Open containing folder"
-        >
-            <mat-icon>folder</mat-icon>
-        </button>
-
-        <mat-menu #viewMenu="matMenu">
-            <button mat-menu-item (click)="changeFit('height')">
-                Fit height
-            </button>
-            <button mat-menu-item (click)="changeFit('width')">
-                Fit width
-            </button>
-            <button mat-menu-item (click)="changeFit('all')">Fit all</button>
-        </mat-menu>
-    </cbx-page-header>
-
-    @if (loading()) {
-        <div class="book__progress">
-            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        </div>
-    } @else if (activeImageUrl()) {
-        <div
-            class="book__viewer"
-            [class.book__viewer--fit-height]="currentFit() === 'height'"
-            [class.book__viewer--fit-width]="currentFit() === 'width'"
-            [class.book__viewer--fit-all]="currentFit() === 'all'"
-        >
-            <img
-                [attr.src]="activeImageUrl()"
-                (click)="onPageClick($event)"
-                tabindex="0"
-                (keydown.space)="nextPage()"
-                (keydown.arrowDown)="nextPage()"
-                (keydown.arrowRight)="nextPage()"
-                (keydown.shift.space)="prevPage()"
-                (keydown.arrowUp)="prevPage()"
-                (keydown.arrowleft)="prevPage()"
-            />
-        </div>
-    }
+        @if (activeTabIndex() === 1) {
+            <cbx-team-list [teams]="teams()" />
+        }
+        @if (activeTabIndex() === 2) {
+            <cbx-location-list [locations]="locations()" />
+        }
+    </div>
 }

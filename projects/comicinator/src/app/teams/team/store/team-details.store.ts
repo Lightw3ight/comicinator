@@ -16,7 +16,7 @@ export const TeamDetailsStore = signalStore(
             async setActiveTeam(id: number) {
                 await teamsStore.loadTeam(id);
                 const team = teamsStore.entityMap()[id];
-                const books = await booksStore.searchByCharacter(id);
+                const books = await booksStore.searchByTeam(id);
                 const characters = await charactersStore.searchByTeam(id);
 
                 patchState(store, { team, characters, books });

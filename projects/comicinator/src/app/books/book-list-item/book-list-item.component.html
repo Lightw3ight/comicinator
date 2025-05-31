@@ -8,6 +8,12 @@
     bookData().title
 }}</label>
 
-<button icon-button (click)="onEditClick($event)" class="book-item__edit">
-    <i class="bi bi-pencil"></i>
-</button>
+<div class="book-item__actions">
+    <button mat-icon-button (click)="onViewClick($event)" title="View">
+        <mat-icon>visibility</mat-icon>
+    </button>
+
+    <button mat-icon-button (click)="onEditClick($event)" title="Edit">
+        <mat-icon>edit</mat-icon>
+    </button>
+</div>

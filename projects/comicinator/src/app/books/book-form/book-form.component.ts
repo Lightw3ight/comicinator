@@ -104,7 +104,7 @@ export class BookFormComponent implements OnInit {
 
     public async ngOnInit() {
         if (this.book) {
-            const characters = await this.charactersStore.selectByBook(
+            const characters = await this.charactersStore.searchByBook(
                 this.book.id,
             );
             const teams = await this.teamsStore.selectByBook(this.book.id);

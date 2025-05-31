@@ -66,7 +66,7 @@ export class BookController {
                 filePath: { [Op.like]: filePath },
             },
         });
-        return model.get({ plain: true });
+        return model?.get({ plain: true });
     }
 
     public static async selectByIds(
@@ -275,26 +275,45 @@ export class BookController {
         }
     }
 
+    public static async setReadDetails(
+        id: number,
+        currentPage: number,
+        pageCount: number,
+    ) {
+        await Book.update(
+            { pageCount, currentPage, lastOpened: new Date() },
+            { where: { id } },
+        );
+
+        return await this.selectById(id);
+    }
+
     public static async update(
         id: number,
         book: Omit<Book, 'id'>,
-        characterIds: number[],
-        teamIds: number[],
-        locationIds: number[],
+        characterIds?: number[],
+        teamIds?: number[],
+        locationIds?: number[],
     ) {
         const tx = await db.transaction();
 
         const modelToSave: Partial<Book> = {
             ...book,
             lastUpdated: new Date(),
-            dateAdded: new Date(),
         };
 
         try {
             await Book.update(modelToSave, { where: { id } });
-            await assignTeams(id, teamIds, tx);
-            await assignCharacters(id, characterIds, tx);
-            await assignLocations(id, locationIds, tx);
+
+            if (teamIds != null) {
+                await assignTeams(id, teamIds, tx);
+            }
+            if (characterIds != null) {
+                await assignCharacters(id, characterIds, tx);
+            }
+            if (locationIds != null) {
+                await assignLocations(id, locationIds, tx);
+            }
 
             await tx.commit();
         } catch (error) {

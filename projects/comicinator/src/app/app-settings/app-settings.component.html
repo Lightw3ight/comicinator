@@ -6,14 +6,18 @@
                 <mat-form-field>
                     <mat-label>Library Path</mat-label>
                     <input matInput formControlName="libraryPath" />
-                    @if (form.controls.libraryPath.errors?.['path']) {
-                    <mat-error>Invalid path</mat-error>
+                    @if (form.controls.libraryPath.errors?.["path"]) {
+                        <mat-error>Invalid path</mat-error>
                     }
+                    <button
+                        mat-icon-button
+                        matSuffix
+                        type="button"
+                        (click)="chooseLibraryPath()"
+                    >
+                        <mat-icon>folder_open</mat-icon>
+                    </button>
                 </mat-form-field>
-
-                <button mat-button type="button" (click)="chooseLibraryPath()">
-                    Browse
-                </button>
 
                 <br />
 

@@ -45,11 +45,24 @@ export class BooksApiService {
         );
     }
 
+    public async setReadDetails(
+        id: number,
+        currentPage: number,
+        pageCount: number,
+    ) {
+        return await this.electron.run<Book>(
+            'bookSetReadDetails',
+            id,
+            currentPage,
+            pageCount,
+        );
+    }
+
     public async update(
         book: Omit<Book, 'dateAdded'>,
-        characterIds: number[],
-        teamIds: number[],
-        locationIds: number[],
+        characterIds?: number[],
+        teamIds?: number[],
+        locationIds?: number[],
     ): Promise<Book> {
         return await this.electron.run<Book>(
             'bookUpdate',

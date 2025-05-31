@@ -45,22 +45,25 @@ export class ImporterService {
         volume: VolumeResult,
         progress?: ProgressReporter,
     ): Promise<BookImportResult> {
+        const publisherId = await this.importPublisher(
+            volume.publisher,
+            progress,
+        );
+
         const characterIds = await this.importCharacters(
             result.characterCredits,
+            publisherId,
             true,
             progress,
         );
         const teamIds = await this.importTeams(
             result.teamCredits,
+            publisherId,
             true,
             progress,
         );
         const locationIds = await this.importLocations(
             result.locations,
-            progress,
-        );
-        const publisherId = await this.importPublisher(
-            volume.publisher,
             progress,
         );
 
@@ -100,9 +103,14 @@ export class ImporterService {
         progress?.(`Fetching character image`);
         const response = await fetch(result.image.original_url);
         const image = await response.blob();
-        const teamIds = await this.importTeams(result.teams, false, progress);
         const publisherId = await this.importPublisher(
             result.publisher,
+            progress,
+        );
+        const teamIds = await this.importTeams(
+            result.teams,
+            publisherId,
+            false,
             progress,
         );
 
@@ -140,6 +148,7 @@ export class ImporterService {
 
         const characterIds = await this.importCharacters(
             result.characters,
+            publisherId,
             importMembers,
             progress,
         );
@@ -191,6 +200,7 @@ export class ImporterService {
 
     private async importCharacters(
         characters: ItemBase[] | undefined,
+        publisherId: number | undefined,
         addNewMembers: boolean,
         progress: ProgressReporter | undefined,
     ) {
@@ -201,6 +211,7 @@ export class ImporterService {
             const existing = await this.charactersApiService.findForImport(
                 item.id,
                 item.name,
+                publisherId,
             );
 
             if (existing) {
@@ -269,6 +280,7 @@ export class ImporterService {
 
     private async importTeams(
         teams: ItemBase[] | undefined,
+        publisherId: number | undefined,
         addNewTeams: boolean,
         progress: ProgressReporter | undefined,
     ) {
@@ -279,6 +291,7 @@ export class ImporterService {
             const existing = await this.teamsApiService.findForImport(
                 item.id,
                 item.name,
+                publisherId,
             );
 
             if (existing) {

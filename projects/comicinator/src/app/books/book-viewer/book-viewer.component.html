@@ -1,0 +1,96 @@
+<cbx-page-header [title]="title">
+    <div class="book-viewer__actions">
+        <button mat-button title="Set zoom" [matMenuTriggerFor]="zoomMenu">
+            <mat-icon>zoom_in</mat-icon>
+            {{ zoomLabel() }}
+        </button>
+
+        <button
+            mat-icon-button
+            [matMenuTriggerFor]="viewMenu"
+            title="Change view"
+        >
+            @if (currentFit() === "height") {
+                <mat-icon>unfold_more</mat-icon>
+            }
+            @if (currentFit() === "width") {
+                <mat-icon class="book__rotate">unfold_more</mat-icon>
+            }
+            @if (currentFit() === "all") {
+                <mat-icon>zoom_out_map</mat-icon>
+            }
+        </button>
+
+        <button
+            type="button"
+            mat-icon-button
+            title="Prev page"
+            [disabled]="imageIndex() === 0"
+            (click)="prevPage()"
+        >
+            <mat-icon>chevron_left</mat-icon>
+        </button>
+
+        <button
+            type="button"
+            mat-icon-button
+            title="Next page"
+            [disabled]="imageIndex() === imageUrls().length - 1"
+            (click)="nextPage()"
+        >
+            <mat-icon>chevron_right</mat-icon>
+        </button>
+
+        <div class="book-viewer__action-divider"></div>
+
+        <button mat-icon-button mat-dialog-close title="Close">
+            <mat-icon>close</mat-icon>
+        </button>
+
+        <mat-menu #viewMenu="matMenu">
+            <button mat-menu-item (click)="changeFit('height')">
+                Fit height
+            </button>
+            <button mat-menu-item (click)="changeFit('width')">
+                Fit width
+            </button>
+        </mat-menu>
+
+        <mat-menu #zoomMenu="matMenu">
+            <button mat-menu-item (click)="setZoom(1)">100%</button>
+            <button mat-menu-item (click)="setZoom(1.25)">125%</button>
+            <button mat-menu-item (click)="setZoom(1.5)">150%</button>
+            <button mat-menu-item (click)="setZoom(2)">200%</button>
+            <button mat-menu-item (click)="setZoom(3)">300%</button>
+            <button mat-menu-item (click)="setZoom(4)">400%</button>
+        </mat-menu>
+    </div>
+</cbx-page-header>
+
+@if (loading()) {
+    <div class="book__progress">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </div>
+} @else if (activeImageUrl()) {
+    <div class="book__viewer-container" #viewerContainer>
+        <div
+            class="book__viewer"
+            [style.--image-zoom]="zoomLevel()"
+            [class.book__viewer--fit-height]="currentFit() === 'height'"
+            [class.book__viewer--fit-width]="currentFit() === 'width'"
+            [class.book__viewer--fit-all]="currentFit() === 'all'"
+        >
+            <img
+                [attr.src]="activeImageUrl()"
+                (click)="onPageClick($event)"
+                tabindex="0"
+                (keydown.space)="nextPage()"
+                (keydown.arrowDown)="nextPage()"
+                (keydown.arrowRight)="nextPage()"
+                (keydown.shift.space)="prevPage()"
+                (keydown.arrowUp)="prevPage()"
+                (keydown.arrowleft)="prevPage()"
+            />
+        </div>
+    </div>
+}

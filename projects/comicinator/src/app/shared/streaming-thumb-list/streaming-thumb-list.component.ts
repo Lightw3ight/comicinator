@@ -16,6 +16,8 @@ import { observeSize } from '../observers/observe-size';
 import { ThumbListRowComponent } from './thumb-list-row/thumb-list-row.component';
 import { ThumbListItemTemplateDirective } from '../virtual-thumb-list/thumb-list-item-template.directive';
 
+const SCROLL_BAR_WIDTH = 20;
+
 @Component({
     selector: 'cbx-streaming-thumb-list',
     templateUrl: 'streaming-thumb-list.component.html',
@@ -85,7 +87,10 @@ export class StreamingThumbListComponent {
                 return 0;
             }
 
-            return Math.max(Math.floor(width / itemWidth), 1);
+            return Math.max(
+                Math.floor((width - SCROLL_BAR_WIDTH) / itemWidth),
+                1,
+            );
         });
     }
 }
