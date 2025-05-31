@@ -230,7 +230,7 @@ export class BookController {
                 [field, 'id'],
                 [field, 'name'],
                 [fn('COUNT', col('*')), 'bookCount'],
-                [fn('MIN', col('filePath')), 'firstFilePath'],
+                [fn('MAX', col('filePath')), 'firstFilePath'],
             ],
         });
 
@@ -239,6 +239,7 @@ export class BookController {
 
     public static async selectByGroup(field: keyof Book, value: any) {
         const results = await Book.findAll({
+            order: [['coverDate', 'DESC']],
             where: { [field]: value },
         });
 

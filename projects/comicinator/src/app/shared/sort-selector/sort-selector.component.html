@@ -2,7 +2,11 @@
     {{ activeFieldLabel() }}
 </button>
 
-<button mat-icon-button (click)="toggleSortDirection()">
+<button
+    mat-icon-button
+    (click)="toggleSortDirection()"
+    title="Toggle sort direction"
+>
     @if (activeSort().dir === "DESC") {
         <mat-icon>arrow_downward</mat-icon>
     } @else {

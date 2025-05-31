@@ -4,12 +4,33 @@
     gap: 24px;
 }
 
-.team-form__img-preview {
-    width: 200px;
-    position: absolute;
-}
-
 mat-form-field {
     width: 100%;
     margin-bottom: 16px;
+}
+
+.team-form__img-preview {
+    width: 200px;
+    position: absolute;
+
+    .team-form__remove-image {
+        opacity: 0;
+    }
+
+    &:hover {
+        .team-form__remove-image {
+            opacity: 1;
+        }
+    }
+
+    img {
+        width: 100%;
+    }
+}
+.team-form__remove-image {
+    position: absolute;
+    z-index: 1;
+    left: calc(50% - 20px);
+    top: calc(50% - 20px);
+    transition: opacity ease-in-out 0.2s;
 }

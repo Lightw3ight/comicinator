@@ -28,6 +28,8 @@ import { SettingsStore } from '../core/store/settings/settings.store';
 import { bookThumbSrc } from '../shared/book-thumb-path';
 import { ImportItem } from './import-item.interface';
 import { ImportProgressComponent } from './import-progress/import-progress.component';
+import { parseFileDetails } from '../shared/parse-file-details';
+import { ImportListItemComponent } from './import-list-item/import-list-item.component';
 
 const TOKEN_RX = /{([^}]*)}/g;
 const INNER_TOKEN_RX = /<([^>]*)>/g;
@@ -44,6 +46,7 @@ const TOKEN_PADDING_RX = /^(\D+)(\d+)$/;
         MatDialogActions,
         MatDialogClose,
         MatTableModule,
+        ImportListItemComponent,
     ],
 })
 export class ImportBooksComponent {
@@ -60,13 +63,14 @@ export class ImportBooksComponent {
         'outputPath',
     ];
 
-    protected itemsToImport = signal(this.createImportItems());
-    protected selectedItem = signal<ImportItem | undefined>(undefined);
-    private sort = viewChild(MatSort);
+    protected readonly selectedItem = signal<ImportItem | undefined>(undefined);
+    protected readonly itemsToImport = signal(this.createImportItems());
+    private readonly sort = viewChild(MatSort);
     protected dataSource = new MatTableDataSource<ImportItem>(
         this.itemsToImport(),
     );
-    protected thumbPath = this.computeThumbSrc();
+    protected readonly thumbPath = this.computeThumbSrc();
+    protected readonly canImport = this.computeCanImport();
 
     constructor() {
         effect(() => {
@@ -92,46 +96,56 @@ export class ImportBooksComponent {
         });
     }
 
+    protected toggleItemSelection(item: ImportItem, selected: boolean) {
+        const items = [...this.itemsToImport()];
+        const ix = items.indexOf(item);
+
+        items.splice(ix, 1, {
+            ...item,
+            selected,
+        });
+        this.itemsToImport.set(items);
+    }
+
     protected async startImport() {
         const ref = this.dialog.open(ImportProgressComponent, {
             minWidth: 300,
-            data: this.itemsToImport(),
+            data: this.itemsToImport().filter((item) => item.selected),
             disableClose: true,
         });
         await firstValueFrom(ref.afterClosed());
         this.dialogRef.close();
     }
 
+    private computeCanImport() {
+        return computed(() => {
+            return this.itemsToImport().some((o) => o.selected);
+        });
+    }
+
     private createImportItems() {
-        const rx = /^(.*?) (\d{1,3}) \((\d{4})\)/;
+        const items = this.filePaths.map<ImportItem>((itemPath) => {
+            const details = parseFileDetails(itemPath);
 
-        return this.filePaths.map<ImportItem>((itemPath) => {
-            const filePath = itemPath.replaceAll('/', '\\');
-            const fileName = filePath.substring(filePath.lastIndexOf('\\') + 1);
-            let item: Omit<ImportItem, 'outputPath'>;
-            const match = fileName.match(rx);
-
-            if (match) {
-                item = {
-                    filePath,
-                    name: match[1],
-                    issueNumber: !isNaN(Number(match[2]))
-                        ? Number(match[2])
-                        : undefined,
-                    year: match[3],
-                };
-            } else {
-                item = {
-                    filePath,
-                    name: fileName.substring(0, fileName.lastIndexOf('.')),
-                };
-            }
+            const item: Omit<ImportItem, 'outputPath'> = {
+                filePath: details.filePath,
+                name: details.series ?? details.fileName,
+                issueNumber: details.issueNumber,
+                year: details.year,
+                selected: true,
+            };
 
             return {
                 ...item,
                 outputPath: this.generateOutputPath(item),
             };
         });
+
+        if (items.length) {
+            this.selectedItem.set(items[0]);
+        }
+
+        return items;
     }
 
     private generateOutputPath(item: Partial<ImportItem>) {
@@ -147,35 +161,42 @@ export class ImportBooksComponent {
         const newItems: ImportItem[] = [];
 
         for (let item of items) {
-            const ref = this.dialog.open(BookSearchResultsComponent, {
-                data: {
-                    series: item.name,
-                    number: item.issueNumber,
-                    volume: item.year,
-                    filePath: item.filePath,
-                },
-                minWidth: 900,
-                minHeight: 200,
-            });
-
-            const { issue, volume } = (await firstValueFrom(
-                ref.afterClosed(),
-            )) as { issue: BookResult; volume: VolumeResult };
-
-            if (issue && volume) {
-                const newItem: ImportItem = {
-                    ...item,
-                    issue,
-                    volume,
-                    name: volume?.name ?? item.name,
-                    issueNumber: issue?.issueNumber ?? item.issueNumber,
-                    year: volume?.startYear ?? item.year,
-                };
-
-                newItems.push({
-                    ...newItem,
-                    outputPath: this.generateOutputPath(newItem),
+            if (item.selected) {
+                const ref = this.dialog.open(BookSearchResultsComponent, {
+                    data: {
+                        series: item.name,
+                        number: item.issueNumber,
+                        volume: item.year,
+                        filePath: item.filePath,
+                    },
+                    minWidth: 900,
+                    minHeight: 200,
                 });
+
+                const { issue, volume } = (await firstValueFrom(
+                    ref.afterClosed(),
+                )) as { issue: BookResult; volume: VolumeResult };
+
+                if (issue && volume) {
+                    const newItem: ImportItem = {
+                        ...item,
+                        issue,
+                        volume,
+                        name: volume?.name ?? item.name,
+                        issueNumber: issue?.issueNumber ?? item.issueNumber,
+                        year: volume?.startYear ?? item.year,
+                    };
+
+                    newItems.push({
+                        ...newItem,
+                        outputPath: this.generateOutputPath(newItem),
+                    });
+                } else {
+                    newItems.push({
+                        ...item,
+                        selected: false,
+                    });
+                }
             } else {
                 newItems.push(item);
             }

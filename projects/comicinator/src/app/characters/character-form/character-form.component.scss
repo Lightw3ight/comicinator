@@ -4,31 +4,33 @@
     gap: 24px;
 }
 
-.char-form__img-preview {
-    width: 200px;
-    position: absolute;
-}
-
-.char-form__form-container {
-    // display: grid;
-    // grid-template-columns: 1fr;
-    // gap: 16px;
-    // grid-template-areas:
-    //     "name"
-    //     "aliases"
-    //     "real-name"
-    //     "gender"
-    //     "birth-date"
-    //     "creators"
-    //     "powers"
-    //     "origin"
-    //     "publisher"
-    //     "summary"
-    //     "description"
-    //     "external-url";
-}
-
 mat-form-field {
     width: 100%;
     margin-bottom: 16px;
+}
+
+.char-form__img-preview {
+    width: 200px;
+    position: absolute;
+
+    .char-form__remove-image {
+        opacity: 0;
+    }
+
+    &:hover {
+        .char-form__remove-image {
+            opacity: 1;
+        }
+    }
+
+    img {
+        width: 100%;
+    }
+}
+.char-form__remove-image {
+    position: absolute;
+    z-index: 1;
+    left: calc(50% - 20px);
+    top: calc(50% - 20px);
+    transition: opacity ease-in-out 0.2s;
 }

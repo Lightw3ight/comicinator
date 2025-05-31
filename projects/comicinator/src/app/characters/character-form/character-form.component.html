@@ -15,10 +15,18 @@
         <div class="char-form__content">
             <div>
                 @if (imageUrl()) {
-                    <img
-                        [attr.src]="imageUrl()"
-                        class="char-form__img-preview"
-                    />
+                    <div class="char-form__img-preview">
+                        <img [attr.src]="imageUrl()" />
+                        <button
+                            class="char-form__remove-image"
+                            mat-mini-fab
+                            type="button"
+                            (click)="clearImage()"
+                            title="Remove image"
+                        >
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
                 }
             </div>
             <div class="char-form__form-container">

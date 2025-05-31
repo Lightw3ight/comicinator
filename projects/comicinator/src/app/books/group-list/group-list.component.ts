@@ -48,8 +48,10 @@ export class GroupListComponent implements OnDestroy {
         effect(async () => {
             const search = this.search();
             const columnCount = this.columnCount();
+            this.bookGroupStore.groupField();
             this.bookStore.sortField();
             this.bookStore.sortDirection();
+            this.bookStore.lastBookImport();
 
             untracked(async () => {
                 if (columnCount > 0) {

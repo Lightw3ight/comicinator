@@ -43,6 +43,7 @@ export class MainBookListComponent {
             const columnCount = this.columnCount();
             this.booksStore.sortField();
             this.booksStore.sortDirection();
+            this.booksStore.lastBookImport();
 
             untracked(async () => {
                 if (columnCount > 0) {

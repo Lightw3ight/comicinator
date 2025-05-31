@@ -52,7 +52,7 @@ export class MainNavComponent {
 
         if (files.length) {
             const ref = this.dialog.open(ImportBooksComponent, {
-                minWidth: 800,
+                minWidth: 900,
                 data: files,
             });
 

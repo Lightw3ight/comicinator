@@ -115,11 +115,8 @@ export class LocationController {
             ...location,
             lastUpdated: new Date(),
             dateAdded: new Date(),
+            image: image ? Buffer.from(image) : null,
         };
-
-        if (image) {
-            modelToSave.image = Buffer.from(image);
-        }
 
         const newUser = await Location.create(modelToSave);
 
@@ -138,11 +135,8 @@ export class LocationController {
         const modelToSave: Partial<Location> = {
             ...location,
             lastUpdated: new Date(),
+            image: image ? Buffer.from(image) : null,
         };
-
-        if (image) {
-            modelToSave.image = Buffer.from(image);
-        }
 
         await Location.update(modelToSave, {
             where: { id: id },

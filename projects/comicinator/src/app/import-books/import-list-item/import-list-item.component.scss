@@ -1,0 +1,35 @@
+:host {
+    display: block;
+}
+
+:host:has(+ :host) {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.import-item__main-details {
+    display: grid;
+    grid-template-columns: auto 50px 50px fit-content(0);
+    align-items: center;
+    gap: 8px;
+}
+
+.import-item__issue,
+.import-item__year {
+    text-align: right;
+}
+
+.import-item__path-details {
+    border-top: 1px solid rgba(255, 255, 255, 0.5);
+    display: flex;
+    flex-direction: column;
+    font-size: 11px;
+    padding: 8px 10px;
+
+    label {
+        opacity: 0.7;
+    }
+}
+
+:host.import-item--selected {
+    background-color: var(--brand-color);
+}

@@ -14,10 +14,18 @@
         <div class="team-form__content">
             <div>
                 @if (imageUrl()) {
-                    <img
-                        [attr.src]="imageUrl()"
-                        class="team-form__img-preview"
-                    />
+                    <div class="team-form__img-preview">
+                        <img [attr.src]="imageUrl()" />
+                        <button
+                            class="team-form__remove-image"
+                            mat-mini-fab
+                            type="button"
+                            (click)="clearImage()"
+                            title="Remove image"
+                        >
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
                 }
             </div>
             <div class="team-form__form-container">

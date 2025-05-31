@@ -190,11 +190,8 @@ export class CharacterController {
         const modelToSave: Partial<Character> = {
             ...character,
             lastUpdated: new Date(),
+            image: image ? Buffer.from(image) : null,
         };
-
-        if (image) {
-            modelToSave.image = Buffer.from(image);
-        }
 
         try {
             await Character.update(modelToSave, {

@@ -1,5 +1,12 @@
 import { CdkDrag } from '@angular/cdk/drag-drop';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+    Component,
+    computed,
+    inject,
+    OnDestroy,
+    OnInit,
+    signal,
+} from '@angular/core';
 import {
     NonNullableFormBuilder,
     ReactiveFormsModule,
@@ -55,7 +62,7 @@ import { LocationSearchResultsComponent } from './location-search-results/locati
         CdkDrag,
     ],
 })
-export class LocationFormComponent implements OnInit {
+export class LocationFormComponent implements OnInit, OnDestroy {
     private dialog = inject(MatDialog);
     private locationsStore = inject(LocationsStore);
     private settingsStore = inject(SettingsStore);
@@ -80,6 +87,20 @@ export class LocationFormComponent implements OnInit {
     public async ngOnInit() {
         if (this.location) {
             this.loadImage(this.location.id);
+        }
+    }
+
+    public ngOnDestroy(): void {
+        this.clearImage();
+    }
+
+    protected clearImage() {
+        this.imageBlob.set(undefined);
+        const imgUrl = this.imageUrl();
+
+        if (imgUrl) {
+            URL.revokeObjectURL(imgUrl);
+            this.imageUrl.set(undefined);
         }
     }
 
@@ -157,18 +178,11 @@ export class LocationFormComponent implements OnInit {
     }
 
     private setImage(image: Blob | undefined) {
-        const existing = this.imageUrl();
-
-        if (existing) {
-            URL.revokeObjectURL(existing);
-        }
+        this.clearImage();
 
         if (image) {
             this.imageBlob.set(image);
             this.imageUrl.set(URL.createObjectURL(image));
-        } else {
-            this.imageBlob.set(undefined);
-            this.imageUrl.set(undefined);
         }
     }
 

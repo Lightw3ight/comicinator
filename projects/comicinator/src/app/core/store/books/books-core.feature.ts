@@ -24,10 +24,10 @@ import { SortDirection } from '../../models/sort-direction.type';
 import { CharactersStore } from '../characters/characters.store';
 import { chunkItems } from '../chunk-items';
 import { LocationsStore } from '../locations/locations.store';
+import { SortState } from '../models/sort-state.interface';
 import { PublishersStore } from '../publishers/publishers.store';
 import { TeamsStore } from '../teams/teams.store';
 import { BooksState } from './books-state.interface';
-import { SortState } from '../models/sort-state.interface';
 
 const BOOK_STATE_KEY = 'cbx-book-state';
 
@@ -205,7 +205,9 @@ export function withBooksCoreFeature() {
                         locationIds,
                     );
 
-                    patchState(store, addEntity(newBook));
+                    patchState(store, addEntity(newBook), {
+                        lastBookImport: new Date(),
+                    });
                 },
 
                 async deleteBook(bookId: number, removeFile: boolean) {
@@ -335,14 +337,12 @@ export function withBooksCoreFeature() {
                         externalUrl: xml?.Web,
                     };
 
-                    const newBook = await booksApiService.create(
+                    await this.insertBook(
                         book,
                         characterIds,
                         teamIds,
                         locationIds,
                     );
-
-                    patchState(store, addEntity(newBook));
                 },
             };
         }),

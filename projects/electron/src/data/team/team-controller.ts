@@ -156,11 +156,8 @@ export class TeamController {
             ...team,
             lastUpdated: new Date(),
             dateAdded: new Date(),
+            image: image ? Buffer.from(image) : null,
         };
-
-        if (image) {
-            modelToSave.image = Buffer.from(image);
-        }
 
         try {
             const newUser = await Team.create(modelToSave);
@@ -190,11 +187,8 @@ export class TeamController {
         const modelToSave: Partial<Team> = {
             ...team,
             lastUpdated: new Date(),
+            image: image ? Buffer.from(image) : null,
         };
-
-        if (image) {
-            modelToSave.image = Buffer.from(image);
-        }
 
         try {
             await Team.update(modelToSave, {

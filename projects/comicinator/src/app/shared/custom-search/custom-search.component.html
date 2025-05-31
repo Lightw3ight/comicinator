@@ -1,0 +1,28 @@
+<h2
+    mat-dialog-title
+    cdkDrag
+    cdkDragRootElement=".cdk-overlay-pane"
+    cdkDragHandle
+>
+    Custom search
+</h2>
+<mat-dialog-content>
+    <mat-form-field subscriptSizing="dynamic">
+        <mat-label>Search for</mat-label>
+        <input matInput [(ngModel)]="searchValue" />
+    </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button mat-button type="button" mat-dialog-close>Cancel</button>
+
+    <button
+        mat-button
+        type="button"
+        cdkFocusInitial
+        [mat-dialog-close]="searchValue()"
+        [disabled]="searchValue() == null || searchValue() == ''"
+    >
+        Search
+    </button>
+</mat-dialog-actions>

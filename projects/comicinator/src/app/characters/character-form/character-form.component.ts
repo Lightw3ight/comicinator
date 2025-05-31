@@ -1,5 +1,12 @@
 import { CdkDrag } from '@angular/cdk/drag-drop';
-import { Component, computed, inject, signal, Signal } from '@angular/core';
+import {
+    Component,
+    computed,
+    inject,
+    OnDestroy,
+    signal,
+    Signal,
+} from '@angular/core';
 import {
     NonNullableFormBuilder,
     ReactiveFormsModule,
@@ -60,7 +67,7 @@ import { CharacerSearchResultsComponent } from './character-search-results/chara
         TeamSelectorComponent,
     ],
 })
-export class CharacterFormComponent {
+export class CharacterFormComponent implements OnDestroy {
     private dialog = inject(MatDialog);
     private charactersStore = inject(CharactersStore);
     private settingsStore = inject(SettingsStore);
@@ -84,6 +91,10 @@ export class CharacterFormComponent {
         () => !!this.settingsStore.settings.apiKey(),
     );
 
+    public ngOnDestroy(): void {
+        this.clearImage();
+    }
+
     public async ngOnInit() {
         if (this.characterId) {
             await this.loadImage(this.characterId);
@@ -94,6 +105,16 @@ export class CharacterFormComponent {
                 teamIds: teams.map((o) => o.id),
             });
             this.form.markAsPristine();
+        }
+    }
+
+    protected clearImage() {
+        this.imageBlob.set(undefined);
+        const imgUrl = this.imageUrl();
+
+        if (imgUrl) {
+            URL.revokeObjectURL(imgUrl);
+            this.imageUrl.set(undefined);
         }
     }
 
@@ -175,18 +196,11 @@ export class CharacterFormComponent {
     }
 
     private setImage(image: Blob | undefined) {
-        const existing = this.imageUrl();
-
-        if (existing) {
-            URL.revokeObjectURL(existing);
-        }
+        this.clearImage();
 
         if (image) {
             this.imageBlob.set(image);
             this.imageUrl.set(URL.createObjectURL(image));
-        } else {
-            this.imageBlob.set(undefined);
-            this.imageUrl.set(undefined);
         }
     }
 

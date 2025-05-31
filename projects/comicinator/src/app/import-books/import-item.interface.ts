@@ -9,4 +9,5 @@ export interface ImportItem {
     issueNumber?: number;
     issue?: BookResult;
     volume?: VolumeResult;
+    selected: boolean;
 }

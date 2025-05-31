@@ -30,21 +30,6 @@ export const API_TYPES = {
     location: '4020',
 };
 
-// export const BASE_URL = (path: string, args?: { [key: string]: string }) => {
-//     let query = '';
-
-//     if (args) {
-//         query =
-//             '&' +
-//             Object.entries(args)
-//                 .reduce<string[]>((acc, [key, value]) => {
-//                     return [...acc, `${key}=${value}`];
-//                 }, [])
-//                 .join('&');
-//     }
-//     return `https://comicvine.gamespot.com/api/${path}/?api_key=${API_KEY}&format=json${query}`;
-// };
-
 @Injectable({ providedIn: 'root' })
 export class ComicVineService {
     private http = inject(HttpClient);
@@ -105,27 +90,17 @@ export class ComicVineService {
         return this.mapBookResult(response.results);
     }
 
-    // public async searchVolumesWithYear(name: string, year?: string) {
-    //     const filters = {
-    //         name,
-    //         start_year: year,
-    //     };
-    //     const filterQuery = Object.entries(filters)
-    //         .filter(([, value]) => value != null)
-    //         .map(([key, value]) => `${key}:${value}`)
-    //         .join(',');
-    //     const url = this.makeUrl('volumes', {
-    //         filter: filterQuery,
-    //         // sort: 'date_added:desc',
-    //     });
-    //     const response = await firstValueFrom(
-    //         this.http.get<ApiResponseDto<VolumeResultDto[]>>(url)
-    //     );
-
-    //     return response.results.map(this.mapVolumeResult);
-    // }
-
     public async searchVolumes(name: string) {
+        const id = Number(name);
+
+        if (!isNaN(id)) {
+            const volume = await this.getVolume(id);
+
+            if (volume) {
+                return [volume];
+            }
+        }
+
         const url = this.makeUrl('search', {
             query: name,
             limit: '100',
@@ -189,6 +164,14 @@ export class ComicVineService {
             this.http.get<ApiResponseDto<CharacterResultDto>>(url),
         );
         return this.mapCharacterResult(response.results);
+    }
+
+    public async getVolume(id: number) {
+        const url = this.makeUrl(`volumes/${API_TYPES.volume}-${id}`);
+        const response = await firstValueFrom(
+            this.http.get<ApiResponseDto<VolumeResultDto>>(url),
+        );
+        return this.mapVolumeResult(response.results);
     }
 
     public async getLocation(id: number) {

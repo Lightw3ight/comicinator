@@ -23,6 +23,8 @@ import { SelectIssueComponent } from '../select-issue/select-issue.component';
 import { BookListItem } from './book-list-item.interface';
 import { bookThumbSrc } from '../../../shared/book-thumb-path';
 import { CdkDrag } from '@angular/cdk/drag-drop';
+import { CustomSearchComponent } from '../../../shared/custom-search/custom-search.component';
+import { parseFileDetails } from '../../../shared/parse-file-details';
 
 @Component({
     selector: 'cbx-book-search-results',
@@ -49,10 +51,11 @@ export class BookSearchResultsComponent {
     protected displayedColumns = [
         // 'id',
         'name',
-        'publisher',
-        'issueCount',
         'startYear',
+        'issueCount',
+        'publisher',
     ];
+
     protected searchParams = inject<{
         series: string;
         number: string;
@@ -62,12 +65,22 @@ export class BookSearchResultsComponent {
     protected results = signal<MatTableDataSource<BookListItem>>(
         new MatTableDataSource<BookListItem>([]),
     );
+    protected fileName = this.getFileName();
     protected loading = signal(true);
     protected selectedItem = signal<VolumeResult | undefined>(undefined);
     private sort = viewChild(MatSort);
     protected completingSelection = signal(false);
     protected selectedIssue = signal<BookResult | undefined>(undefined);
     protected fileThumbPath = this.getFileThumbPath();
+    protected activeSearchValue = signal<string>('');
+
+    private getFileName() {
+        const path = this.searchParams.filePath.replaceAll('/', '\\');
+        return path.substring(
+            path.lastIndexOf('\\') + 1,
+            path.lastIndexOf('.'),
+        );
+    }
 
     private getFileThumbPath() {
         if (this.searchParams.filePath) {
@@ -86,6 +99,23 @@ export class BookSearchResultsComponent {
         });
     }
 
+    protected async customSearch() {
+        const { series, fileName } = parseFileDetails(
+            this.searchParams.filePath,
+        );
+
+        const ref = this.dialog.open<CustomSearchComponent, string, string>(
+            CustomSearchComponent,
+            { data: series ?? fileName, minWidth: 500 },
+        );
+        const result = await firstValueFrom(ref.afterClosed());
+
+        if (result) {
+            this.clearSelection();
+            await this.search(result);
+        }
+    }
+
     protected async openIssuesDialog() {
         const ref = this.dialog.open(SelectIssueComponent, {
             data: { volume: this.selectedItem()!.id },
@@ -99,12 +129,22 @@ export class BookSearchResultsComponent {
         }
     }
 
+    private clearSelection() {
+        if (this.completingSelection()) {
+            return;
+        }
+
+        this.selectedItem.set(undefined);
+        this.selectedIssue.set(undefined);
+    }
+
     protected async selectItem(item: VolumeResult) {
         if (this.completingSelection()) {
             return;
         }
 
         this.selectedItem.set(item);
+        this.selectedIssue.set(undefined);
         const message = () => `Failed searching for book id ${item.id}, retry?`;
         const response = await this.messagingService.runWithRetry(
             () =>
@@ -157,6 +197,7 @@ export class BookSearchResultsComponent {
 
     private async search(search: string) {
         this.loading.set(true);
+        this.activeSearchValue.set(search);
         const message = () =>
             `Failed to load search results for ${search}, Retry?`;
         let results = await this.messagingService.runWithRetry(

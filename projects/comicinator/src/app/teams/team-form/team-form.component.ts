@@ -1,4 +1,11 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import {
+    Component,
+    computed,
+    inject,
+    OnDestroy,
+    OnInit,
+    signal,
+} from '@angular/core';
 import {
     NonNullableFormBuilder,
     ReactiveFormsModule,
@@ -48,7 +55,6 @@ import { CdkDrag } from '@angular/cdk/drag-drop';
         MatDialogClose,
         MatButtonModule,
         ReactiveFormsModule,
-        MatIconButton,
         MatIcon,
         MatDatepickerModule,
         MatInputModule,
@@ -60,7 +66,7 @@ import { CdkDrag } from '@angular/cdk/drag-drop';
         CdkDrag,
     ],
 })
-export class TeamFormComponent {
+export class TeamFormComponent implements OnInit, OnDestroy {
     private dialog = inject(MatDialog);
     private charactersStore = inject(CharactersStore);
     private teamsStore = inject(TeamsStore);
@@ -98,11 +104,25 @@ export class TeamFormComponent {
         }
     }
 
+    public ngOnDestroy(): void {
+        this.clearImage();
+    }
+
     private async loadImage(teamId: number) {
         const img = await this.teamsStore.selectImage(teamId);
 
         if (img) {
             this.setImage(img);
+        }
+    }
+
+    protected clearImage() {
+        this.imageBlob.set(undefined);
+        const imgUrl = this.imageUrl();
+
+        if (imgUrl) {
+            URL.revokeObjectURL(imgUrl);
+            this.imageUrl.set(undefined);
         }
     }
 
@@ -187,18 +207,11 @@ export class TeamFormComponent {
     }
 
     private setImage(image: Blob | undefined) {
-        const existing = this.imageUrl();
-
-        if (existing) {
-            URL.revokeObjectURL(existing);
-        }
+        this.clearImage();
 
         if (image) {
             this.imageBlob.set(image);
             this.imageUrl.set(URL.createObjectURL(image));
-        } else {
-            this.imageBlob.set(undefined);
-            this.imageUrl.set(undefined);
         }
     }
 
