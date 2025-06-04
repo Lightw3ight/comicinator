@@ -41,7 +41,7 @@ import { TeamsStore } from '../../core/store/teams/teams.store';
 import { CharacterSelectorComponent } from '../../shared/character-selector/character-selector.component';
 import { ProgressTakeoverComponent } from '../../shared/progress-takeover/progress-takeover.component';
 import { TeamSearchResultsComponent } from './team-search-results/team-search-results.component';
-import { CdkDrag } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'cbx-team-form',
@@ -64,6 +64,7 @@ import { CdkDrag } from '@angular/cdk/drag-drop';
         CharacterSelectorComponent,
         ProgressTakeoverComponent,
         CdkDrag,
+        CdkDragHandle,
     ],
 })
 export class TeamFormComponent implements OnInit, OnDestroy {
@@ -143,6 +144,14 @@ export class TeamFormComponent implements OnInit, OnDestroy {
                 characterIds ?? [],
             );
             this.dialogRef.close();
+        } else {
+            await this.teamsStore.addTeam(
+                formValue as Team,
+                this.imageBlob(),
+                characterIds ?? [],
+                false,
+            );
+            this.dialogRef.close();
         }
     }
 
@@ -180,6 +189,7 @@ export class TeamFormComponent implements OnInit, OnDestroy {
                 await this.importerService.importTeam(
                     result,
                     importMembers,
+                    this.team?.id,
                     (progress) => this.progressText.set(progress),
                 );
             this.setImage(image);
@@ -218,7 +228,6 @@ export class TeamFormComponent implements OnInit, OnDestroy {
     private createForm() {
         const form = this.formBuilder.group({
             name: ['', Validators.required],
-            summary: [''],
             aliases: [''],
             description: [''],
             publisherId: [undefined as number | undefined],

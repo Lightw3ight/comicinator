@@ -8,6 +8,7 @@ import {
     MatDialogTitle,
 } from '@angular/material/dialog';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'cbx-confirm-delete-dialog',
@@ -20,6 +21,8 @@ import { MatCheckbox } from '@angular/material/checkbox';
         MatDialogClose,
         MatButtonModule,
         MatCheckbox,
+        CdkDrag,
+        CdkDragHandle,
     ],
 })
 export class ConfirmDeleteDialogComponent {

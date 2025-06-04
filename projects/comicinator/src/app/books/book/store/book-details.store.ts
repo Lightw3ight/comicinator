@@ -25,9 +25,20 @@ export const BookDetailsStore = signalStore(
                 patchState(store, { book, characters, teams, locations });
             },
 
-            async updateItem() {
+            async updateItem(reloadChildren = false) {
                 const book = bookStore.entityMap()[store.book()!.id];
-                patchState(store, { book });
+
+                if (reloadChildren) {
+                    const characters = await charactersStore.searchByBook(
+                        book.id,
+                    );
+                    const teams = await teamStore.selectByBook(book.id);
+                    const locations = await locationStore.searchByBook(book.id);
+
+                    patchState(store, { book, characters, teams, locations });
+                } else {
+                    patchState(store, { book });
+                }
             },
         };
     }),

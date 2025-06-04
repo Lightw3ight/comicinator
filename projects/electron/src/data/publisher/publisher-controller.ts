@@ -60,29 +60,30 @@ export class PublisherController {
     }
 
     public static async findForImport(externalId: number | null, name: string) {
-        let where: any[] = [
-            {
-                externalId: externalId,
-            },
-        ];
-
         if (externalId != null) {
-            where = [
-                {
-                    externalId: externalId,
-                },
-                {
-                    name: { [Op.like]: name },
-                    externalId: null,
-                },
-            ];
+            const result = await Publisher.findOne({ where: { externalId } });
+
+            if (result) {
+                return result.get({ plain: true });
+            }
+        }
+
+        if (name == null) {
+            return undefined;
+        }
+
+        let where: any = { name: { [Op.like]: name } };
+        if (externalId != null) {
+            where = {
+                ...where,
+                externalId: null,
+            };
         }
 
         const result = await Publisher.findOne({
-            where: {
-                [Op.or]: where,
-            },
+            where,
         });
+
         return result?.get({ plain: true });
     }
 

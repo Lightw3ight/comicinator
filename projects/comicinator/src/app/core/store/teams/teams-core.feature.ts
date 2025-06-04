@@ -25,6 +25,7 @@ import { PublishersStore } from '../publishers/publishers.store';
 import { TeamsState } from './teams-state.interface';
 import { SortState } from '../models/sort-state.interface';
 import store2 from 'store2';
+import { CharactersApiService } from '../../api/characters/characters-api.service';
 
 const TEAM_STATE_KEY = 'cbx-team-state';
 
@@ -38,6 +39,7 @@ export function withTeamsCoreFeature<_>() {
             const teamsApiService = inject(TeamsApiService);
             const publishersStore = inject(PublishersStore);
             const charactersStore = inject(CharactersStore);
+            const charactersApiService = inject(CharactersApiService);
 
             return {
                 persistState() {
@@ -173,62 +175,34 @@ export function withTeamsCoreFeature<_>() {
                     return await teamsApiService.selectImage(teamId);
                 },
 
-                async importTeam(data: TeamResult): Promise<number> {
+                async importTeam(
+                    data: TeamResult,
+                    publisherId: number | undefined,
+                ): Promise<number> {
                     let image: Blob | undefined;
                     try {
                         const response = await fetch(data.image.originalUrl);
                         image = await response.blob();
                     } catch {}
 
-                    let publisherId: number | undefined;
-
-                    if (data.publisher != null) {
-                        let existing: Publisher | undefined =
-                            publishersStore.entityMap()[data.publisher.id];
-                        if (!existing) {
-                            existing = publishersStore
-                                .entities()
-                                .find(
-                                    (p) =>
-                                        p.name.toLocaleLowerCase() ===
-                                        data.publisher?.name.toLocaleLowerCase(),
-                                );
-                        }
-
-                        if (existing) {
-                            publisherId = existing.id;
-                        } else {
-                            publisherId = await publishersStore.addPublisher({
-                                name: data.publisher!.name,
-                                externalId: data.publisher!.id,
-                                externalUrl: data.publisher!.siteUrl,
-                            });
-                        }
-                    }
-
                     let characterIds: number[] = [];
 
                     if (data.characters) {
-                        characterIds = data.characters
-                            .map(
-                                (char) =>
-                                    charactersStore
-                                        .entities()
-                                        .find((o) => o.externalId === char.id)
-                                        ?.id,
-                            )
-                            .filter((val) => val != null);
+                        const externalIds = data.characters.map((o) => o.id);
+                        characterIds =
+                            await charactersApiService.selectByExternalIds(
+                                externalIds,
+                            );
                     }
 
                     const newTeam: Omit<Team, 'id'> = {
                         name: data.name,
                         dateAdded: new Date(),
                         aliases: data.aliases,
-                        description: data.description,
+                        description: data.summary,
                         externalId: data.id,
                         externalUrl: data.siteUrl,
                         publisherId: publisherId,
-                        summary: data.summary,
                     };
 
                     return await this.addTeam(
@@ -249,7 +223,7 @@ export function withTeamsCoreFeature<_>() {
                         const existing = await teamsApiService.findForImport(
                             null,
                             team.name,
-                            undefined,
+                            team.publisherId,
                         );
 
                         if (existing) {
@@ -292,7 +266,10 @@ export function withTeamsCoreFeature<_>() {
                     patchState(store, removeEntity(teamId));
                 },
 
-                async addTeamsByName(commaDelimitedTeams: string | undefined) {
+                async addTeamsByName(
+                    commaDelimitedTeams: string | undefined,
+                    publisherId: number | undefined,
+                ) {
                     if (
                         commaDelimitedTeams == null ||
                         commaDelimitedTeams.trim().length === 0
@@ -308,6 +285,7 @@ export function withTeamsCoreFeature<_>() {
                     for (let name of names) {
                         const team: Omit<Team, 'id' | 'dateAdded'> = {
                             name: name!,
+                            publisherId,
                         };
                         const id = await this.addTeam(team, undefined, []);
                         teamIds.push(id);

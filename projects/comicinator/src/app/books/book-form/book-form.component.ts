@@ -36,15 +36,15 @@ import { CharacterSelectorComponent } from '../../shared/character-selector/char
 import { TeamSelectorComponent } from '../../shared/team-selector/team-selector.component';
 import { BookSearchResultsComponent } from './book-search-results/book-search-results.component';
 
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { FileSystemService } from '../../core/file-system.service';
 import { AbortedImport } from '../../core/importers/aborted-import';
 import { ImporterService } from '../../core/importers/importer.service';
 import { MessagingService } from '../../core/messaging/messaging.service';
 import { LocationsStore } from '../../core/store/locations/locations.store';
-import { ProgressTakeoverComponent } from '../../shared/progress-takeover/progress-takeover.component';
 import { LocationSelectorComponent } from '../../shared/location-selector/location-selector.component';
-import { CdkDrag } from '@angular/cdk/drag-drop';
-import { FileSystemService } from '../../core/file-system.service';
+import { ProgressTakeoverComponent } from '../../shared/progress-takeover/progress-takeover.component';
 
 @Component({
     selector: 'cbx-book-form',
@@ -71,6 +71,7 @@ import { FileSystemService } from '../../core/file-system.service';
         ProgressTakeoverComponent,
         LocationSelectorComponent,
         CdkDrag,
+        CdkDragHandle,
     ],
 })
 export class BookFormComponent implements OnInit {

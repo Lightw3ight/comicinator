@@ -10,7 +10,7 @@ import {
     MatDialogTitle,
 } from '@angular/material/dialog';
 
-import { CdkDrag } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { MatButton } from '@angular/material/button';
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { MatSort, MatSortModule } from '@angular/material/sort';
@@ -32,6 +32,7 @@ import { LocationSearchItem } from './location-search-item.interface';
         MatSortModule,
         MatProgressBar,
         CdkDrag,
+        CdkDragHandle,
     ],
 })
 export class LocationSearchResultsComponent {

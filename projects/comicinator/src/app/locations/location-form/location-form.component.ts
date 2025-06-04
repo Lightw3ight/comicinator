@@ -1,4 +1,4 @@
-import { CdkDrag } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import {
     Component,
     computed,
@@ -60,6 +60,7 @@ import { LocationSearchResultsComponent } from './location-search-results/locati
         MatSelectModule,
         ProgressTakeoverComponent,
         CdkDrag,
+        CdkDragHandle,
     ],
 })
 export class LocationFormComponent implements OnInit, OnDestroy {

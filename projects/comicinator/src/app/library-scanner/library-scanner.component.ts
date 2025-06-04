@@ -17,6 +17,7 @@ import { BooksStore } from '../core/store/books/books.store';
 import { SettingsStore } from '../core/store/settings/settings.store';
 import { ScanResult } from './models/scan-result.interface';
 import { ScanResultsComponent } from './scan-results/scan-results.component';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'cmx-library-scanner',
@@ -29,6 +30,8 @@ import { ScanResultsComponent } from './scan-results/scan-results.component';
         MatDialogActions,
         MatProgressBarModule,
         MatCheckboxModule,
+        CdkDrag,
+        CdkDragHandle,
     ],
 })
 export class LibraryScannerComponent {

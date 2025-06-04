@@ -35,9 +35,19 @@ export class CharacterController {
     public static async selectByIds(ids: number[]) {
         const results = await Character.findAll({
             where: { id: ids },
+            attributes: { exclude: ['image'] },
             order: [['name', 'ASC']],
         });
         return results.map((o) => o.get({ plain: true }));
+    }
+
+    public static async selectByExternalIds(externalIds: number[]) {
+        const results = await Character.findAll({
+            attributes: ['id'],
+            where: { externalId: externalIds },
+        });
+
+        return results.map((o) => o.id);
     }
 
     public static async selectMany(options: SelectOptions<Book>) {
@@ -130,6 +140,7 @@ export class CharacterController {
             }
         }
 
+        // const where: any[] = [];
         const where: any = {
             name: { [Op.like]: name },
         };
@@ -139,7 +150,7 @@ export class CharacterController {
         }
 
         if (publisherId != null) {
-            where['publisherId'] = publisherId;
+            where[Op.or] = [{ publisherId }, { publisherId: null }];
         }
 
         const result = await Character.findOne({

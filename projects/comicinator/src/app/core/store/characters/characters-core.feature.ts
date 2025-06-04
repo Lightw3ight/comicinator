@@ -24,6 +24,8 @@ import { PublishersStore } from '../publishers/publishers.store';
 import { CharactersState } from './characters-state.interface';
 import store2 from 'store2';
 import { SortState } from '../models/sort-state.interface';
+import { PublishersApiService } from '../../api/publishers/publishers-api.service';
+import { TeamsApiService } from '../../api/teams/teams-api.service';
 
 const CHARACTER_STATE_KEY = 'cbx-character-state';
 
@@ -35,7 +37,7 @@ export function withCharactersCoreFeature() {
 
         withMethods((store) => {
             const charactersApiService = inject(CharactersApiService);
-            const publishersStore = inject(PublishersStore);
+            const teamsApiService = inject(TeamsApiService);
 
             return {
                 persistState() {
@@ -169,7 +171,8 @@ export function withCharactersCoreFeature() {
 
                 async importCharacter(
                     data: CharacterResult,
-                    teamIds?: number[],
+                    publisherId: number | undefined,
+                    currentTeamId?: number,
                 ): Promise<number> {
                     let image: Blob | undefined;
                     try {
@@ -177,29 +180,19 @@ export function withCharactersCoreFeature() {
                         image = await response.blob();
                     } catch {}
 
-                    let publisherId: number | undefined;
+                    let teamIds: number[] = [];
 
-                    if (data.publisher != null) {
-                        let existing: Publisher | undefined =
-                            publishersStore.entityMap()[data.publisher.id];
-                        if (!existing) {
-                            existing = publishersStore
-                                .entities()
-                                .find(
-                                    (p) =>
-                                        p.name.toLocaleLowerCase() ===
-                                        data.publisher?.name.toLocaleLowerCase(),
-                                );
-                        }
+                    if (data.teams) {
+                        const externalIds = data.teams.map((o) => o.id);
+                        teamIds =
+                            await teamsApiService.selectByExternalIds(
+                                externalIds,
+                            );
 
-                        if (existing) {
-                            publisherId = existing.id;
-                        } else {
-                            publisherId = await publishersStore.addPublisher({
-                                name: data.publisher!.name,
-                                externalId: data.publisher!.id,
-                                externalUrl: data.publisher!.siteUrl,
-                            });
+                        if (currentTeamId) {
+                            teamIds = teamIds.filter(
+                                (id) => id !== currentTeamId,
+                            );
                         }
                     }
 
@@ -209,7 +202,7 @@ export function withCharactersCoreFeature() {
                         aliases: data.aliases,
                         birthDate: data.birth,
                         creators: data.creators,
-                        description: data.description,
+                        description: data.summary,
                         externalId: data.id,
                         externalUrl: data.siteUrl,
                         gender: data.gender,
@@ -217,7 +210,6 @@ export function withCharactersCoreFeature() {
                         powers: data.powers,
                         publisherId: publisherId,
                         realName: data.realName,
-                        summary: data.summary,
                     };
 
                     return await this.addCharacter(
@@ -257,7 +249,7 @@ export function withCharactersCoreFeature() {
                             await charactersApiService.findForImport(
                                 null,
                                 character.name,
-                                undefined,
+                                character.publisherId,
                             );
 
                         if (existing) {
@@ -276,7 +268,10 @@ export function withCharactersCoreFeature() {
                     return added.id;
                 },
 
-                async addCharactersByName(characters: string | undefined) {
+                async addCharactersByName(
+                    characters: string | undefined,
+                    publisherId: number | undefined,
+                ) {
                     if (characters == null || characters.trim().length === 0) {
                         return [];
                     }
@@ -287,6 +282,7 @@ export function withCharactersCoreFeature() {
                     for (let name of names) {
                         const id = await this.addCharacter({
                             name,
+                            publisherId,
                             dateAdded: new Date(),
                         });
                         characterIds.push(id);

@@ -62,6 +62,13 @@ export class CharactersApiService {
         );
     }
 
+    public async selectByExternalIds(externalIds: number[]): Promise<number[]> {
+        return await this.electron.run<number[]>(
+            'charSelectByExternalIds',
+            externalIds,
+        );
+    }
+
     public async selectImage(characterId: number): Promise<Blob | undefined> {
         const img = await this.electron.run<ArrayBuffer>(
             'charSelectImage',

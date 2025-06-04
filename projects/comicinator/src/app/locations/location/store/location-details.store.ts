@@ -19,10 +19,17 @@ export const LocationDetailsStore = signalStore(
                 patchState(store, { location, books });
             },
 
-            async updateItem() {
+            async updateItem(updateChildren = false) {
                 const location =
                     locationsStore.entityMap()[store.location()!.id];
-                patchState(store, { location });
+                if (updateChildren) {
+                    const books = await booksStore.searchByCharacter(
+                        location.id,
+                    );
+                    patchState(store, { location, books });
+                } else {
+                    patchState(store, { location });
+                }
             },
         };
     }),

@@ -25,7 +25,10 @@ export function withLocationsSearchFeature<_>() {
                 },
 
                 async searchByBook(bookId: number): Promise<Location[]> {
-                    return await locationsApiService.selectByBook(bookId);
+                    const results =
+                        await locationsApiService.selectByBook(bookId);
+                    patchState(store, addEntities(results));
+                    return results;
                 },
             };
         }),

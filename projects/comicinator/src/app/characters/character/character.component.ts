@@ -86,7 +86,7 @@ export class CharacterComponent {
         });
 
         await firstValueFrom(ref.afterClosed());
-        this.characterDetailsStore.updateItem();
+        this.characterDetailsStore.updateItem(true);
     }
 
     private computePublisher() {

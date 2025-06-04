@@ -1,4 +1,5 @@
 import { inject, Injectable } from '@angular/core';
+import { CharactersApiService } from '../api/characters/characters-api.service';
 import { ComicVineService } from '../api/comic-vine/comic-vine-api.service';
 import { BookResult } from '../api/comic-vine/models/book-result.interface';
 import { CharacterResult } from '../api/comic-vine/models/character-result.interface';
@@ -6,6 +7,9 @@ import { ItemBase } from '../api/comic-vine/models/item-base.interface';
 import { LocationResult } from '../api/comic-vine/models/location-result.interface';
 import { TeamResult } from '../api/comic-vine/models/team-result.interface';
 import { VolumeResult } from '../api/comic-vine/models/volume-result.interface';
+import { LocationsApiService } from '../api/locations/locations-api.service';
+import { PublishersApiService } from '../api/publishers/publishers-api.service';
+import { TeamsApiService } from '../api/teams/teams-api.service';
 import { MessagingService } from '../messaging/messaging.service';
 import { Character } from '../models/character.interface';
 import { Location } from '../models/location.interface';
@@ -19,10 +23,6 @@ import { BookImportResult } from './book-import-result.interface';
 import { CharacterImportResult } from './character-import-result.interface';
 import { LocationImportResult } from './location-import-result.interface';
 import { TeamImportResult } from './team-import-result.interface';
-import { TeamsApiService } from '../api/teams/teams-api.service';
-import { CharactersApiService } from '../api/characters/characters-api.service';
-import { LocationsApiService } from '../api/locations/locations-api.service';
-import { PublishersApiService } from '../api/publishers/publishers-api.service';
 
 type ProgressReporter = (progress: string) => void;
 
@@ -53,6 +53,7 @@ export class ImporterService {
         const characterIds = await this.importCharacters(
             result.characterCredits,
             publisherId,
+            undefined,
             true,
             progress,
         );
@@ -117,10 +118,9 @@ export class ImporterService {
         const character: Partial<Character> = {
             name: result.name,
             aliases: result.aliases ?? '',
-            description: result.description ?? '',
+            description: result.summary ?? '',
             publisherId: publisherId,
             realName: result.realName ?? '',
-            summary: result.summary ?? '',
             creators: result.creators ?? '',
             origin: result.origin ?? '',
             powers: result.powers ?? '',
@@ -136,6 +136,7 @@ export class ImporterService {
     public async importTeam(
         result: TeamResult,
         importMembers: boolean,
+        currentTeamId: number | undefined,
         progress?: ProgressReporter,
     ): Promise<TeamImportResult> {
         progress?.(`Fetching team image`);
@@ -149,15 +150,15 @@ export class ImporterService {
         const characterIds = await this.importCharacters(
             result.characters,
             publisherId,
+            currentTeamId,
             importMembers,
             progress,
         );
 
         const team: Partial<Team> = {
             name: result.name,
-            description: result.description ?? '',
+            description: result.summary ?? '',
             publisherId: publisherId,
-            summary: result.summary ?? '',
             externalUrl: result.siteUrl ?? '',
             externalId: result.id,
             aliases: result.aliases,
@@ -201,6 +202,7 @@ export class ImporterService {
     private async importCharacters(
         characters: ItemBase[] | undefined,
         publisherId: number | undefined,
+        currentTeamId: number | undefined,
         addNewMembers: boolean,
         progress: ProgressReporter | undefined,
     ) {
@@ -230,18 +232,14 @@ export class ImporterService {
                     throw new AbortedImport('Aborted at character import');
                 }
 
-                let teamIds = char.teams
-                    ?.map(
-                        (item) =>
-                            this.teamsStore
-                                .entities()
-                                .find((o) => o.externalId === item.id)?.id,
-                    )
-                    .filter((o) => o != null);
-
+                const publisherId = await this.importPublisher(
+                    char?.publisher,
+                    progress,
+                );
                 const newId = await this.charactersStore.importCharacter(
                     char,
-                    teamIds ?? [],
+                    publisherId,
+                    currentTeamId,
                 );
                 ids.push(newId);
             }
@@ -310,7 +308,14 @@ export class ImporterService {
                     throw new AbortedImport('Aborted at team import');
                 }
 
-                const newId = await this.teamsStore.importTeam(team);
+                const publisherId = await this.importPublisher(
+                    team?.publisher,
+                    progress,
+                );
+                const newId = await this.teamsStore.importTeam(
+                    team,
+                    publisherId,
+                );
                 ids.push(newId);
             }
         }

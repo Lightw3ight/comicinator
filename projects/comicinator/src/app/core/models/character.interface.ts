@@ -5,7 +5,6 @@ export interface Character {
     name: string;
     aliases?: string;
     creators?: string;
-    summary?: string;
     description?: string;
     gender?: Gender;
     origin?: string;

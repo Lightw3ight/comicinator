@@ -1,4 +1,4 @@
-import { CdkDrag } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import {
     Component,
     computed,
@@ -63,6 +63,7 @@ import { CharacerSearchResultsComponent } from './character-search-results/chara
         MatSelectModule,
         ProgressTakeoverComponent,
         CdkDrag,
+        CdkDragHandle,
         MatTabsModule,
         TeamSelectorComponent,
     ],
@@ -227,7 +228,6 @@ export class CharacterFormComponent implements OnDestroy {
             realName: [''],
             aliases: [''],
             creators: [''],
-            summary: [''],
             description: [''],
             origin: [''],
             powers: [''],

@@ -22,7 +22,7 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ComicVineService } from '../../../core/api/comic-vine/comic-vine-api.service';
 import { BookResult } from '../../../core/api/comic-vine/models/book-result.interface';
-import { CdkDrag } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'cbx-select-issue',
@@ -38,6 +38,7 @@ import { CdkDrag } from '@angular/cdk/drag-drop';
         MatSortModule,
         MatProgressBar,
         CdkDrag,
+        CdkDragHandle,
     ],
 })
 export class SelectIssueComponent {

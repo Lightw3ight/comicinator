@@ -17,6 +17,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { TeamResult } from '../../../core/api/comic-vine/models/team-result.interface';
 import { TeamSearchItem } from './team-search-item.interface';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'cbx-team-search-results',
@@ -32,6 +33,8 @@ import { MatCheckbox } from '@angular/material/checkbox';
         MatSortModule,
         MatProgressBar,
         MatCheckbox,
+        CdkDrag,
+        CdkDragHandle,
     ],
 })
 export class TeamSearchResultsComponent {

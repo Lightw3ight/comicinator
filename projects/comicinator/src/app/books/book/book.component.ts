@@ -129,11 +129,14 @@ export class BookComponent {
         this.fileSystem.showItemInFolder(this.book()!.filePath);
     }
 
-    protected edit() {
-        this.dialog.open(BookFormComponent, {
+    protected async edit() {
+        const ref = this.dialog.open(BookFormComponent, {
             data: this.book(),
             minWidth: 800,
         });
+
+        await firstValueFrom(ref.afterClosed());
+        this.bookDetailsStore.updateItem(true);
     }
 
     private computeTitle() {

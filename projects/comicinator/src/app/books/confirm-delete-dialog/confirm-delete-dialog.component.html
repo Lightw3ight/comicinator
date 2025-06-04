@@ -1,4 +1,11 @@
-<h2 mat-dialog-title>Remove book</h2>
+<h2
+    mat-dialog-title
+    cdkDrag
+    cdkDragRootElement=".cdk-overlay-pane"
+    cdkDragHandle
+>
+    Remove book
+</h2>
 <mat-dialog-content>
     <p>
         Are tou sure you want to remove the book {{ bookTitle }} from your

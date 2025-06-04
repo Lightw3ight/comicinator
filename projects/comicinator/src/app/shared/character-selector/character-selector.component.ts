@@ -65,7 +65,10 @@ export class CharacterSelectorComponent {
                     await this.charactersStore.quickFind(filterValue);
 
                 if (timeStamp === current) {
-                    this.searchResults.set(results);
+                    const filtered = results.filter(
+                        (item) => !this.selection().includes(item.id),
+                    );
+                    this.searchResults.set(filtered);
                 }
             });
         });

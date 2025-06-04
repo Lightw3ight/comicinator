@@ -22,9 +22,18 @@ export const TeamDetailsStore = signalStore(
                 patchState(store, { team, characters, books });
             },
 
-            async updateItem() {
+            async updateItem(updateChildren = false) {
                 const team = teamsStore.entityMap()[store.team()!.id];
-                patchState(store, { team });
+
+                if (updateChildren) {
+                    const books = await booksStore.searchByTeam(team.id);
+                    const characters = await charactersStore.searchByTeam(
+                        team.id,
+                    );
+                    patchState(store, { team, characters, books });
+                } else {
+                    patchState(store, { team });
+                }
             },
         };
     }),

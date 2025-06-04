@@ -16,7 +16,9 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { CharacterResult } from '../../../core/api/comic-vine/models/character-result.interface';
 import { CharacterSearchItem } from './character-search-item.interface';
-import { CdkDrag } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
+import { ProgressTakeoverComponent } from '../../../shared/progress-takeover/progress-takeover.component';
+import { MessagingService } from '../../../core/messaging/messaging.service';
 
 @Component({
     selector: 'cbx-character-search-results',
@@ -32,10 +34,13 @@ import { CdkDrag } from '@angular/cdk/drag-drop';
         MatSortModule,
         MatProgressBar,
         CdkDrag,
+        CdkDragHandle,
+        ProgressTakeoverComponent,
     ],
 })
 export class CharacerSearchResultsComponent {
     private comicVineService = inject(ComicVineService);
+    private messagingService = inject(MessagingService);
     private dialogRef = inject(MatDialogRef<CharacerSearchResultsComponent>);
 
     protected displayedColumns = ['name', 'realName', 'publisher'];
@@ -63,11 +68,17 @@ export class CharacerSearchResultsComponent {
         if (id != null) {
             this.fetchingFullCharacter.set(true);
             try {
-                const apiResult = await this.comicVineService.getCharacter(
-                    this.selectedItem()!.id,
+                const message = () =>
+                    `Failed to select character with id ${this.selectedItem()!.id}, Retry?`;
+                const apiResult = await this.messagingService.runWithRetry(
+                    () =>
+                        this.comicVineService.getCharacter(
+                            this.selectedItem()!.id,
+                        ),
+                    message,
                 );
                 this.dialogRef.close(apiResult);
-            } catch {
+            } finally {
                 this.fetchingFullCharacter.set(false);
             }
         }
@@ -75,15 +86,29 @@ export class CharacerSearchResultsComponent {
 
     private async search(search: string) {
         this.loading.set(true);
-        const results = await this.comicVineService.searchCharacters(search);
+        const message = () =>
+            `Failed to load search results for ${search}, Retry?`;
+        let results = await this.messagingService.runWithRetry(
+            () => this.comicVineService.searchCharacters(search),
+            message,
+        );
+
+        if (results == null) {
+            this.dialogRef.close();
+            return;
+        }
+
         const searchItems = results.map((o) => this.mapToListItem(o));
         this.results.set(new MatTableDataSource(searchItems));
         this.results().sort = this.sort()!;
-        const first = results.find(
+        let first = results.find(
             (o) =>
                 o.name.toLocaleLowerCase() ===
                 this.initialSearch.toLocaleLowerCase(),
         );
+        if (!first && results.length) {
+            first = results[0];
+        }
         this.selectedItem.set(first);
         this.loading.set(false);
     }

@@ -239,7 +239,10 @@ export class BookController {
 
     public static async selectByGroup(field: keyof Book, value: any) {
         const results = await Book.findAll({
-            order: [['coverDate', 'DESC']],
+            order: [
+                ['coverDate', 'DESC'],
+                ['number', 'DESC'],
+            ],
             where: { [field]: value },
         });
 

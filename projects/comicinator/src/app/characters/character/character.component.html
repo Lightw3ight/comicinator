@@ -41,7 +41,7 @@
                     <p><label>Birth date:</label> {{ char.birthDate }}</p>
                 }
 
-                <p>{{ char.summary ?? "No Description" }}</p>
+                <p>{{ char.description ?? "No Description" }}</p>
 
                 @if (char.externalUrl) {
                     <a>

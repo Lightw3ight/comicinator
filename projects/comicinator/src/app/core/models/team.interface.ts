@@ -3,7 +3,6 @@ export interface Team {
     name: string;
     dateAdded: Date;
     aliases?: string;
-    summary?: string;
     description?: string;
     publisherId?: number;
     externalUrl?: string;

@@ -30,6 +30,7 @@ import { ImportItem } from './import-item.interface';
 import { ImportProgressComponent } from './import-progress/import-progress.component';
 import { parseFileDetails } from '../shared/parse-file-details';
 import { ImportListItemComponent } from './import-list-item/import-list-item.component';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 
 const TOKEN_RX = /{([^}]*)}/g;
 const INNER_TOKEN_RX = /<([^>]*)>/g;
@@ -47,6 +48,8 @@ const TOKEN_PADDING_RX = /^(\D+)(\d+)$/;
         MatDialogClose,
         MatTableModule,
         ImportListItemComponent,
+        CdkDrag,
+        CdkDragHandle,
     ],
 })
 export class ImportBooksComponent {

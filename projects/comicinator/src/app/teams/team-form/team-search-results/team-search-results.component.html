@@ -1,4 +1,11 @@
-<h2 mat-dialog-title>Search results</h2>
+<h2
+    mat-dialog-title
+    cdkDrag
+    cdkDragRootElement=".cdk-overlay-pane"
+    cdkDragHandle
+>
+    Search results
+</h2>
 <mat-dialog-content>
     @if (loading()) {
         <mat-progress-bar mode="indeterminate"></mat-progress-bar>

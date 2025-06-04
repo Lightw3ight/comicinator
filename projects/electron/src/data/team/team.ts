@@ -11,7 +11,6 @@ class Team extends Model<InferAttributes<Team>, InferCreationAttributes<Team>> {
     declare id: number;
     declare name: string;
     declare aliases?: string;
-    declare summary?: string;
     declare description?: string;
     declare publisherId?: number;
     declare lastUpdated?: Date;
@@ -33,7 +32,6 @@ Team.init(
             allowNull: false,
         },
         aliases: DataTypes.TEXT,
-        summary: DataTypes.TEXT,
         description: DataTypes.TEXT,
         publisherId: DataTypes.TEXT,
         dateAdded: {

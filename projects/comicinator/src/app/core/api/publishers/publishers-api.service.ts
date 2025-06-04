@@ -26,7 +26,7 @@ export class PublishersApiService {
 
     public async findForImport(
         externalId: number | null,
-        name: string,
+        name?: string,
     ): Promise<Publisher | undefined> {
         return await this.electron.run<Publisher>(
             'pubFindForImport',

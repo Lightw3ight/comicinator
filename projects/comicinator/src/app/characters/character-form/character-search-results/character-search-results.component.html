@@ -7,6 +7,10 @@
     Search results
 </h2>
 <mat-dialog-content>
+    @if (fetchingFullCharacter()) {
+        <cbx-progress-takeover message="Fetching full character details" />
+    }
+
     @if (loading()) {
         <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     }

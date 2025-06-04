@@ -34,6 +34,7 @@ const CHARACTER_METHODS = [
     'selectImage',
     'selectByIds',
     'findForImport',
+    'selectByExternalIds',
 ];
 
 const TEAM_METHODS = [
@@ -48,6 +49,7 @@ const TEAM_METHODS = [
     'selectImage',
     'findForImport',
     'selectByIds',
+    'selectByExternalIds',
 ];
 
 const LOCATION_METHODS = [

@@ -43,7 +43,6 @@ Character.init(
         },
         aliases: DataTypes.TEXT,
         creators: DataTypes.TEXT,
-        summary: DataTypes.TEXT,
         description: DataTypes.TEXT,
         gender: DataTypes.TEXT,
         origin: DataTypes.TEXT,

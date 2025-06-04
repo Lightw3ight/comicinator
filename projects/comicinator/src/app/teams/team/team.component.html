@@ -23,7 +23,7 @@
                     <p><label>AKA:</label> {{ tm.aliases }}</p>
                 }
 
-                <p>{{ tm.summary ?? "No Description" }}</p>
+                <p>{{ tm.description ?? "No Description" }}</p>
 
                 @if (tm.externalUrl) {
                     <a>

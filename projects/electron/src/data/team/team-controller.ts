@@ -41,6 +41,15 @@ export class TeamController {
         return results.map((o) => o.get({ plain: true }));
     }
 
+    public static async selectByExternalIds(externalIds: number[]) {
+        const results = await Team.findAll({
+            attributes: ['id'],
+            where: { externalId: externalIds },
+        });
+
+        return results.map((o) => o.id);
+    }
+
     public static async selectMany(options: SelectOptions<Book>) {
         let where = {};
 
@@ -97,7 +106,7 @@ export class TeamController {
         }
 
         if (publisherId != null) {
-            where['publisherId'] = publisherId;
+            where[Op.or] = [{ publisherId }, { publisherId: null }];
         }
 
         const result = await Team.findOne({

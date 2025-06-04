@@ -69,7 +69,7 @@ export class TeamComponent {
         });
 
         await firstValueFrom(ref.afterClosed());
-        this.teamDetailsStore.updateItem();
+        this.teamDetailsStore.updateItem(true);
     }
 
     protected async deleteTeam() {

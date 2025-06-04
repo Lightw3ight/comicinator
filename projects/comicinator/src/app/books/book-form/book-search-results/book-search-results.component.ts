@@ -22,7 +22,7 @@ import { MessagingService } from '../../../core/messaging/messaging.service';
 import { SelectIssueComponent } from '../select-issue/select-issue.component';
 import { BookListItem } from './book-list-item.interface';
 import { bookThumbSrc } from '../../../shared/book-thumb-path';
-import { CdkDrag } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { CustomSearchComponent } from '../../../shared/custom-search/custom-search.component';
 import { parseFileDetails } from '../../../shared/parse-file-details';
 
@@ -40,6 +40,7 @@ import { parseFileDetails } from '../../../shared/parse-file-details';
         MatSortModule,
         MatProgressBar,
         CdkDrag,
+        CdkDragHandle,
     ],
 })
 export class BookSearchResultsComponent {

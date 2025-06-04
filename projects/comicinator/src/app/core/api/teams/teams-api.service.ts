@@ -37,6 +37,13 @@ export class TeamsApiService {
         return await this.electron.run<Team[]>('teamSelectByIds', ids);
     }
 
+    public async selectByExternalIds(externalIds: number[]): Promise<number[]> {
+        return await this.electron.run<number[]>(
+            'teamSelectByExternalIds',
+            externalIds,
+        );
+    }
+
     public async fetchTeam(id: number): Promise<Team> {
         const team = await this.electron.run<Team>('teamSelectById', id);
 

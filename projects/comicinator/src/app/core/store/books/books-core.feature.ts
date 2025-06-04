@@ -295,22 +295,6 @@ export function withBooksCoreFeature() {
                         return;
                     }
 
-                    const locationIds = await locationsStore.addByName(
-                        xml?.Locations,
-                    );
-
-                    const characterIds =
-                        await charactersStore.addCharactersByName(
-                            xml?.Characters,
-                        );
-                    const teamIds = await teamsStore.addTeamsByName(xml?.Teams);
-
-                    let fileName = filePath.replaceAll('/', '\\');
-                    fileName = fileName.substring(
-                        fileName.lastIndexOf('\\') + 1,
-                        fileName.lastIndexOf('.'),
-                    );
-                    let coverDate: Date | undefined;
                     let publisherId: number | undefined;
 
                     if (xml?.Publisher) {
@@ -327,6 +311,27 @@ export function withBooksCoreFeature() {
                             });
                         }
                     }
+
+                    const locationIds = await locationsStore.addByName(
+                        xml?.Locations,
+                    );
+
+                    const characterIds =
+                        await charactersStore.addCharactersByName(
+                            xml?.Characters,
+                            publisherId,
+                        );
+                    const teamIds = await teamsStore.addTeamsByName(
+                        xml?.Teams,
+                        publisherId,
+                    );
+
+                    let fileName = filePath.replaceAll('/', '\\');
+                    fileName = fileName.substring(
+                        fileName.lastIndexOf('\\') + 1,
+                        fileName.lastIndexOf('.'),
+                    );
+                    let coverDate: Date | undefined;
 
                     if (xml?.Year && !isNaN(Number(xml.Year))) {
                         const { Year, Month, Day } = xml;
