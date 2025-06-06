@@ -21,10 +21,9 @@
     >
         <div>
             @if (selectedItem(); as item) {
-                <img
-                    [attr.src]="item.image.thumb_url"
-                    class="search-result__preview-image"
-                />
+                <div class="search-result__file-preview-image">
+                    <img [attr.src]="item.image.thumb_url" />
+                </div>
             }
         </div>
         <div>

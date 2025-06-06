@@ -17,6 +17,7 @@ const imageQueue: { [key: string]: ImageQueueItem } = {};
 
 export function abortImageQueue() {
     const queueItems = Object.entries(imageQueue);
+    console.log('Aborting Image QUEUE', queueItems.length);
 
     queueItems.forEach(([, item]) => (item.aborted = true));
 
@@ -63,9 +64,14 @@ export async function getZipThumbnail(
 
             try {
                 console.log('GENERATING THUMB:', zipPath);
-                const imageBuffer = await readFirst(zipPath, '.jpg');
+                const imageBuffer = await readFirst(zipPath, [
+                    '.jpg',
+                    '.png',
+                    '.jpeg',
+                ]);
                 await generateThumb(zipPath, thumbsPath, imageBuffer);
-            } catch {
+            } catch (er: any) {
+                console.log('ERROR MAKING THUMB', zipPath, er);
                 await sharp(fallbackImagePath)
                     .resize({ withoutEnlargement: true, width: 300 })
                     .jpeg({ quality: 80 })

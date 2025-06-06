@@ -15,12 +15,15 @@ table {
 .search-result__container {
     display: grid;
     grid-template-columns: 150px auto;
-    align-items: flex-start;
-    gap: 32px;
+    gap: 24px;
 }
 
-.search-result__preview-image {
-    width: 100%;
+.search-result__file-preview-image {
+    position: sticky;
+    top: 0;
+    img {
+        width: 100%;
+    }
 }
 
 .search-result__container--hidden {

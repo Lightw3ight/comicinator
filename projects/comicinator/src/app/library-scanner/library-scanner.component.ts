@@ -108,6 +108,7 @@ export class LibraryScannerComponent {
                     reason: 'File already exists',
                     path,
                 });
+                this.filesProcessed.update((val) => val + 1);
                 continue;
             }
 

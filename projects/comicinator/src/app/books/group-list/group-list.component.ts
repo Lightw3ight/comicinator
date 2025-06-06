@@ -89,31 +89,6 @@ export class GroupListComponent implements OnDestroy {
         );
     }
 
-    // private electron = inject(ElectronService);
-
-    // public search = input<string>();
-    // public quickSearch = input.required<string>();
-    // public operator = input<FilterOperator>('starts-with');
-
-    // protected groups = this.bookGroupStore.groups;
-    // protected groupField = this.bookGroupStore.groupField;
-
-    // constructor() {
-    //     effect(() => {
-    //         const field = this.groupField();
-    //         const operator: FilterOperator = this.search()?.length
-    //             ? 'contains'
-    //             : 'starts-with';
-    //         const search = this.search() ?? this.quickSearch();
-
-    //         if (field) {
-    //             untracked(() => {
-    //                 this.bookGroupStore.loadGroups(search, operator);
-    //             });
-    //         }
-    //     });
-    // }
-
     public async ngOnDestroy() {
         await this.electron.abortImageQueue();
     }

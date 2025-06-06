@@ -107,10 +107,11 @@ export class BooksApiService {
         field: string,
         fieldValue: any,
     ): Promise<Book[]> {
+        const value = fieldValue === 'null' ? null : fieldValue;
         return await this.electron.run<Book[]>(
             'bookSelectByGroup',
             field,
-            fieldValue,
+            value,
         );
     }
 

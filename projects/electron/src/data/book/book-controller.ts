@@ -201,7 +201,7 @@ export class BookController {
 
         return await Book.count({
             where,
-            col: groupField,
+            col: groupField ?? 'title',
             distinct: true,
         });
     }
@@ -238,6 +238,8 @@ export class BookController {
     }
 
     public static async selectByGroup(field: keyof Book, value: any) {
+        value = value === '' ? null : value;
+
         const results = await Book.findAll({
             order: [
                 ['coverDate', 'DESC'],
