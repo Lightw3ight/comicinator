@@ -1,0 +1,56 @@
+:host {
+    display: block;
+    padding: 0;
+    --page-header-height: 50px;
+}
+
+.location__banner {
+    display: grid;
+    grid-template-columns: 200px auto;
+    gap: 24px;
+    padding: 24px;
+    background-color: var(--page-header-background);
+    align-items: flex-start;
+}
+
+img {
+    width: 100%;
+}
+
+.location__details {
+    font-size: 14px;
+    label {
+        color: var(--brand-color);
+    }
+}
+
+header {
+    display: grid;
+    grid-template-columns: auto fit-content(0);
+    grid-template-areas:
+        "title actions"
+        "subtitle actions";
+    margin-bottom: 24px;
+
+    h1 {
+        grid-area: title;
+        margin: 0;
+        flex: 0 0 auto;
+        font-size: 32px;
+    }
+
+    small {
+        grid-area: subtitle;
+    }
+
+    div {
+        grid-area: actions;
+    }
+}
+mat-tab-group {
+    margin-left: 24px;
+}
+
+.location__lists {
+    margin: 0 8px;
+}

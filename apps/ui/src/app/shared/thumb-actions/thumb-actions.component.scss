@@ -1,0 +1,11 @@
+:host {
+    display: block;
+    position: absolute;
+    transition: opacity 0.2s ease-in-out;
+    top: 0px;
+    right: -2px;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-bottom-left-radius: 8px;
+}

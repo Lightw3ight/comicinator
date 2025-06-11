@@ -1,0 +1,78 @@
+:host {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--side-bar-width);
+    background-color: #444444;
+    display: grid;
+    grid-template-rows: 71px fit-content(0) auto 51px;
+    grid-template-columns: var(--side-bar-width);
+}
+
+mat-icon {
+    color: white;
+}
+
+nav {
+    width: var(--side-bar-width);
+}
+
+header {
+    padding-left: 3px;
+
+    img {
+        width: 160px;
+        margin: 19px 12px 12px 12px;
+    }
+}
+
+h1 {
+    color: var(--brand-color);
+    margin: 0;
+    flex: 1 1 auto;
+    letter-spacing: 0.5px;
+}
+
+button {
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0);
+    cursor: pointer;
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+.main-nav__nav-item {
+    color: white;
+    display: block;
+    border-radius: 8px;
+    margin: 0 8px;
+    margin-bottom: 2px;
+    padding: 8px;
+    text-decoration: none;
+
+    i {
+        margin-right: 8px;
+    }
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+.main-nav__nav-item--active {
+    background-color: var(--brand-color);
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 4px;
+    background-color: rgba(0, 0, 0, 0.1);
+}

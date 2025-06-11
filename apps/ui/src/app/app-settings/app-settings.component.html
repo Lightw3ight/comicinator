@@ -1,0 +1,48 @@
+<form [formGroup]="form" (ngSubmit)="form.valid && save()">
+    <h2 mat-dialog-title>Settings</h2>
+    <mat-dialog-content>
+        <mat-tab-group animationDuration mat-stretch-tabs="false">
+            <mat-tab label="General">
+                <mat-form-field>
+                    <mat-label>Library Path</mat-label>
+                    <input matInput formControlName="libraryPath" />
+                    @if (form.controls.libraryPath.errors?.["path"]) {
+                        <mat-error>Invalid path</mat-error>
+                    }
+                    <button
+                        mat-icon-button
+                        matSuffix
+                        type="button"
+                        (click)="chooseLibraryPath()"
+                    >
+                        <mat-icon>folder_open</mat-icon>
+                    </button>
+                </mat-form-field>
+
+                <br />
+
+                <mat-form-field>
+                    <mat-label>ComicVine API key</mat-label>
+                    <input matInput formControlName="apiKey" />
+                </mat-form-field>
+            </mat-tab>
+            <mat-tab label="Import settings">
+                <mat-form-field>
+                    <mat-label>File import pattern</mat-label>
+                    <input matInput formControlName="filePattern" />
+                </mat-form-field>
+
+                <br />
+
+                <mat-form-field>
+                    <mat-label>Folder import pattern</mat-label>
+                    <input matInput formControlName="folderPattern" />
+                </mat-form-field>
+            </mat-tab>
+        </mat-tab-group>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-button type="button" mat-dialog-close>Cancel</button>
+        <button mat-button type="submit" cdkFocusInitial>Save</button>
+    </mat-dialog-actions>
+</form>

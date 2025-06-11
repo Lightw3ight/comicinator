@@ -1,0 +1,5 @@
+<cbx-virtual-thumb-list [data]="books()" [itemWidth]="232" [itemHeight]="388">
+    <ng-template thumbListItemTemplate let-book>
+        <cbx-book-list-item [routerLink]="['/books', book.id]" [book]="book" />
+    </ng-template>
+</cbx-virtual-thumb-list>

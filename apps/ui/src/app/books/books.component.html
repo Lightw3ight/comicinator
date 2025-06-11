@@ -1,0 +1,9 @@
+<cbx-books-view-bar [title]="pageTitle()" />
+
+<div class="books__list-container">
+    @if (groupingActive()) {
+        <cbx-group-list [search]="search()" />
+    } @else {
+        <cbx-main-book-list [search]="search()" />
+    }
+</div>

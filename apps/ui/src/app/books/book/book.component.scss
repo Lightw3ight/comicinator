@@ -1,0 +1,19 @@
+:host {
+    --available-viewer-height: calc(
+        100vh - (var(--page-header-height) + var(--header-height))
+    );
+    display: block;
+    line-height: 0;
+    // display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+cbx-character-list,
+cbx-team-list {
+    margin: 8px;
+}
+
+mat-tab-group {
+    margin-left: 24px;
+}

@@ -1,0 +1,40 @@
+<h2
+    mat-dialog-title
+    cdkDrag
+    cdkDragRootElement=".cdk-overlay-pane"
+    cdkDragHandle
+>
+    Import books
+</h2>
+<mat-dialog-content>
+    <div class="import-books__content">
+        <div>
+            <img [attr.src]="thumbPath()" />
+        </div>
+        <div>
+            @for (item of itemsToImport(); track item.filePath) {
+                <cbx-import-list-item
+                    [item]="item"
+                    [selected]="selectedItem() === item"
+                    (click)="selectedItem.set(item)"
+                    (selectionToggled)="toggleItemSelection(item, $event)"
+                />
+            }
+        </div>
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button mat-button (click)="scanAllItems()" [disabled]="!canImport()">
+        Scan
+    </button>
+    <button
+        mat-button
+        cdkFocusInitial
+        (click)="startImport()"
+        [disabled]="!canImport()"
+    >
+        Import
+    </button>
+</mat-dialog-actions>

@@ -1,0 +1,27 @@
+<cbx-page-header [title]="pageTitle()">
+    <div class="characters__actions">
+        <cbx-sort-selector
+            [activeSort]="sortConfig()"
+            (activeSortChange)="setSorting($event)"
+        >
+            <cbx-sort-item field="name" label="Name" />
+            <cbx-sort-item field="realName" label="Real name" />
+            <cbx-sort-item field="aliases" label="Aliases" />
+            <cbx-sort-item field="dateAdded" label="Date added" />
+            <cbx-sort-item field="lastUpdated" label="Last updated" />
+        </cbx-sort-selector>
+
+        @if (search()) {
+            <div class="characters__action-divider"></div>
+            <button
+                mat-icon-button
+                (click)="clearSearch()"
+                title="Clear search"
+            >
+                <mat-icon>close</mat-icon>
+            </button>
+        }
+    </div>
+</cbx-page-header>
+
+<cbx-main-character-list [search]="search()" />

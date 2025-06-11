@@ -1,0 +1,167 @@
+<form [formGroup]="form" (ngSubmit)="form.valid && save()">
+    <h2
+        mat-dialog-title
+        cdkDrag
+        cdkDragRootElement=".cdk-overlay-pane"
+        cdkDragHandle
+    >
+        {{ book?.title ?? "New Book" }}
+        <div class="book-form__file-path">
+            <a href="javascript:void(0)" (click)="openFileLocation()"
+                ><small>{{ book?.filePath }}</small></a
+            >
+        </div>
+    </h2>
+    <mat-dialog-content>
+        @if (importing()) {
+            <cbx-progress-takeover [message]="progressText()" />
+        }
+
+        <div class="book-form__content">
+            <div>
+                @if (bookThumbUrl) {
+                    <img
+                        [attr.src]="bookThumbUrl"
+                        class="book-form__img-preview"
+                    />
+                }
+            </div>
+            <div class="book-form__form-container">
+                <mat-tab-group mat-stretch-tabs="false">
+                    <mat-tab label="Details">
+                        <mat-form-field subscriptSizing="dynamic">
+                            <mat-label>Title</mat-label>
+                            <input matInput formControlName="title" />
+                        </mat-form-field>
+
+                        <mat-form-field subscriptSizing="dynamic">
+                            <mat-label>Series</mat-label>
+                            <input matInput formControlName="series" />
+                        </mat-form-field>
+
+                        <div class="book-form__issue-volume">
+                            <mat-form-field subscriptSizing="dynamic">
+                                <mat-label>Volume</mat-label>
+                                <input
+                                    matInput
+                                    formControlName="volume"
+                                    type="number"
+                                />
+                            </mat-form-field>
+
+                            <mat-form-field subscriptSizing="dynamic">
+                                <mat-label>Issue number</mat-label>
+                                <input matInput formControlName="number" />
+                            </mat-form-field>
+                        </div>
+
+                        <mat-form-field subscriptSizing="dynamic">
+                            <mat-label>Cover date</mat-label>
+                            <input
+                                matInput
+                                [matDatepicker]="picker"
+                                formControlName="coverDate"
+                            />
+                            <!-- <mat-hint>MM/DD/YYYY</mat-hint> -->
+                            <mat-datepicker-toggle
+                                matIconSuffix
+                                [for]="picker"
+                            ></mat-datepicker-toggle>
+                            <mat-datepicker #picker></mat-datepicker>
+                        </mat-form-field>
+
+                        <mat-form-field subscriptSizing="dynamic">
+                            <mat-label>Writer</mat-label>
+                            <input matInput formControlName="writer" />
+                        </mat-form-field>
+
+                        <mat-form-field subscriptSizing="dynamic">
+                            <mat-label>Penciler</mat-label>
+                            <input matInput formControlName="penciler" />
+                        </mat-form-field>
+
+                        <mat-form-field subscriptSizing="dynamic">
+                            <mat-label>Inker</mat-label>
+                            <input matInput formControlName="inker" />
+                        </mat-form-field>
+
+                        <mat-form-field subscriptSizing="dynamic">
+                            <mat-label>Colorist</mat-label>
+                            <input matInput formControlName="colorist" />
+                        </mat-form-field>
+
+                        <mat-form-field subscriptSizing="dynamic">
+                            <mat-label>Letterer</mat-label>
+                            <input matInput formControlName="letterer" />
+                        </mat-form-field>
+
+                        <mat-form-field subscriptSizing="dynamic">
+                            <mat-label>Cover artist</mat-label>
+                            <input matInput formControlName="coverArtist" />
+                        </mat-form-field>
+
+                        <mat-form-field subscriptSizing="dynamic">
+                            <mat-label>Editor</mat-label>
+                            <input matInput formControlName="editor" />
+                        </mat-form-field>
+
+                        <mat-form-field subscriptSizing="dynamic">
+                            <mat-label>Publisher</mat-label>
+                            <mat-select formControlName="publisherId">
+                                @for (pub of publishers(); track pub.id) {
+                                    <mat-option [value]="pub.id">{{
+                                        pub.name
+                                    }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field subscriptSizing="dynamic">
+                            <mat-label>External URL</mat-label>
+                            <input matInput formControlName="externalUrl" />
+                        </mat-form-field>
+                    </mat-tab>
+                    <mat-tab label="Characters">
+                        <cbx-character-selector
+                            [selection]="form.value.characterIds!"
+                            (selectionChange)="
+                                form.controls.characterIds.setValue($event)
+                            "
+                        />
+                    </mat-tab>
+                    <mat-tab label="Teams">
+                        <cbx-team-selector
+                            [selection]="form.value.teamIds!"
+                            (selectionChange)="
+                                form.controls.teamIds.setValue($event)
+                            "
+                        />
+                    </mat-tab>
+                    <mat-tab label="Locations">
+                        <cbx-location-selector
+                            [selection]="form.value.locationIds!"
+                            (selectionChange)="
+                                form.controls.locationIds.setValue($event)
+                            "
+                        />
+                    </mat-tab>
+                </mat-tab-group>
+            </div>
+        </div>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        @if (showSearch()) {
+            <div class="book-form__actions-left">
+                <mat-checkbox (change)="saveXml.set($event.checked)"
+                    >Save to XML to file</mat-checkbox
+                >
+            </div>
+        }
+
+        <button mat-button type="button" mat-dialog-close>Cancel</button>
+        @if (showSearch()) {
+            <button mat-button type="button" (click)="scan()">Scan</button>
+        }
+        <button mat-button type="submit" cdkFocusInitial>Save</button>
+    </mat-dialog-actions>
+</form>

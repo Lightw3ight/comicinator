@@ -1,0 +1,7 @@
+<h4>In progress</h4>
+
+<div class="last-read__items">
+    @for (book of books(); track book.id) {
+        <cbx-last-read-item [book]="book" />
+    }
+</div>

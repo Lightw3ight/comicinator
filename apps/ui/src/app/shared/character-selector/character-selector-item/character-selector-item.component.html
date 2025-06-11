@@ -1,0 +1,14 @@
+<div [style.backgroundImage]="imageCssUrl()" class="char-item__thumb"></div>
+<div>
+    {{ character().name }}
+</div>
+<div>
+    <button
+        mat-icon-button
+        title="remove"
+        type="button"
+        (click)="remove.emit()"
+    >
+        <mat-icon>close</mat-icon>
+    </button>
+</div>

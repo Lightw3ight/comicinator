@@ -1,0 +1,48 @@
+@if (location(); as loc) {
+    <div class="location__banner">
+        <div>
+            <img [attr.src]="imageUrl()" />
+        </div>
+
+        <div>
+            <cbx-page-header [title]="loc.name">
+                <button
+                    mat-icon-button
+                    (click)="deleteLocation()"
+                    title="Delete location"
+                >
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <button mat-icon-button (click)="edit()" title="Edit location">
+                    <mat-icon>edit</mat-icon>
+                </button>
+            </cbx-page-header>
+
+            <div class="location__details">
+                <p>{{ loc.description ?? "No Description" }}</p>
+
+                @if (loc.externalUrl) {
+                    <a>
+                        <a [attr.href]="loc.externalUrl" target="_blank">{{
+                            loc.externalUrl
+                        }}</a>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <mat-tab-group
+        animationDuration
+        mat-stretch-tabs="false"
+        (selectedIndexChange)="activeTabIndex.set($event)"
+    >
+        <mat-tab label="Books"></mat-tab>
+    </mat-tab-group>
+
+    <div class="location__lists">
+        @if (activeTabIndex() === 0) {
+            <cbx-book-list [books]="books()" />
+        }
+    </div>
+}

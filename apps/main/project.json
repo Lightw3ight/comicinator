@@ -1,0 +1,52 @@
+{
+    "name": "comicinator-main",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "apps/main/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "dist",
+                "main": "apps/main/src/index.ts",
+                "tsConfig": "apps/main/tsconfig.lib.json",
+                "rootDir": "apps/main/src",
+                "assets": [],
+                "generatePackageJson": false
+            }
+        },
+
+        "serve": {
+            "dependsOn": [
+                "build",
+                { "projects": "comicinator-ui", "target": "serve" }
+            ],
+            "command": "ts-node apps/main/start-electron.ts"
+        },
+        "make": {
+            "dependsOn": [
+                "build",
+                { "projects": "comicinator-ui", "target": "build" }
+            ],
+            "command": "electron-forge make"
+        },
+
+        "package": {
+            "dependsOn": [
+                "build",
+                { "projects": "comicinator-ui", "target": "build" }
+            ],
+            "command": "electron-forge package"
+        },
+
+        "publish": {
+            "dependsOn": [
+                "build",
+                { "projects": "comicinator-ui", "target": "build" }
+            ],
+            "command": "electron-forge publish"
+        }
+    }
+}

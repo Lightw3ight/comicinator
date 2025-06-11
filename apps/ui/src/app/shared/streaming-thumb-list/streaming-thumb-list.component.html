@@ -1,0 +1,15 @@
+<cdk-virtual-scroll-viewport scrollWindow [itemSize]="itemHeight()">
+    <ng-container
+        *cdkVirtualFor="
+            let row of dataSource();
+            trackBy: trackRow;
+            let index = index
+        "
+    >
+        <cbx-thumb-list-row
+            [style.height.px]="itemHeight()"
+            [data]="row"
+            [itemTemplate]="itemTemplate().template"
+        />
+    </ng-container>
+</cdk-virtual-scroll-viewport>

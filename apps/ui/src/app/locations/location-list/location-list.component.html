@@ -1,0 +1,12 @@
+<cbx-virtual-thumb-list
+    [data]="locations()"
+    [itemWidth]="232"
+    [itemHeight]="332"
+>
+    <ng-template thumbListItemTemplate let-location>
+        <cbx-location-list-item
+            [routerLink]="['/locations', location.id]"
+            [location]="location"
+        />
+    </ng-template>
+</cbx-virtual-thumb-list>

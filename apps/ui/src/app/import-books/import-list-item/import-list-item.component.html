@@ -1,0 +1,39 @@
+<div class="import-item__main-details">
+    <div>
+        <mat-checkbox
+            [checked]="item().selected"
+            (change)="selectionToggled.emit($event.checked)"
+            >{{ item().name }}</mat-checkbox
+        >
+    </div>
+
+    <div class="import-item__issue">
+        {{ item().issueNumber ?? "N/A" }}
+    </div>
+
+    <div class="import-item__year">
+        {{ item().year ?? "N/A" }}
+    </div>
+    <div>
+        <button
+            type="button"
+            mat-icon-button
+            (click)="showDetails.set(!showDetails())"
+        >
+            @if (showDetails()) {
+                <mat-icon>expand_less</mat-icon>
+            } @else {
+                <mat-icon>expand_more</mat-icon>
+            }
+        </button>
+    </div>
+</div>
+@if (showDetails()) {
+    <div class="import-item__path-details">
+        <label>Source:</label>
+        <span>{{ item().filePath }}</span>
+
+        <label>Destination:</label>
+        <span>{{ item().outputPath }}</span>
+    </div>
+}

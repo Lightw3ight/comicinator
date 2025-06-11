@@ -1,0 +1,34 @@
+<div class="book-item__img" [style.backgroundImage]="thumbSrc()"></div>
+
+@if (bookData().number != null) {
+    <div class="book-item__num">
+        <span>#{{ bookData().number }}</span>
+        <span class="book-item__vol">
+            @if (bookData().volume) {
+                V{{ bookData().volume }}
+            }
+        </span>
+    </div>
+}
+
+<div class="book-item__details">
+    @if (bookData().series) {
+        <label class="book-item__series" [attr.title]="bookData().series">{{
+            bookData().series
+        }}</label>
+    }
+
+    <label class="book-item__title" [attr.title]="bookData().title">{{
+        bookData().title
+    }}</label>
+</div>
+
+<cbx-thumb-actions>
+    <button mat-icon-button (click)="onViewClick($event)" title="View">
+        <mat-icon>visibility</mat-icon>
+    </button>
+
+    <button mat-icon-button (click)="onEditClick($event)" title="Edit">
+        <mat-icon>edit</mat-icon>
+    </button>
+</cbx-thumb-actions>

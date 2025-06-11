@@ -1,0 +1,29 @@
+<h2
+    mat-dialog-title
+    cdkDrag
+    cdkDragRootElement=".cdk-overlay-pane"
+    cdkDragHandle
+>
+    Remove book
+</h2>
+<mat-dialog-content>
+    <p>
+        Are tou sure you want to remove the book {{ bookTitle }} from your
+        library
+    </p>
+    <div class="message-dialog__confirm">
+        <mat-checkbox #checkbox>Also delete from disk</mat-checkbox>
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button mat-button type="button" [mat-dialog-close]="false">No</button>
+    <button
+        mat-button
+        type="submit"
+        [mat-dialog-close]="[true, checkbox.checked]"
+        cdkFocusInitial
+    >
+        Yes
+    </button>
+</mat-dialog-actions>

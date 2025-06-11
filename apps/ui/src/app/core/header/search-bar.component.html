@@ -1,0 +1,14 @@
+<button class="search-bar__back" (click)="back()">
+    <i class="bi bi-arrow-left-short"></i>
+</button>
+
+<input
+    class="search-bar__input"
+    placeholder="Search..."
+    [(ngModel)]="searchValue"
+    (keydown.enter)="search()"
+/>
+
+<button class="search-bar__button" (click)="search()">
+    <i class="bi bi-search"></i>
+</button>

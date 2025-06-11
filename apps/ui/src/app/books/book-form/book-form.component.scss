@@ -1,0 +1,51 @@
+.book-form__content {
+    display: grid;
+    grid-template-columns: 200px auto;
+    gap: 24px;
+}
+
+.book-form__img-preview {
+    width: 200px;
+    position: absolute;
+}
+
+mat-form-field {
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.book-form__issue-volume {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    mat-form-field {
+        width: auto;
+    }
+}
+
+.book-form__actions-left {
+    flex: 1 1 auto;
+}
+
+.book-form__progress-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+
+.book-form__file-path {
+    margin-left: 8px;
+    font-size: 11px;
+    display: block;
+    line-height: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

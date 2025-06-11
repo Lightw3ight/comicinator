@@ -1,0 +1,25 @@
+<cbx-page-header [title]="pageTitle()">
+    <div class="locations__actions">
+        <cbx-sort-selector
+            [activeSort]="sortConfig()"
+            (activeSortChange)="setSorting($event)"
+        >
+            <cbx-sort-item field="name" label="Name" />
+            <cbx-sort-item field="dateAdded" label="Date added" />
+            <cbx-sort-item field="lastUpdated" label="Last updated" />
+        </cbx-sort-selector>
+
+        @if (search()) {
+            <div class="locations__action-divider"></div>
+            <button
+                mat-icon-button
+                (click)="clearSearch()"
+                title="Clear search"
+            >
+                <mat-icon>close</mat-icon>
+            </button>
+        }
+    </div>
+</cbx-page-header>
+
+<cbx-main-location-list [search]="search()" />

@@ -1,0 +1,57 @@
+<header>
+    <img src="images/logo.svg" />
+</header>
+
+<nav>
+    <a
+        class="main-nav__nav-item"
+        routerLink="/books"
+        routerLinkActive="main-nav__nav-item--active"
+    >
+        <i class="bi bi-collection"></i>
+        Books
+    </a>
+
+    <a
+        class="main-nav__nav-item"
+        routerLink="/characters"
+        routerLinkActive="main-nav__nav-item--active"
+    >
+        <i class="bi bi-person"></i>
+        Characters
+    </a>
+
+    <a
+        class="main-nav__nav-item"
+        routerLink="/teams"
+        routerLinkActive="main-nav__nav-item--active"
+    >
+        <i class="bi bi-people"></i>
+        Teams
+    </a>
+
+    <a
+        class="main-nav__nav-item"
+        routerLink="/locations"
+        routerLinkActive="main-nav__nav-item--active"
+    >
+        <i class="bi bi-geo"></i>
+        Locations
+    </a>
+</nav>
+
+<cbx-last-read-list />
+
+<footer>
+    <button (click)="openSettings()" [disabled]="!loaded()">
+        <mat-icon class="material-icons-outlined">settings</mat-icon>
+    </button>
+
+    <button (click)="scanLibrary()" [disabled]="!loaded()">
+        <mat-icon class="material-icons-outlined">create_new_folder</mat-icon>
+    </button>
+
+    <button (click)="importFiles()" [disabled]="!loaded()">
+        <mat-icon>save_alt</mat-icon>
+    </button>
+</footer>

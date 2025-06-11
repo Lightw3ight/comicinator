@@ -1,0 +1,13 @@
+<div>
+    <img class="super__img" [attr.src]="imageUrl()" />
+</div>
+
+<div>
+    <cbx-page-header [title]="title()">
+        <ng-content select="[cbx-action-buttons]"></ng-content>
+    </cbx-page-header>
+
+    <div class="super__details">
+        <ng-content></ng-content>
+    </div>
+</div>

@@ -1,0 +1,28 @@
+<div class="team-selector__filter-input">
+    <mat-form-field>
+        <input
+            type="text"
+            placeholder="Search..."
+            [formControl]="searchControl"
+            matInput
+            [matAutocomplete]="auto"
+        />
+        <mat-autocomplete
+            #auto="matAutocomplete"
+            (optionSelected)="addItem($event)"
+        >
+            @for (item of searchResults(); track item.id) {
+                <mat-option [value]="item.id">
+                    {{ item.name }}
+                </mat-option>
+            }
+        </mat-autocomplete>
+        <mat-hint>Type at least one character to search</mat-hint>
+    </mat-form-field>
+</div>
+
+<div>
+    @for (team of selectedTeams(); track team.id) {
+        <cbx-team-selector-item [team]="team" (remove)="removeItem(team)" />
+    }
+</div>

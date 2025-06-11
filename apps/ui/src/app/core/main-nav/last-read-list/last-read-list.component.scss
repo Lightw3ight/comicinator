@@ -1,0 +1,18 @@
+:host {
+    display: block;
+    overflow: auto;
+    display: grid;
+    grid-template-rows: fit-content(0) auto;
+    margin-top: 16px;
+}
+
+h3,
+h4 {
+    padding: 0 16px;
+    margin: 16px 0;
+}
+
+.last-read__items {
+    overflow: auto;
+    padding: 0 16px 16px 16px;
+}

@@ -1,0 +1,27 @@
+:host {
+    display: block;
+    margin-bottom: 8px;
+    line-height: 0;
+}
+
+label {
+    font-size: 12px;
+    display: inline-block;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-decoration: none;
+    cursor: pointer;
+    line-height: normal;
+
+    &:hover {
+        color: var(--brand-color);
+    }
+}
+
+.last-red-item__progress {
+    height: 3px;
+    background-color: var(--brand-color);
+    margin-top: 2px;
+}

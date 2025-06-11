@@ -1,0 +1,75 @@
+{
+    "name": "comicinator-ui",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "application",
+    "prefix": "cbx",
+    "sourceRoot": "apps/ui/src",
+    "tags": [],
+    "targets": {
+        "build": {
+            "executor": "@angular-devkit/build-angular:application",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "dist/comicinator",
+                "index": "apps/ui/src/index.html",
+                "browser": "apps/ui/src/main.ts",
+                "polyfills": ["zone.js"],
+                "tsConfig": "apps/ui/tsconfig.app.json",
+                "inlineStyleLanguage": "scss",
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "apps/ui/public"
+                    }
+                ],
+                "styles": [
+                    "apps/ui/src/styles.scss",
+                    "bootstrap-icons/font/bootstrap-icons.scss"
+                ],
+                "scripts": []
+            },
+            "configurations": {
+                "production": {
+                    "outputHashing": "all"
+                },
+                "development": {
+                    "optimization": false,
+                    "extractLicenses": false,
+                    "sourceMap": true
+                }
+            },
+            "defaultConfiguration": "production"
+        },
+        "serve": {
+            "continuous": true,
+            "executor": "@angular-devkit/build-angular:dev-server",
+            "configurations": {
+                "production": {
+                    "buildTarget": "comicinator-ui:build:production"
+                },
+                "development": {
+                    "buildTarget": "comicinator-ui:build:development"
+                }
+            },
+            "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+            "executor": "@angular-devkit/build-angular:extract-i18n",
+            "options": {
+                "buildTarget": "comicinator-ui:build"
+            }
+        },
+        "lint": {
+            "executor": "@nx/eslint:lint"
+        },
+        "serve-static": {
+            "continuous": true,
+            "executor": "@nx/web:file-server",
+            "options": {
+                "buildTarget": "comicinator-ui:build",
+                "staticFilePath": "dist/apps/ui/browser",
+                "spa": true
+            }
+        }
+    }
+}

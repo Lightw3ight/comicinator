@@ -1,0 +1,71 @@
+@use 'app/styles/_theme-colors' as *;
+@use '@angular/material' as mat;
+
+html {
+    color-scheme: dark;
+    @include mat.theme(
+        (
+            color: $primary-palette,
+            typography: Roboto,
+            density: 0,
+        )
+    );
+}
+cyan-orange
+/* You can add global styles to this file, and also import other style files */
+
+html,
+body {
+    height: 100%;
+}
+
+html {
+    box-sizing: border-box;
+}
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+html,
+body {
+    height: 100%;
+    background-color: var(--page-background);
+    margin: 0;
+    padding: 0;
+}
+
+i.bi,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+a {
+    color: white;
+    font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
+
+.bi {
+    font-size: 16px;
+}
+
+body {
+    --brand-color: #ff0095;
+    --page-background: #222222;
+    --side-bar-width: 220px;
+    --header-height: 70px;
+    --page-header-height: 60px;
+    --page-header-background: rgba(0, 0, 0, 0.2);
+    padding-top: var(--header-height);
+}
+
+h1 {
+    font-family: 'Bangers', system-ui;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 28px;
+    color: var(--brand-color);
+}

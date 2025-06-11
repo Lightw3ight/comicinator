@@ -1,0 +1,56 @@
+:host {
+    display: block;
+}
+
+.character__banner {
+    display: grid;
+    grid-template-columns: 200px auto;
+    gap: 24px;
+    padding: 24px;
+    background-color: rgba(0, 0, 0, 0.2);
+    align-items: flex-start;
+}
+
+img {
+    width: 100%;
+}
+
+.character__details {
+    font-size: 14px;
+    label {
+        color: var(--brand-color);
+    }
+}
+
+header {
+    display: grid;
+    grid-template-columns: auto fit-content(0);
+    grid-template-areas:
+        "title actions"
+        "subtitle actions";
+    margin-bottom: 24px;
+
+    h1 {
+        grid-area: title;
+        margin: 0;
+        flex: 0 0 auto;
+        font-size: 32px;
+    }
+
+    small {
+        grid-area: subtitle;
+    }
+
+    div {
+        grid-area: actions;
+    }
+}
+
+cbx-book-list,
+cbx-team-list {
+    margin: 8px;
+}
+
+mat-tab-group {
+    margin-left: 24px;
+}

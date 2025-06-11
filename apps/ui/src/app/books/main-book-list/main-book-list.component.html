@@ -1,0 +1,13 @@
+<cbx-streaming-thumb-list
+    [data]="dataSource()"
+    (columnCountChange)="onColumnCountChange($event)"
+    [itemWidth]="232"
+    [itemHeight]="388"
+>
+    <ng-template thumbListItemTemplate let-bookId>
+        <cbx-book-list-item
+            [routerLink]="['/books', bookId]"
+            [bookId]="bookId"
+        />
+    </ng-template>
+</cbx-streaming-thumb-list>

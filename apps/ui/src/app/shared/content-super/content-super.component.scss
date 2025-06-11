@@ -1,0 +1,12 @@
+:host {
+    display: grid;
+    grid-template-columns: 200px auto;
+    gap: 24px;
+    padding: 24px;
+    background-color: rgba(0, 0, 0, 0.2);
+    align-items: flex-start;
+}
+
+.super__img {
+    width: 100%;
+}

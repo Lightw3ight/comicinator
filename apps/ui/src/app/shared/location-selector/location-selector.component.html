@@ -1,0 +1,31 @@
+<div class="location-selector__filter-input">
+    <mat-form-field>
+        <input
+            type="text"
+            placeholder="Search..."
+            [formControl]="searchControl"
+            matInput
+            [matAutocomplete]="auto"
+        />
+        <mat-autocomplete
+            #auto="matAutocomplete"
+            (optionSelected)="addItem($event)"
+        >
+            @for (item of searchResults(); track item.id) {
+                <mat-option [value]="item.id">
+                    {{ item.name }}
+                </mat-option>
+            }
+        </mat-autocomplete>
+        <mat-hint>Type at least one character to search</mat-hint>
+    </mat-form-field>
+</div>
+
+<div>
+    @for (location of selectedLocations(); track location.id) {
+        <cbx-location-selector-item
+            [location]="location"
+            (remove)="removeItem(location)"
+        />
+    }
+</div>
