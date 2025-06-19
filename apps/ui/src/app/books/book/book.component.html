@@ -1,7 +1,7 @@
 @if (book(); as bk) {
-    <cbx-content-super [title]="title()" [imageUrl]="previewImageSrc()">
+    <cbx-content-super [title]="title()">
         <div cbx-action-buttons>
-            <button mat-icon-button (click)="openBook()">
+            <button mat-icon-button (click)="openBook()" title="Read book">
                 <mat-icon>visibility</mat-icon>
             </button>
 
@@ -30,14 +30,107 @@
             <button mat-icon-button (click)="removeBook()" title="Delete">
                 <mat-icon>delete</mat-icon>
             </button>
+        </div>
 
-            <button
-                mat-icon-button
-                (click)="showInExplorer()"
-                title="Open containing folder"
-            >
-                <mat-icon>folder</mat-icon>
-            </button>
+        <div preview-image>
+            <div class="book__preview-image-container">
+                <img
+                    class="book__preview-image"
+                    [attr.src]="previewImageSrc()"
+                    alt="Cover image"
+                />
+
+                <div class="book__preview-image-overlay">
+                    <button mat-mini-fab (click)="openBook()" title="Read book">
+                        <mat-icon>visibility</mat-icon>
+                    </button>
+                </div>
+            </div>
+
+            @if (bk.number || bk.volume) {
+                <div class="book__num-vol">
+                    @if (bk.number) {
+                        <span>#{{ bk.number }}</span>
+                    }
+                    @if (bk.volume) {
+                        <span>V{{ bk.volume }}</span>
+                    }
+                </div>
+            }
+        </div>
+
+        <a
+            href="javascript:void(0);"
+            (click)="showInExplorer()"
+            class="book__file-link"
+            >{{ bk.filePath }}</a
+        >
+
+        <div class="book__details">
+            @if (bk.publisherId) {
+                <div>
+                    <label>Publisher:</label>
+                    {{ publisher() }}
+                </div>
+            }
+
+            @if (bk.publisherId) {
+                <div>
+                    <label>Series:</label>&nbsp;
+                    <a [routerLink]="['/books/group/series', bk.series]">{{
+                        bk.series
+                    }}</a>
+                </div>
+            }
+
+            @if (bk.coverDate) {
+                <div>
+                    <label>Store date:</label>
+                    {{ bk.coverDate | date: 'mediumDate' }}
+                </div>
+            }
+
+            @if (bk.writer) {
+                <div>
+                    <label>Writer(s):</label>
+                    {{ bk.writer }}
+                </div>
+            }
+
+            @if (bk.penciler) {
+                <div>
+                    <label>Penciler(s):</label>
+                    {{ bk.penciler }}
+                </div>
+            }
+
+            @if (bk.inker) {
+                <div>
+                    <label>Inker(s):</label>
+                    {{ bk.inker }}
+                </div>
+            }
+
+            @if (bk.colorist) {
+                <div>
+                    <label>Colorist(s):</label>
+                    {{ bk.colorist }}
+                </div>
+            }
+
+            @if (bk.letterer) {
+                <div>
+                    <label>Letterer(s):</label>
+                    {{ bk.letterer }}
+                </div>
+            }
+
+            @if (bk.coverArtist) {
+                <div>
+                    <label>Cover artist(s):</label>
+                    {{ bk.coverArtist }}
+                </div>
+            }
         </div>
     </cbx-content-super>
 

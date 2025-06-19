@@ -16,7 +16,6 @@ class Book extends Model<InferAttributes<Book>, InferCreationAttributes<Book>> {
     declare number?: string;
     declare volume?: number;
     declare summary?: string;
-    declare notes?: string;
     declare coverDate?: Date;
     declare writer?: string;
     declare penciler?: string;
@@ -58,7 +57,6 @@ Book.init(
         number: DataTypes.TEXT,
         volume: DataTypes.TEXT,
         summary: DataTypes.TEXT,
-        notes: DataTypes.TEXT,
         writer: DataTypes.TEXT,
         penciler: DataTypes.TEXT,
         inker: DataTypes.TEXT,

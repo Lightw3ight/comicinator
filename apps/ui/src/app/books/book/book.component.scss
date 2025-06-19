@@ -3,10 +3,44 @@
         100vh - (var(--page-header-height) + var(--header-height))
     );
     display: block;
-    line-height: 0;
+    // line-height: 0;
     // display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.book__preview-image {
+    width: 100%;
+}
+
+.book__file-link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+.book__preview-image-container {
+    position: relative;
+}
+
+.book__preview-image-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    button {
+        opacity: 0;
+        transition: opacity ease-in-out 0.2s;
+    }
+
+    &:hover button {
+        opacity: 1;
+    }
 }
 
 cbx-character-list,
@@ -16,4 +50,31 @@ cbx-team-list {
 
 mat-tab-group {
     margin-left: 24px;
+}
+
+.book__num-vol {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    background-color: var(--brand-color);
+    color: #ffffff;
+    font-size: 24px;
+    padding: 8px;
+    margin-top: 8px;
+    font-family: 'Bangers', system-ui;
+    border-radius: 8px;
+}
+
+.book__details {
+    line-height: normal;
+    font-size: 14px;
+    margin-top: 16px;
+
+    label {
+        color: var(--brand-color);
+    }
+
+    div {
+        margin-bottom: 16px;
+    }
 }

@@ -5,35 +5,35 @@ import {
     inject,
     input,
     numberAttribute,
-    OnDestroy,
     signal,
-    Signal,
     untracked,
 } from '@angular/core';
-import { MatButtonModule, MatIconButton } from '@angular/material/button';
+import {
+    MatButtonModule,
+    MatIconButton,
+    MatMiniFabButton,
+} from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
-import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { Router } from '@angular/router';
+import { MatTab, MatTabGroup } from '@angular/material/tabs';
+import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { CharacterListComponent } from '../../characters/character-list/character-list.component';
 import { ElectronService } from '../../core/electron.service';
 import { FileSystemService } from '../../core/file-system.service';
 import { MessagingService } from '../../core/messaging/messaging.service';
-import { Book } from '../../core/models/book.interface';
 import { BooksStore } from '../../core/store/books/books.store';
-import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
-import { BookFormComponent } from '../book-form/book-form.component';
-import { ConfirmDeleteDialogComponent } from '../confirm-delete-dialog/confirm-delete-dialog.component';
-import { bookThumbCssSrc, bookThumbSrc } from '../../shared/book-thumb-path';
-import { CharacterListComponent } from '../../characters/character-list/character-list.component';
-import { BookDetailsStore } from './store/book-details.store';
-import { ContentSuperComponent } from '../../shared/content-super/content-super.component';
-import { BookViewerComponent } from '../book-viewer/book-viewer.component';
-import { MatTab, MatTabGroup } from '@angular/material/tabs';
-import { TeamListComponent } from '../../teams/team-list/team-list.component';
 import { LocationListComponent } from '../../locations/location-list/location-list.component';
+import { bookThumbSrc } from '../../shared/book-thumb-path';
+import { ContentSuperComponent } from '../../shared/content-super/content-super.component';
+import { TeamListComponent } from '../../teams/team-list/team-list.component';
+import { BookFormComponent } from '../book-form/book-form.component';
 import { BookViewerService } from '../book-viewer/book-viewer.service';
+import { ConfirmDeleteDialogComponent } from '../confirm-delete-dialog/confirm-delete-dialog.component';
+import { BookDetailsStore } from './store/book-details.store';
+import { DatePipe } from '@angular/common';
+import { PublishersStore } from '../../core/store/publishers/publishers.store';
 
 export type ImageFit = 'width' | 'height' | 'all';
 
@@ -55,6 +55,9 @@ export const FIT_KEY = 'image-viewer-fit';
         ContentSuperComponent,
         MatTab,
         MatTabGroup,
+        DatePipe,
+        MatMiniFabButton,
+        RouterLink,
     ],
 })
 export class BookComponent {
@@ -66,6 +69,7 @@ export class BookComponent {
     private messagingService = inject(MessagingService);
     private bookDetailsStore = inject(BookDetailsStore);
     private bookViewer = inject(BookViewerService);
+    private publisherStore = inject(PublishersStore);
 
     public readonly id = input.required({ transform: numberAttribute });
 
@@ -76,7 +80,8 @@ export class BookComponent {
     protected readonly loading = signal(false);
     protected readonly title = this.computeTitle();
     protected readonly previewImageSrc = this.computeThumbSrc();
-    protected activeTabIndex = signal(0);
+    protected readonly activeTabIndex = signal(0);
+    protected readonly publisher = this.computePublisher();
 
     constructor() {
         effect(() => {
@@ -100,6 +105,18 @@ export class BookComponent {
             message: 'Successfully removed thumbnail cache',
             hideRejectButton: true,
             confirmButtonText: 'OK',
+        });
+    }
+
+    private computePublisher() {
+        return computed(() => {
+            const id = this.book()?.publisherId;
+
+            if (id) {
+                return this.publisherStore.entityMap()[id]?.name;
+            }
+
+            return undefined;
         });
     }
 

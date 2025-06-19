@@ -6,14 +6,14 @@
             class="bar__group-button"
             title="Group by"
         >
-            <mat-icon>collections</mat-icon> {{ groupedField() ?? "None" }}
+            <mat-icon>collections</mat-icon> {{ groupedField() ?? 'None' }}
         </button>
 
         <cbx-sort-selector
             [activeSort]="sortConfig()"
             (activeSortChange)="setSorting($event)"
         >
-            <cbx-sort-item field="coverDate" label="Cover date" />
+            <cbx-sort-item field="coverDate" label="Store date" />
             <cbx-sort-item field="series" label="Series" />
             <cbx-sort-item field="title" label="Title" />
             <cbx-sort-item field="volume" label="Volume" />

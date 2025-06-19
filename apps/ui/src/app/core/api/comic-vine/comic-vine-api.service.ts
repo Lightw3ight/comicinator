@@ -173,7 +173,7 @@ export class ComicVineService {
     }
 
     public async getVolume(id: number) {
-        const url = this.makeUrl(`volumes/${API_TYPES.volume}-${id}`);
+        const url = this.makeUrl(`volume/${API_TYPES.volume}-${id}`);
         const response = await firstValueFrom(
             this.http.get<ApiResponseDto<VolumeResultDto>>(url),
         );

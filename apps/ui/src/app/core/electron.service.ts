@@ -20,6 +20,10 @@ export class ElectronService {
         return await this.electron[command](...args);
     }
 
+    public getFilePaths(files: File[]): string[] {
+        return this.electron.getFilePaths(files);
+    }
+
     public async abortImageQueue() {
         return await this.electron.cbxAbortImageQueue();
     }

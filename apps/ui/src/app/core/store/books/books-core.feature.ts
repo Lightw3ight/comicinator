@@ -369,7 +369,6 @@ export function withBooksCoreFeature() {
                         inker: xml?.Inker,
                         //filesize
                         letterer: xml?.Letterer,
-                        notes: xml?.Notes,
                         number: xml?.Number,
                         // pageCount
                         penciler: xml?.Penciller,

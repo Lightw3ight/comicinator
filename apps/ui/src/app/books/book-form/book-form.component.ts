@@ -38,6 +38,7 @@ import { BookSearchResultsComponent } from './book-search-results/book-search-re
 
 import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { ComicVineService } from '../../core/api/comic-vine/comic-vine-api.service';
 import { FileSystemService } from '../../core/file-system.service';
 import { AbortedImport } from '../../core/importers/aborted-import';
 import { ImporterService } from '../../core/importers/importer.service';
@@ -87,6 +88,7 @@ export class BookFormComponent implements OnInit {
     private importerService = inject(ImporterService);
     private messagingService = inject(MessagingService);
     private fileSystem = inject(FileSystemService);
+    private comicVineService = inject(ComicVineService);
     protected book = inject<Book>(MAT_DIALOG_DATA, { optional: true });
 
     protected importing = signal<boolean>(false);
@@ -195,6 +197,64 @@ export class BookFormComponent implements OnInit {
         };
     }
 
+    protected async refreshFromApi() {
+        const issueId = this.book?.externalId;
+        if (issueId) {
+            this.importing.set(true);
+            const issue = await this.comicVineService.getBook(issueId);
+
+            if (issue.volume?.id == null) {
+                this.messagingService.error('Comic has no volume');
+                return;
+            }
+
+            const volume = await this.comicVineService.getVolume(
+                issue.volume!.id,
+            );
+
+            await this.processApiResult(issue, volume);
+        }
+    }
+
+    private async processApiResult(issue: BookResult, volume: VolumeResult) {
+        this.importing.set(true);
+
+        try {
+            const { book, ...ids } = await this.importerService.importBook(
+                issue,
+                volume,
+                (progress) => this.progressText.set(progress),
+            );
+
+            if (ids.teamIds.length) {
+                await this.teamsStore.loadByIds(ids.teamIds);
+            }
+
+            if (ids.characterIds.length) {
+                await this.charactersStore.loadByIds(ids.characterIds);
+            }
+
+            if (ids.locationIds.length) {
+                await this.locationsStore.loadByIds(ids.locationIds);
+            }
+
+            this.form.patchValue({
+                ...book,
+                ...ids,
+            });
+        } catch (err: unknown) {
+            if (err instanceof AbortedImport) {
+                this.messagingService.warning('Book import aborted');
+            } else {
+                this.messagingService.error(
+                    'An error occured while importing book information',
+                );
+            }
+        } finally {
+            this.importing.set(false);
+        }
+    }
+
     protected async scan() {
         const { series, number, volume } = this.getSearchParams();
 
@@ -217,44 +277,7 @@ export class BookFormComponent implements OnInit {
 
             if (response) {
                 const { issue, volume } = response;
-
-                this.importing.set(true);
-
-                try {
-                    const { book, ...ids } =
-                        await this.importerService.importBook(
-                            issue,
-                            volume,
-                            (progress) => this.progressText.set(progress),
-                        );
-
-                    if (ids.teamIds.length) {
-                        await this.teamsStore.loadByIds(ids.teamIds);
-                    }
-
-                    if (ids.characterIds.length) {
-                        await this.charactersStore.loadByIds(ids.characterIds);
-                    }
-
-                    if (ids.locationIds.length) {
-                        await this.locationsStore.loadByIds(ids.locationIds);
-                    }
-
-                    this.form.patchValue({
-                        ...book,
-                        ...ids,
-                    });
-                } catch (err: unknown) {
-                    if (err instanceof AbortedImport) {
-                        this.messagingService.warning('Book import aborted');
-                    } else {
-                        this.messagingService.error(
-                            'An error occured while importing book information',
-                        );
-                    }
-                } finally {
-                    this.importing.set(false);
-                }
+                await this.processApiResult(issue, volume);
             }
         }
     }

@@ -7,7 +7,6 @@ export interface Book {
     number?: string;
     volume?: number;
     summary?: string;
-    notes?: string;
     coverDate?: Date;
     writer?: string;
     penciler?: string;

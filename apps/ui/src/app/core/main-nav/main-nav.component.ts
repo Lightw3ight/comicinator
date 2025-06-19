@@ -55,17 +55,6 @@ export class MainNavComponent {
             });
 
             await firstValueFrom(ref.afterClosed());
-
-            // if (this.booksStore.searchText()) {
-            //     await this.booksStore.search(this.booksStore.searchText()!);
-            // } else {
-            //     await this.booksStore.runQuickSearch(
-            //         this.booksStore.quickSearch(),
-            //         true,
-            //     );
-            // }
-
-            // await this.bookGroupStore.reloadGroups();
         }
     }
 }

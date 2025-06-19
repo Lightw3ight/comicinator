@@ -1,7 +1,7 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webUtils } from 'electron';
 
 const FILE_SYSTEM_METHODS = [
     'exists',
@@ -140,6 +140,20 @@ contextBridge.exposeInMainWorld('electron', {
             }
         }
         return await ipcRenderer.invoke('sql-run', sql, ...args);
+    },
+
+    getFilePath: (file: File) => {
+        return webUtils.getPathForFile(file);
+    },
+
+    getFilePaths: (files: File[]) => {
+        return files.map((file) => webUtils.getPathForFile(file));
+
+        // return Array.from(fileList).map((file) => {
+        //     const result = webUtils.getPathForFile(file);
+        //     console.log('get path for ', file.name, result);
+        //     return result;
+        // });
     },
 
     send: (channel: string, data: any) => {

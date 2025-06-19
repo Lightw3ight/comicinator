@@ -43,11 +43,11 @@ export class ImporterService {
     public async importBook(
         result: BookResult,
         volume: VolumeResult,
-        progress?: ProgressReporter
+        progress?: ProgressReporter,
     ): Promise<BookImportResult> {
         const publisherId = await this.importPublisher(
             volume.publisher,
-            progress
+            progress,
         );
 
         const characterIds = await this.importCharacters(
@@ -55,17 +55,17 @@ export class ImporterService {
             publisherId,
             undefined,
             true,
-            progress
+            progress,
         );
         const teamIds = await this.importTeams(
             result.teamCredits,
             publisherId,
             true,
-            progress
+            progress,
         );
         const locationIds = await this.importLocations(
             result.locations,
-            progress
+            progress,
         );
 
         let title = result.name;
@@ -89,7 +89,7 @@ export class ImporterService {
                 number: result.issueNumber,
                 series: volume?.name,
                 volume: volume.startYear ? Number(volume.startYear) : undefined,
-                coverDate: result.coverDate,
+                coverDate: result.storeDate,
                 externalId: result.id,
                 publisherId,
             },
@@ -101,7 +101,7 @@ export class ImporterService {
 
     public async importCharacter(
         result: CharacterResult,
-        progress?: ProgressReporter
+        progress?: ProgressReporter,
     ): Promise<CharacterImportResult> {
         let image: Blob | undefined;
 
@@ -115,13 +115,13 @@ export class ImporterService {
 
         const publisherId = await this.importPublisher(
             result.publisher,
-            progress
+            progress,
         );
         const teamIds = await this.importTeams(
             result.teams,
             publisherId,
             false,
-            progress
+            progress,
         );
 
         const character: Partial<Character> = {
@@ -146,7 +146,7 @@ export class ImporterService {
         result: TeamResult,
         importMembers: boolean,
         currentTeamId: number | undefined,
-        progress?: ProgressReporter
+        progress?: ProgressReporter,
     ): Promise<TeamImportResult> {
         let image: Blob | undefined;
 
@@ -160,7 +160,7 @@ export class ImporterService {
 
         const publisherId = await this.importPublisher(
             result.publisher,
-            progress
+            progress,
         );
 
         const characterIds = await this.importCharacters(
@@ -168,7 +168,7 @@ export class ImporterService {
             publisherId,
             currentTeamId,
             importMembers,
-            progress
+            progress,
         );
 
         const team: Partial<Team> = {
@@ -189,7 +189,7 @@ export class ImporterService {
 
     public async importLocation(
         result: LocationResult,
-        progress?: ProgressReporter
+        progress?: ProgressReporter,
     ): Promise<LocationImportResult> {
         let image: Blob | undefined;
 
@@ -226,7 +226,7 @@ export class ImporterService {
         publisherId: number | undefined,
         currentTeamId: number | undefined,
         addNewMembers: boolean,
-        progress: ProgressReporter | undefined
+        progress: ProgressReporter | undefined,
     ) {
         const ids: number[] = [];
 
@@ -235,7 +235,7 @@ export class ImporterService {
             const existing = await this.charactersApiService.findForImport(
                 item.id,
                 item.name,
-                publisherId
+                publisherId,
             );
 
             if (existing) {
@@ -247,7 +247,7 @@ export class ImporterService {
                     `An error occurred while retrieving character information for ${item.name}`;
                 const char = await this.messaging.runWithRetry(
                     () => this.comicVineService.getCharacter(item.id),
-                    errorMessage
+                    errorMessage,
                 );
 
                 if (char == null) {
@@ -256,12 +256,12 @@ export class ImporterService {
 
                 const publisherId = await this.importPublisher(
                     char?.publisher,
-                    progress
+                    progress,
                 );
                 const newId = await this.charactersStore.importCharacter(
                     char,
                     publisherId,
-                    currentTeamId
+                    currentTeamId,
                 );
                 ids.push(newId);
             }
@@ -272,7 +272,7 @@ export class ImporterService {
 
     private async importPublisher(
         publisher: ItemBase | undefined,
-        progress: ProgressReporter | undefined
+        progress: ProgressReporter | undefined,
     ) {
         if (!publisher) {
             return undefined;
@@ -281,7 +281,7 @@ export class ImporterService {
         let publisherId = (
             await this.publishersApiService.findForImport(
                 publisher.id,
-                publisher.name
+                publisher.name,
             )
         )?.id;
 
@@ -302,7 +302,7 @@ export class ImporterService {
         teams: ItemBase[] | undefined,
         publisherId: number | undefined,
         addNewTeams: boolean,
-        progress: ProgressReporter | undefined
+        progress: ProgressReporter | undefined,
     ) {
         const ids: number[] = [];
 
@@ -311,7 +311,7 @@ export class ImporterService {
             const existing = await this.teamsApiService.findForImport(
                 item.id,
                 item.name,
-                publisherId
+                publisherId,
             );
 
             if (existing) {
@@ -323,7 +323,7 @@ export class ImporterService {
                     `An error occurred while retrieving team information for ${item.name}`;
                 const team = await this.messaging.runWithRetry(
                     () => this.comicVineService.getTeam(item.id),
-                    errorMessage
+                    errorMessage,
                 );
 
                 if (team == null) {
@@ -332,11 +332,11 @@ export class ImporterService {
 
                 const publisherId = await this.importPublisher(
                     team?.publisher,
-                    progress
+                    progress,
                 );
                 const newId = await this.teamsStore.importTeam(
                     team,
-                    publisherId
+                    publisherId,
                 );
                 ids.push(newId);
             }
@@ -347,7 +347,7 @@ export class ImporterService {
 
     private async importLocations(
         locations: ItemBase[] | undefined,
-        progress: ProgressReporter | undefined
+        progress: ProgressReporter | undefined,
     ) {
         const ids: number[] = [];
 
@@ -355,7 +355,7 @@ export class ImporterService {
             progress?.(`Checking for existing location: ${item.name}`);
             const existing = await this.locationsApiService.findForImport(
                 item.id,
-                item.name
+                item.name,
             );
 
             if (existing) {
@@ -367,16 +367,15 @@ export class ImporterService {
                     `An error occurred while retrieving team information for ${item.name}`;
                 const location = await this.messaging.runWithRetry(
                     () => this.comicVineService.getLocation(item.id),
-                    errorMessage
+                    errorMessage,
                 );
 
                 if (location == null) {
                     throw new AbortedImport('Aborted at location import');
                 }
 
-                const newId = await this.locationsStore.importLocation(
-                    location
-                );
+                const newId =
+                    await this.locationsStore.importLocation(location);
                 ids.push(newId);
             }
         }

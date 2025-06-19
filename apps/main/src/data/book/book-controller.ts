@@ -26,7 +26,7 @@ async function assignTeams(bookId: number, teamIds: number[], tx: Transaction) {
 async function assignCharacters(
     bookId: number,
     characterIds: number[],
-    tx: Transaction
+    tx: Transaction,
 ) {
     await BookCharacter.destroy({
         where: { bookId },
@@ -36,7 +36,7 @@ async function assignCharacters(
     for (const characterId of characterIds) {
         await BookCharacter.create(
             { bookId, characterId },
-            { transaction: tx }
+            { transaction: tx },
         );
     }
 }
@@ -44,7 +44,7 @@ async function assignCharacters(
 async function assignLocations(
     bookId: number,
     locationIds: number[],
-    tx: Transaction
+    tx: Transaction,
 ) {
     await BookLocation.destroy({
         where: { bookId },
@@ -74,7 +74,7 @@ export class BookController {
     public static async selectByIds(
         ids: number[],
         order: keyof Book = 'coverDate',
-        dir = 'DESC'
+        dir = 'DESC',
     ) {
         const results = await Book.findAll({
             where: { id: ids },
@@ -101,15 +101,18 @@ export class BookController {
         publisherId: number | undefined,
         series: string,
         volume: string | undefined,
-        currentNumber: number
+        currentNumber: number,
     ) {
         const results = await Book.findAll({
-            order: [['coverDate', 'ASC']],
+            order: [
+                [Sequelize.literal('CAST(number AS INTEGER)'), 'ASC'],
+                ['coverDate', 'ASC'],
+            ],
             attributes: { exclude: ['image'] },
             where: {
                 [Op.and]: [
                     Sequelize.literal(
-                        `CAST(number AS INTEGER) > ${currentNumber}`
+                        `CAST(number AS INTEGER) > ${currentNumber}`,
                     ),
                     { publisherId },
                     { series },
@@ -145,7 +148,7 @@ export class BookController {
     public static async selectByCharacter(
         characterId: number,
         order: keyof Book = 'coverDate',
-        orderDirection = 'DESC'
+        orderDirection = 'DESC',
     ) {
         const results = await Book.findAll({
             order: [[order, orderDirection]],
@@ -162,7 +165,7 @@ export class BookController {
     public static async selectByTeam(
         teamId: number,
         order: keyof Book = 'coverDate',
-        orderDirection = 'DESC'
+        orderDirection = 'DESC',
     ) {
         const results = await Book.findAll({
             order: [[order, orderDirection]],
@@ -179,7 +182,7 @@ export class BookController {
     public static async selectByLocation(
         locationId: number,
         order: keyof Book = 'coverDate',
-        orderDirection = 'DESC'
+        orderDirection = 'DESC',
     ) {
         const results = await Book.findAll({
             order: [[order, orderDirection]],
@@ -218,7 +221,7 @@ export class BookController {
 
     public static async selectGrouped(
         field: keyof Book,
-        options: SelectOptions<Book>
+        options: SelectOptions<Book>,
     ) {
         const where =
             options.filter == null
@@ -253,7 +256,7 @@ export class BookController {
         const results = await Book.findAll({
             order: [
                 ['coverDate', 'DESC'],
-                ['number', 'DESC'],
+                [Sequelize.literal('CAST(number AS INTEGER)'), 'DESC'],
             ],
             where: { [field]: value },
         });
@@ -265,7 +268,7 @@ export class BookController {
         book: Omit<Book, 'id'>,
         characterIds: number[],
         teamIds: number[],
-        locationIds: number[]
+        locationIds: number[],
     ) {
         const tx = await db.transaction();
 
@@ -293,11 +296,11 @@ export class BookController {
     public static async setReadDetails(
         id: number,
         currentPage: number,
-        pageCount: number
+        pageCount: number,
     ) {
         await Book.update(
             { pageCount, currentPage, lastOpened: new Date() },
-            { where: { id } }
+            { where: { id } },
         );
 
         return await this.selectById(id);
@@ -308,7 +311,7 @@ export class BookController {
         book: Omit<Book, 'id'>,
         characterIds?: number[],
         teamIds?: number[],
-        locationIds?: number[]
+        locationIds?: number[],
     ) {
         const tx = await db.transaction();
 
