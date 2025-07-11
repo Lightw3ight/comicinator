@@ -7,6 +7,8 @@ import { Location } from './location/location';
 import { Team } from './team/team';
 import { TeamCharacter } from './team/team-character';
 import { db } from './db';
+import { Library } from './library/library';
+import { LibraryFilter } from './library/library-filter';
 
 export function initializeModelRelationships() {
     Book.belongsToMany(Character, {
@@ -44,6 +46,8 @@ export function initializeModelRelationships() {
         through: BookLocation,
         foreignKey: 'locationId',
     });
+
+    LibraryFilter.belongsTo(Library, { foreignKey: 'libraryId' });
 
     db.sync();
 }

@@ -2,8 +2,8 @@
 
 <div class="books__list-container">
     @if (groupingActive()) {
-        <cbx-group-list [search]="search()" />
+        <cbx-group-list [search]="search()" [libraryId]="libraryId()" />
     } @else {
-        <cbx-main-book-list [search]="search()" />
+        <cbx-main-book-list [search]="search()" [libraryId]="libraryId()" />
     }
 </div>

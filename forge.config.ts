@@ -12,6 +12,15 @@ const config: ForgeConfig = {
         },
         extraResource: ['./resources/no-image.jpg', './resources/app.ico'],
         icon: './resources/app.ico',
+        ignore: [
+            /\.nx/,
+            /\.angular/,
+            /debug-data/,
+            /tmp/,
+            /\.github/,
+            /apps/,
+            /\.vscode/,
+        ],
     },
     rebuildConfig: {},
     makers: [

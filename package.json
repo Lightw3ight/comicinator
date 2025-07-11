@@ -1,11 +1,11 @@
 {
     "name": "comicinator",
-    "version": "0.5.0",
+    "version": "0.5.8",
     "description": "Comic book reader and organizer",
     "author": "Kris Mackintosh",
     "license": "MIT",
     "scripts": {},
-    "main": "dist/index.js",
+    "main": "dist/app/index.js",
     "dependencies": {
         "@angular/common": "~19.2.0",
         "@angular/compiler": "~19.2.0",

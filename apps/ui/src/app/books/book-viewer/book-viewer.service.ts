@@ -18,8 +18,9 @@ export class BookViewerService {
 
         const ref = this.dialog.open(BookViewerComponent, {
             data: book,
-            minWidth: 'calc(100vw - 32px)',
-            minHeight: 'calc(100vh - 32px)',
+            minWidth: '100vw',
+            minHeight: '100vh',
+            panelClass: 'book-viewer__panel',
         });
         await firstValueFrom(ref.afterClosed());
     }

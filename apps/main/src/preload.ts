@@ -97,12 +97,25 @@ const BOOK_METHODS = [
     'selectNextBook',
 ];
 
-const SETTING_METHODS = ['selectAll', 'saveAll'];
+const LIBRARY_METHODS = [
+    'selectById',
+    'selectAll',
+    'selectFilters',
+    'create',
+    'update',
+    'remove',
+    'selectBooks',
+    'selectBooksCount',
+    'selectGroupedBooks',
+    'selectGroupedBooksCount',
+];
+
+const SETTING_METHODS = ['selectAll', 'saveAll', 'create', 'update', 'remove'];
 
 function createHandlerPassthroughs(prefix: string, names: string[]) {
     return names.reduce((acc, name) => {
         const fnName = `${prefix}${name.charAt(0).toUpperCase()}${name.slice(
-            1
+            1,
         )}`;
         return {
             ...acc,
@@ -125,6 +138,7 @@ contextBridge.exposeInMainWorld('electron', {
     ...createHandlerPassthroughs('fs', FILE_SYSTEM_METHODS),
     ...createHandlerPassthroughs('zip', ZIP_METHODS),
     ...createHandlerPassthroughs('cbx', GENERIC_METHODS),
+    ...createHandlerPassthroughs('lib', LIBRARY_METHODS),
     sqlRun: async (sql: string, ...args: any[]) => {
         for (const arg of args) {
             if (arg instanceof Object) {

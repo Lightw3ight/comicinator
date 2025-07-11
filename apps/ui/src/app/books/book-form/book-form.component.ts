@@ -6,7 +6,7 @@ import {
     Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { provideNativeDateAdapter } from '@angular/material/core';
+
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import {
     MAT_DIALOG_DATA,
@@ -51,7 +51,6 @@ import { ProgressTakeoverComponent } from '../../shared/progress-takeover/progre
     selector: 'cbx-book-form',
     templateUrl: 'book-form.component.html',
     styleUrl: 'book-form.component.scss',
-    providers: [provideNativeDateAdapter()],
     imports: [
         CommonModule,
         MatDialogTitle,

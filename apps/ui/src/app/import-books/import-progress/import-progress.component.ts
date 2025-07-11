@@ -51,7 +51,7 @@ export class ImportProgressComponent implements OnInit {
     async begin() {
         const errors: ErrorResult[] = [];
 
-        for (let item of this.importItems) {
+        for (const item of this.importItems) {
             if (this.cancelled()) {
                 break;
             }

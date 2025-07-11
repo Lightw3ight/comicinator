@@ -8,6 +8,7 @@ import { AppSettingsComponent } from '../../app-settings/app-settings.component'
 import { ImportBooksComponent } from '../../import-books/import-books.component';
 import { LibraryScannerComponent } from '../../library-scanner/library-scanner.component';
 import { FileSystemService } from '../file-system.service';
+import { LibraryStore } from '../store/library/library.store';
 import { SettingsStore } from '../store/settings/settings.store';
 import { LastReadListComponent } from './last-read-list/last-read-list.component';
 
@@ -28,8 +29,10 @@ export class MainNavComponent {
     private dialog = inject(MatDialog);
     private fileSystemService = inject(FileSystemService);
     private settingsStore = inject(SettingsStore);
+    protected libraryStore = inject(LibraryStore);
 
     protected loaded = this.settingsStore.loaded;
+    protected libraries = this.libraryStore.quickList;
 
     protected openSettings() {
         this.dialog.open(AppSettingsComponent, {

@@ -6,7 +6,7 @@
     width: var(--side-bar-width);
     background-color: #444444;
     display: grid;
-    grid-template-rows: 71px fit-content(0) auto 51px;
+    grid-template-rows: 71px fit-content(0) fit-content(0) auto 51px;
     grid-template-columns: var(--side-bar-width);
 }
 
@@ -48,19 +48,39 @@ button {
 
 .main-nav__nav-item {
     color: white;
-    display: block;
+    display: flex;
     border-radius: 8px;
     margin: 0 8px;
     margin-bottom: 2px;
     padding: 8px;
     text-decoration: none;
-
-    i {
-        margin-right: 8px;
-    }
+    align-items: center;
+    gap: 8px;
 
     &:hover {
         background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+.main-nav__lib-quick-list {
+    padding: 0 16px;
+    margin-top: 16px;
+
+    h4 {
+        margin: 0 0 4px 0;
+    }
+}
+
+.main-nav__lib-quick-list-item {
+    padding: 2px 0;
+
+    a {
+        font-size: 12px;
+        text-decoration: none;
+
+        &:hover {
+            color: var(--brand-color);
+        }
     }
 }
 

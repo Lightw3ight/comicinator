@@ -44,6 +44,7 @@ Thumbs.db
 .github/instructions/nx.instructions.md
 
 .angular
+out
 
 # App data for running in debug mode
 debug-data

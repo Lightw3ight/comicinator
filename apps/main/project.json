@@ -9,7 +9,7 @@
             "executor": "@nx/js:tsc",
             "outputs": ["{options.outputPath}"],
             "options": {
-                "outputPath": "dist",
+                "outputPath": "dist/main",
                 "main": "apps/main/src/index.ts",
                 "tsConfig": "apps/main/tsconfig.lib.json",
                 "rootDir": "apps/main/src",
@@ -19,18 +19,33 @@
         },
 
         "serve": {
+            "executor": "nx:run-commands",
             "dependsOn": [
                 "build",
                 { "projects": "comicinator-ui", "target": "serve" }
             ],
-            "command": "ts-node apps/main/start-electron.ts"
+            "options": {
+                "parallel": false,
+                "commands": [
+                    "node tools/prepare-files-for-serve.js",
+                    "ts-node apps/main/start-electron.ts"
+                ]
+            }
         },
+
         "make": {
+            "executor": "nx:run-commands",
             "dependsOn": [
                 "build",
                 { "projects": "comicinator-ui", "target": "build" }
             ],
-            "command": "electron-forge make"
+            "options": {
+                "parallel": false,
+                "commands": [
+                    "node tools/prepare-files-for-make.js",
+                    "electron-forge make"
+                ]
+            }
         },
 
         "package": {

@@ -51,7 +51,7 @@ export class BookViewerComponent implements OnDestroy, OnInit {
     protected readonly title = this.computeTitle();
     protected readonly loading = signal(false);
     protected readonly images = signal<{ entryName: string; url: string }[]>(
-        []
+        [],
     );
     protected readonly imageIndex = signal<number>(0);
     protected readonly activeImage = this.computeActiveImage();
@@ -109,7 +109,7 @@ export class BookViewerComponent implements OnDestroy, OnInit {
     protected async setAsFrontCover() {
         const confirmed = await this.messagingService.confirm(
             'Set as front cover?',
-            'Are you sure you want to set the current page as the front cover?'
+            'Are you sure you want to set the current page as the front cover?',
         );
 
         if (confirmed) {
@@ -163,9 +163,9 @@ export class BookViewerComponent implements OnDestroy, OnInit {
 
         if (
             viewer.offsetHeight === viewer.scrollHeight ||
-            viewer.scrollTop + viewer.offsetHeight === viewer.scrollHeight
+            Math.ceil(viewer.scrollTop) + viewer.offsetHeight >=
+                viewer.scrollHeight
         ) {
-            console.log('next page from read next');
             this.nextPage();
         } else {
             viewer.scrollTo({
@@ -230,7 +230,7 @@ export class BookViewerComponent implements OnDestroy, OnInit {
                 this.bookStore.setReadDetails(
                     this.book().id,
                     currentPage + 1,
-                    urls.length
+                    urls.length,
                 );
             });
     }
@@ -261,7 +261,7 @@ export class BookViewerComponent implements OnDestroy, OnInit {
         this.bookStore.setReadDetails(
             this.book().id,
             num + 1,
-            this.images().length
+            this.images().length,
         );
     }
 

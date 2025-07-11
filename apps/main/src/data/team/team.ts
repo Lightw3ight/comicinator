@@ -56,6 +56,11 @@ Team.init(
     {
         sequelize: db,
         modelName: 'Team',
+        indexes: [
+            {
+                fields: ['externalId'],
+            },
+        ],
     },
 );
 

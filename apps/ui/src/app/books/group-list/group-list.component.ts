@@ -36,6 +36,7 @@ export class GroupListComponent implements OnDestroy {
     private bookStore = inject(BooksStore);
 
     public readonly search = input<string>();
+    public readonly libraryId = input<number>();
 
     protected readonly groupField = this.bookGroupStore.groupField;
     protected readonly pagedData$ = toObservable(this.bookGroupStore.pagedData);
@@ -47,6 +48,7 @@ export class GroupListComponent implements OnDestroy {
     constructor() {
         effect(async () => {
             const search = this.search();
+            const libraryId = this.libraryId();
             const columnCount = this.columnCount();
             this.bookGroupStore.groupField();
             this.bookStore.sortField();
@@ -56,6 +58,7 @@ export class GroupListComponent implements OnDestroy {
             untracked(async () => {
                 if (columnCount > 0) {
                     this.bookGroupStore.setColumnCount(columnCount);
+                    this.bookGroupStore.setLibrary(libraryId);
 
                     if (search?.length) {
                         this.bookGroupStore.setSearch(search);

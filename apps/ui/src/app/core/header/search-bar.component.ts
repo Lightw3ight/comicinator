@@ -40,10 +40,21 @@ export class SearchBarComponent {
         const searchValue = this.searchValue().trim();
 
         if (searchValue.length) {
-            const [, searchAreaAndQuery] = this.router.url.split('/');
+            const [, searchAreaAndQuery, secondaryArea] =
+                this.router.url.split('/');
             const [searchArea] = searchAreaAndQuery.split('?');
 
-            this.router.navigateByUrl(`/${searchArea}?search=${searchValue}`);
+            if (searchArea === 'books' && secondaryArea === 'library') {
+                this.router.navigate([], {
+                    relativeTo: this.route,
+                    queryParams: { search: searchValue },
+                    queryParamsHandling: 'merge',
+                });
+            } else {
+                this.router.navigate(['/', searchArea], {
+                    queryParams: { search: searchValue },
+                });
+            }
         }
     }
 }

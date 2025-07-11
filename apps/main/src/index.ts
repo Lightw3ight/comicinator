@@ -15,6 +15,7 @@ import { getGenericHandlers } from './helpers/generic-handlers';
 import { getZipThumbnail } from './helpers/get-zip-thumbnail';
 import { createLazyValue } from './helpers/lazy-value';
 import { getZipHandlers } from './zip/zip-handlers';
+import { LibraryController } from './data/library/library-controller';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -29,15 +30,16 @@ const createWindow = (): void => {
     // Create the browser window.
     mainWindow.set(
         new BrowserWindow({
-            height: 600,
-            width: 800,
+            height: 800,
+            width: 1000,
             icon: ICO_PATH,
+            autoHideMenuBar: true,
             webPreferences: {
                 webSecurity: true,
                 preload: path.join(__dirname, 'preload.js'),
                 contextIsolation: true,
             },
-        })
+        }),
     );
 
     mainWindow().webContents.setWindowOpenHandler(({ url }) => {
@@ -45,8 +47,14 @@ const createWindow = (): void => {
         return { action: 'deny' };
     });
 
+    function generatePackedPath() {
+        const appMainRoot = __dirname.replaceAll('\\', '/');
+        const dist = appMainRoot.substring(0, appMainRoot.lastIndexOf('/'));
+        return `file://${path.join(dist, 'app/ui/browser/index.html')}`;
+    }
+
     const startURL = app.isPackaged
-        ? `file://${path.join(__dirname, 'comicinator/browser/index.html')}`
+        ? generatePackedPath()
         : `http://localhost:4200`;
 
     const filter = {
@@ -56,11 +64,10 @@ const createWindow = (): void => {
     mainWindow().webContents.session.webRequest.onBeforeSendHeaders(
         filter,
         (details, callback) => {
-            details.requestHeaders[
-                'Origin'
-            ] = `https://comicvine.gamespot.com/*`;
+            details.requestHeaders['Origin'] =
+                `https://comicvine.gamespot.com/*`;
             callback({ requestHeaders: details.requestHeaders });
-        }
+        },
     );
 
     mainWindow().webContents.session.webRequest.onHeadersReceived(
@@ -70,7 +77,7 @@ const createWindow = (): void => {
                 'http://localhost:4200', // URL your local electron app hosted
             ];
             callback({ responseHeaders: details.responseHeaders });
-        }
+        },
     );
 
     mainWindow().loadURL(startURL);
@@ -92,7 +99,7 @@ app.on('ready', () => {
             normalizedPath,
             frontCover,
             THUMB_CACHE_PATH,
-            NO_IMAGE_PATH
+            NO_IMAGE_PATH,
         );
     });
 
@@ -124,7 +131,7 @@ app.on('ready', () => {
 });
 
 async function handleEntityImageRequest(
-    buffer: Buffer<ArrayBufferLike> | undefined
+    buffer: Buffer<ArrayBufferLike> | undefined,
 ) {
     if (buffer) {
         // Detect file type dynamically
@@ -164,7 +171,7 @@ function registerHandlers(prefix: string, handlers: object) {
         if (typeof fn === 'function') {
             ipcMain.handle(
                 `${prefix}-${name}`,
-                async (_evt: any, ...args: any[]) => fn(...args)
+                async (_evt: any, ...args: any[]) => fn(...args),
             );
         }
     });
@@ -172,14 +179,14 @@ function registerHandlers(prefix: string, handlers: object) {
 
 function registerControllerHandlers(prefix: string, controller: any) {
     const keys = Object.getOwnPropertyNames(controller).filter(
-        (o) => o !== 'constructor'
+        (o) => o !== 'constructor',
     );
 
     keys.forEach((key) => {
         if (typeof controller[key] === 'function') {
             ipcMain.handle(
                 `${prefix}-${key}`,
-                async (_evt: any, ...args: any[]) => controller[key](...args)
+                async (_evt: any, ...args: any[]) => controller[key](...args),
             );
         }
     });
@@ -197,3 +204,4 @@ registerControllerHandlers('loc', LocationController);
 registerControllerHandlers('setting', SettingController);
 registerControllerHandlers('pub', PublisherController);
 registerControllerHandlers('book', BookController);
+registerControllerHandlers('lib', LibraryController);

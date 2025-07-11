@@ -76,6 +76,7 @@ export function withBookGroupCoreFeature() {
                     const columnCount = store.columnCount();
                     const itemCount = await bookApiService.selectGroupedTotal(
                         field,
+                        store.libraryId(),
                         store.searchText(),
                     );
 
@@ -104,6 +105,14 @@ export function withBookGroupCoreFeature() {
                     if (query !== store.searchText()) {
                         patchState(store, {
                             searchText: query,
+                        });
+                    }
+                },
+
+                setLibrary(libraryId: number | undefined) {
+                    if (libraryId !== store.libraryId()) {
+                        patchState(store, {
+                            libraryId,
                         });
                     }
                 },
@@ -138,6 +147,7 @@ export function withBookGroupCoreFeature() {
                         PAGE_SCROLL_SIZE * store.columnCount(),
                         bookStore.sortField(),
                         bookStore.sortDirection(),
+                        store.libraryId(),
                     );
                     const ids = books.map((o) => o.id);
                     const chunkedIds = chunkItems(ids, store.columnCount());
@@ -149,80 +159,6 @@ export function withBookGroupCoreFeature() {
                     );
                     patchState(store, addEntities(books), { pagedData });
                 },
-
-                // selectGroupBooks(groupValue: string) {
-                //     return computed(() => {
-                //         return store.groupBooks()[groupValue];
-                //     });
-                // },
-
-                // setActiveGroupBy(field: keyof Book) {
-                //     let groupBooks = { ...store.groupBooks() };
-
-                //     if (field !== store.groupField()) {
-                //         groupBooks = {};
-                //     }
-
-                //     patchState(store, {
-                //         groupField: field,
-                //         search: store.search() ?? 'a',
-                //         searchOperator: store.searchOperator() ?? 'starts-with',
-                //         groups: [],
-                //         groupBooks,
-                //     });
-                // },
-
-                // clearGrouping() {
-                //     patchState(store, {
-                //         groupField: undefined,
-                //         groups: [],
-                //         groupBooks: {},
-                //     });
-
-                //     localStorage.removeItem(ACTIVE_GROUP_FIELD_KEY);
-                // },
-
-                // async loadGroups(filter: string, operator: FilterOperator) {
-                //     const groups = await bookApiService.groupBy(
-                //         store.groupField()!,
-                //         filter,
-                //         operator === 'contains',
-                //     );
-
-                //     patchState(store, {
-                //         groups,
-                //         search: filter,
-                //         searchOperator: operator,
-                //     });
-                // },
-
-                // async reloadGroups() {
-                //     const field = store.groupField();
-                //     if (field) {
-                //         await this.loadGroups(
-                //             store.search()!,
-                //             store.searchOperator()!,
-                //         );
-                //     }
-                // },
-
-                // async loadGroupBooks(groupValue: string) {
-                //     if (store.groupBooks()[groupValue] != null) {
-                //         return;
-                //     }
-
-                //     const bookIds = await bookStore.loadByGroup(
-                //         store.groupField()!,
-                //         groupValue,
-                //     );
-
-                //     patchState(store, {
-                //         groupBooks: {
-                //             ...store.groupBooks(),
-                //             [groupValue]: bookIds,
-                //         },
-                //     });
-                // },
             };
         }),
 

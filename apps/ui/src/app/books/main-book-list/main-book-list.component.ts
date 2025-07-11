@@ -33,6 +33,7 @@ export class MainBookListComponent implements OnDestroy {
     private electron = inject(ElectronService);
 
     public readonly search = input<string>();
+    public readonly libraryId = input<number>();
 
     protected readonly pagedData$ = toObservable(this.booksStore.pagedData);
     protected readonly dataSource = signal<
@@ -43,6 +44,7 @@ export class MainBookListComponent implements OnDestroy {
     constructor() {
         effect(async () => {
             const search = this.search();
+            const libraryId = this.libraryId();
             const columnCount = this.columnCount();
             this.booksStore.sortField();
             this.booksStore.sortDirection();
@@ -51,6 +53,8 @@ export class MainBookListComponent implements OnDestroy {
             untracked(async () => {
                 if (columnCount > 0) {
                     this.booksStore.setColumnCount(columnCount);
+
+                    this.booksStore.setLibrary(libraryId);
 
                     if (search?.length) {
                         this.booksStore.setSearch(search);

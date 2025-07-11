@@ -26,7 +26,7 @@ export function withPublishersCoreFeature() {
 
             return {
                 findPublisher(externalId: number | undefined, name: string) {
-                    let result =
+                    const result =
                         store
                             .entities()
                             .find((o) => o.externalId === externalId) ??

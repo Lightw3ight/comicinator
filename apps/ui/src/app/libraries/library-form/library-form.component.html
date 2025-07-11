@@ -1,0 +1,120 @@
+<form [formGroup]="form" (ngSubmit)="form.valid && save()">
+    <h2
+        mat-dialog-title
+        cdkDrag
+        cdkDragRootElement=".cdk-overlay-pane"
+        cdkDragHandle
+    >
+        {{ library?.name ?? 'New Library' }}
+    </h2>
+    <mat-dialog-content>
+        <div class="lib-form__name-and-match-all">
+            <mat-form-field>
+                <mat-label>Name</mat-label>
+                <input matInput formControlName="name" />
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label>Match</mat-label>
+                <mat-select formControlName="matchAll">
+                    <mat-option [value]="true"> All filters </mat-option>
+                    <mat-option [value]="false"> Any filter </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+
+        <mat-form-field subscriptSizing="dynamic">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description"></textarea>
+        </mat-form-field>
+
+        <mat-checkbox formControlName="showInQuickList"
+            >Show in quick list</mat-checkbox
+        >
+
+        <div formArrayName="filters">
+            @for (
+                filterForm of form.controls.filters.controls;
+                track filterForm;
+                let ix = $index
+            ) {
+                <div [formGroup]="filterForm" class="lib-form__filter">
+                    <mat-form-field subscriptSizing="dynamic">
+                        <mat-label>Field</mat-label>
+                        <mat-select
+                            formControlName="field"
+                            (selectionChange)="resetFilterValue(filterForm)"
+                        >
+                            @for (item of availableFields; track item.field) {
+                                <mat-option [value]="item.field">
+                                    {{ item.displayName }}
+                                </mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field subscriptSizing="dynamic">
+                        <mat-label>Operator</mat-label>
+                        <mat-select formControlName="operator">
+                            @for (
+                                op of filterForm.controls.field.value
+                                    | availableOperators;
+                                track op
+                            ) {
+                                <mat-option [value]="op">
+                                    {{ op | operatorDisplayName }}
+                                </mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+
+                    @switch (filterForm.controls.field.value | formField) {
+                        @case ('text') {
+                            <mat-form-field subscriptSizing="dynamic">
+                                <mat-label>Value</mat-label>
+                                <input matInput formControlName="value" />
+                            </mat-form-field>
+                        }
+                        @case ('publisher') {
+                            <mat-form-field subscriptSizing="dynamic">
+                                <mat-label>Value</mat-label>
+                                <mat-select formControlName="value">
+                                    @for (pub of publishers(); track pub.id) {
+                                        <mat-option [value]="pub.id">
+                                            {{ pub.name }}
+                                        </mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+                        }
+                        @case ('date') {
+                            <mat-form-field subscriptSizing="dynamic">
+                                <mat-label>Store date</mat-label>
+                                <input
+                                    matInput
+                                    [matDatepicker]="picker"
+                                    formControlName="value"
+                                />
+
+                                <mat-datepicker-toggle
+                                    matIconSuffix
+                                    [for]="picker"
+                                ></mat-datepicker-toggle>
+                                <mat-datepicker #picker></mat-datepicker>
+                            </mat-form-field>
+                        }
+                    }
+
+                    <button mat-icon-button (click)="removeFilter(ix)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </div>
+            }
+        </div>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-button (click)="addFilter()">Add Filter</button>
+        <button mat-button type="button" mat-dialog-close>Cancel</button>
+        <button mat-button type="submit" cdkFocusInitial>Save</button>
+    </mat-dialog-actions>
+</form>

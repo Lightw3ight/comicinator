@@ -71,7 +71,7 @@ export class ImporterService {
         let title = result.name;
 
         if (title == null && volume.name != null) {
-            title = `${volume.name} ${result.issueNumber
+            title = `${volume.name.trim()} ${result.issueNumber
                 ?.toString()
                 .padStart(3, '0')} (${volume.startYear})`;
         }
@@ -87,7 +87,7 @@ export class ImporterService {
                 externalUrl: result.siteUrl,
                 inker: this.getPersonName(result, ['inker', 'artist']),
                 number: result.issueNumber,
-                series: volume?.name,
+                series: volume?.name?.trim(),
                 volume: volume.startYear ? Number(volume.startYear) : undefined,
                 coverDate: result.storeDate,
                 externalId: result.id,

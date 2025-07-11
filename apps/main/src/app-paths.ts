@@ -12,17 +12,21 @@ export const NO_IMAGE_PATH = app.isPackaged
     ? path.join(process.resourcesPath, NO_IMG_FILE_NAME)
     : path.join(app.getAppPath(), 'resources', NO_IMG_FILE_NAME);
 
-export const DATA_PATH = app.isPackaged
-    ? path.join(app.getPath('appData'), APP_NAME, DB_FILENAME)
-    : path.join(app.getAppPath(), 'debug-data', DB_FILENAME);
+export const DATA_PATH = path.join(
+    app.getPath('appData'),
+    APP_NAME,
+    DB_FILENAME,
+);
 
 export const ICO_PATH = app.isPackaged
     ? path.join(process.resourcesPath, ICO_FILE_NAME)
     : path.join(app.getAppPath(), 'resources', ICO_FILE_NAME);
 
-export const THUMB_CACHE_PATH = app.isPackaged
-    ? path.join(app.getPath('appData'), APP_NAME, THUMB_CACHE_FOLDER)
-    : path.join(app.getAppPath(), 'debug-data', THUMB_CACHE_FOLDER);
+export const THUMB_CACHE_PATH = path.join(
+    app.getPath('appData'),
+    APP_NAME,
+    THUMB_CACHE_FOLDER,
+);
 
 try {
     fs.accessSync(THUMB_CACHE_PATH);

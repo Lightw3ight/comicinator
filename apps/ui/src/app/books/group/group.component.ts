@@ -11,16 +11,21 @@ import { BookGroupStore } from '../../core/store/book-group/book-group.store';
 import { BooksStore } from '../../core/store/books/books.store';
 import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 import { BookListComponent } from '../book-list/book-list.component';
+import { MatIcon } from '@angular/material/icon';
+import { MatIconButton } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { MoveBooksComponent } from '../move-books/move-books.component';
 
 @Component({
     selector: 'cbx-group',
     templateUrl: 'group.component.html',
     styleUrl: 'group.component.scss',
-    imports: [BookListComponent, PageHeaderComponent],
+    imports: [BookListComponent, PageHeaderComponent, MatIcon, MatIconButton],
 })
 export class GroupComponent {
     private booksStore = inject(BooksStore);
     private bookGroupStore = inject(BookGroupStore);
+    private dialog = inject(MatDialog);
 
     public readonly groupField = input.required<keyof Book>();
     public readonly groupValue = input.required<string>();
@@ -36,6 +41,14 @@ export class GroupComponent {
             untracked(async () => {
                 await this.bookGroupStore.setActiveGroup(field, value);
             });
+        });
+    }
+
+    protected moveBookFiles() {
+        this.dialog.open(MoveBooksComponent, {
+            data: this.books(),
+            disableClose: true,
+            minWidth: 900,
         });
     }
 

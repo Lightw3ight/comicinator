@@ -3,6 +3,7 @@ import { EntityBaseState } from '../entity-base-state.interface';
 
 export interface BooksState extends EntityBaseState<Book, number> {
     lastBookImport: Date | undefined;
+    libraryId: number | undefined;
 }
 
 export const BOOKS_INITIAL_STATE: BooksState = {
@@ -14,4 +15,5 @@ export const BOOKS_INITIAL_STATE: BooksState = {
     pagedData: [],
     itemCount: 0,
     columnCount: 0,
+    libraryId: undefined,
 };

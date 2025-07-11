@@ -11,6 +11,7 @@ import { BookLocation } from './book-location';
 import { BookTeam } from './book-team';
 import { generateWhere } from '../models/generate-where';
 import { createBookSort } from './create-book-sort';
+import { FieldFilter } from '../models/field-filter.interface';
 
 async function assignTeams(bookId: number, teamIds: number[], tx: Transaction) {
     await BookTeam.destroy({
@@ -126,10 +127,12 @@ export class BookController {
         return results.map((r) => r.get({ plain: true }))[0];
     }
 
-    public static async selectManyCount(filter: string) {
+    public static async selectManyCount(
+        filter: string | Omit<SelectOptions<Book>, 'offset' | 'limit'>,
+    ) {
         let where = {};
 
-        if (filter) {
+        if (filter && typeof filter === 'string') {
             where = {
                 [Op.or]: [
                     {
@@ -140,6 +143,8 @@ export class BookController {
                     },
                 ],
             };
+        } else if (filter && typeof filter === 'object') {
+            where = generateWhere(['title', 'series'], filter);
         }
 
         return await Book.count({ where });
@@ -196,10 +201,13 @@ export class BookController {
         return results.map((o) => o.get({ plain: true }));
     }
 
-    public static async selectGroupedCount(groupField: string, filter: string) {
+    public static async selectGroupedCount(
+        groupField: string,
+        filter: string | Omit<SelectOptions<Book>, 'offset' | 'limit'>,
+    ) {
         let where = {};
 
-        if (filter) {
+        if (filter && typeof filter === 'string') {
             where = {
                 [Op.or]: [
                     {
@@ -210,6 +218,8 @@ export class BookController {
                     },
                 ],
             };
+        } else if (filter && typeof filter === 'object') {
+            where = generateWhere(['title', 'series'], filter);
         }
 
         return await Book.count({
@@ -223,10 +233,7 @@ export class BookController {
         field: keyof Book,
         options: SelectOptions<Book>,
     ) {
-        const where =
-            options.filter == null
-                ? {}
-                : { [field]: { [Op.like]: `%${options.filter}%` } };
+        const where = generateWhere(['title', 'series'], options);
 
         const results = await Book.findAll({
             group: field,
@@ -349,8 +356,8 @@ export class BookController {
                 const { filePath } = book;
                 await fs.promises.unlink(filePath);
             }
-
-            await Book.destroy({ where: { id: id } });
         }
+
+        await Book.destroy({ where: { id: id } });
     }
 }

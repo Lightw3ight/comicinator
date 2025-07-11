@@ -1,0 +1,17 @@
+mat-form-field {
+    width: 100%;
+}
+
+.lib-form__filter {
+    display: grid;
+    grid-template-columns: 150px 150px auto fit-content(0);
+    gap: 16px;
+    align-items: center;
+    margin-top: 16px;
+}
+
+.lib-form__name-and-match-all {
+    display: grid;
+    grid-template-columns: auto 160px;
+    gap: 16px;
+}

@@ -100,6 +100,21 @@ Book.init(
     {
         sequelize: db,
         modelName: 'Book',
+        indexes: [
+            {
+                fields: ['externalId'],
+                unique: true,
+            },
+            {
+                fields: ['dateAdded'],
+            },
+            {
+                fields: ['lastUpdated'],
+            },
+            {
+                fields: ['series'],
+            },
+        ],
     },
 );
 

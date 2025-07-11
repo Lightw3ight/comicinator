@@ -2,7 +2,7 @@ import { Component, computed, inject, input, Signal } from '@angular/core';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Book } from '../../core/models/book.interface';
 import { BookGroupStore } from '../../core/store/book-group/book-group.store';
 import { BooksStore } from '../../core/store/books/books.store';
@@ -29,6 +29,7 @@ export class BooksViewBarComponent {
     private bookGroupStore = inject(BookGroupStore);
     private booksStore = inject(BooksStore);
     private router = inject(Router);
+    private route = inject(ActivatedRoute);
 
     public readonly title = input<string>();
 
@@ -49,7 +50,12 @@ export class BooksViewBarComponent {
     }
 
     protected clearSearch() {
-        this.router.navigateByUrl('/books', { replaceUrl: true });
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { search: undefined },
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+        });
     }
 
     private computeShowClearSearch() {

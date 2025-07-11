@@ -1,2 +1,7 @@
-<cbx-page-header [title]="title()" />
+<cbx-page-header [title]="title()">
+    <button mat-icon-button title="Move book files" (click)="moveBookFiles()">
+        <mat-icon>drive_file_move</mat-icon>
+    </button>
+</cbx-page-header>
+
 <cbx-book-list [books]="books()" />

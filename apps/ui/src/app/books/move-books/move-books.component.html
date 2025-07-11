@@ -1,0 +1,55 @@
+<h2
+    mat-dialog-title
+    cdkDrag
+    cdkDragRootElement=".cdk-overlay-pane"
+    cdkDragHandle
+>
+    Move books
+</h2>
+<mat-dialog-content>
+    @if (this.processing()) {
+        <cbx-progress-takeover
+            [message]="progressText()"
+            [value]="progress()"
+        />
+    }
+
+    <div class="import-books__content">
+        <div>
+            @for (item of items(); track item.book.id) {
+                <div
+                    class="import-books__item"
+                    [class.import-books__item--disabled]="item.samePath"
+                >
+                    <div>
+                        <mat-checkbox
+                            [checked]="item.selected"
+                            (change)="setItemSelected(item, $event.checked)"
+                            [disabled]="item.samePath"
+                        ></mat-checkbox>
+                    </div>
+
+                    <div class="import-books__item-details">
+                        <div class="import-books__item-label">From:</div>
+                        <div>{{ item.book.filePath }}</div>
+
+                        <div class="import-books__item-label">To:</div>
+                        <div>{{ item.outputPath }}</div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button
+        mat-button
+        cdkFocusInitial
+        (click)="moveBooks()"
+        [disabled]="!canMove()"
+    >
+        Move
+    </button>
+</mat-dialog-actions>

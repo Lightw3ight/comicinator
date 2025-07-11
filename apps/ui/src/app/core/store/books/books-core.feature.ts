@@ -119,9 +119,19 @@ export function withBooksCoreFeature() {
 
                 async resetPageData() {
                     const columnCount = store.columnCount();
-                    const itemCount = await booksApiService.selectManyCount(
-                        store.searchText(),
-                    );
+                    const libId = store.libraryId();
+                    let itemCount: number;
+
+                    if (libId) {
+                        itemCount = await booksApiService.selectByLibraryCount(
+                            libId,
+                            store.searchText(),
+                        );
+                    } else {
+                        itemCount = await booksApiService.selectManyCount(
+                            store.searchText(),
+                        );
+                    }
 
                     if (itemCount === 0 || columnCount === 0) {
                         patchState(store, {
@@ -160,6 +170,22 @@ export function withBooksCoreFeature() {
                     }
                 },
 
+                setLibrary(libId: number | undefined) {
+                    if (libId !== store.libraryId()) {
+                        patchState(store, {
+                            libraryId: libId,
+                        });
+                    }
+                },
+
+                clearLibrary() {
+                    if (store.libraryId() != null) {
+                        patchState(store, {
+                            libraryId: undefined,
+                        });
+                    }
+                },
+
                 async clearPageCache() {
                     patchState(store, { pagedData: [], pagesLoaded: {} });
                 },
@@ -177,13 +203,27 @@ export function withBooksCoreFeature() {
                     });
 
                     const offset = pageIndex * PAGE_SCROLL_SIZE;
-                    const books = await booksApiService.selectMany(
-                        store.searchText(),
-                        offset,
-                        PAGE_SCROLL_SIZE * store.columnCount(),
-                        store.sortField(),
-                        store.sortDirection(),
-                    );
+                    const libraryId = store.libraryId();
+                    let books: Book[];
+
+                    if (libraryId) {
+                        books = await booksApiService.selectByLibrary(
+                            libraryId,
+                            store.searchText(),
+                            offset,
+                            PAGE_SCROLL_SIZE * store.columnCount(),
+                            store.sortField(),
+                            store.sortDirection(),
+                        );
+                    } else {
+                        books = await booksApiService.selectMany(
+                            store.searchText(),
+                            offset,
+                            PAGE_SCROLL_SIZE * store.columnCount(),
+                            store.sortField(),
+                            store.sortDirection(),
+                        );
+                    }
                     const ids = books.map((o) => o.id);
                     const chunkedIds = chunkItems(ids, store.columnCount());
                     const pagedData = [...store.pagedData()];

@@ -20,6 +20,10 @@ export const routes: Routes = [
         component: BooksComponent,
     },
     {
+        path: 'books/library/:libraryId',
+        component: BooksComponent,
+    },
+    {
         path: 'books/group/:groupField/:groupValue',
         component: GroupComponent,
     },
@@ -50,5 +54,12 @@ export const routes: Routes = [
     {
         path: 'locations/:id',
         component: LocationComponent,
+    },
+    {
+        path: 'libraries',
+        loadChildren: () =>
+            import('./libraries/libraries.routes').then(
+                (o) => o.LIBRARIES_ROUTES,
+            ),
     },
 ];

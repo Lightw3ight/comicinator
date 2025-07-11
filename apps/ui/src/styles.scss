@@ -11,12 +11,14 @@ html {
         )
     );
 }
-cyan-orange
+
 /* You can add global styles to this file, and also import other style files */
 
 html,
 body {
     height: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 html {
@@ -48,6 +50,14 @@ a {
     font-family: Roboto, 'Helvetica Neue', sans-serif;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5 {
+    font-weight: 500;
+}
+
 .bi {
     font-size: 16px;
 }
@@ -68,4 +78,8 @@ h1 {
     font-style: normal;
     font-size: 28px;
     color: var(--brand-color);
+}
+
+.book-viewer__panel {
+    --mdc-dialog-container-shape: 0;
 }

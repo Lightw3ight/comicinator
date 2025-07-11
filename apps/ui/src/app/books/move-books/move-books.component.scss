@@ -1,0 +1,31 @@
+.import-books__item {
+    display: grid;
+    grid-template-columns: fit-content(0) auto;
+    align-items: center;
+    gap: 16px;
+    border-radius: 4px;
+    padding: 4px 0;
+
+    + .import-books__item {
+        margin-top: 8px;
+    }
+
+    &:not(.import-books__item--disabled):hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+.import-books__item--disabled {
+    opacity: 0.7;
+}
+
+.import-books__item-details {
+    display: grid;
+    grid-template-columns: fit-content(0) auto;
+    font-size: 12px;
+    column-gap: 8px;
+}
+
+.import-books__item-label {
+    color: var(--brand-color);
+}

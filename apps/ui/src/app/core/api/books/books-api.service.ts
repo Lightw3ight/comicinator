@@ -26,6 +26,28 @@ export class BooksApiService {
         return await this.electron.run<Book[]>('bookSelectMany', options);
     }
 
+    public async selectByLibrary(
+        libraryId: number,
+        filter: string | undefined,
+        offset: number,
+        limit = 100,
+        sortField: keyof Book = 'coverDate',
+        sortDirection: SortDirection = 'DESC',
+    ): Promise<Book[]> {
+        const options: SelectOptions<Book> = {
+            filter,
+            offset,
+            limit,
+            sortField,
+            sortDirection,
+        };
+        return await this.electron.run<Book[]>(
+            'libSelectBooks',
+            libraryId,
+            options,
+        );
+    }
+
     public async selectNextInSeries(
         publisherId: number | undefined,
         series: string,
@@ -44,6 +66,14 @@ export class BooksApiService {
 
     public async selectManyCount(filter?: string) {
         return await this.electron.run<number>('bookSelectManyCount', filter);
+    }
+
+    public async selectByLibraryCount(libraryId: number, filter?: string) {
+        return await this.electron.run<number>(
+            'libSelectBooksCount',
+            libraryId,
+            filter,
+        );
     }
 
     public async create(
@@ -131,12 +161,25 @@ export class BooksApiService {
         );
     }
 
-    public async selectGroupedTotal(field: keyof Book, filter?: string) {
-        return await this.electron.run<number>(
-            'bookSelectGroupedCount',
-            field,
-            filter,
-        );
+    public async selectGroupedTotal(
+        field: keyof Book,
+        libraryId?: number,
+        filter?: string,
+    ) {
+        if (libraryId) {
+            return await this.electron.run<number>(
+                'libSelectGroupedBooksCount',
+                libraryId,
+                field,
+                filter,
+            );
+        } else {
+            return await this.electron.run<number>(
+                'bookSelectGroupedCount',
+                field,
+                filter,
+            );
+        }
     }
 
     public async selectGrouped(
@@ -146,6 +189,7 @@ export class BooksApiService {
         limit = 100,
         sortField: keyof Book = 'coverDate',
         sortDirection: SortDirection = 'DESC',
+        libraryId?: number,
     ): Promise<BookGroup[]> {
         const options: SelectOptions<Book> = {
             filter,
@@ -155,11 +199,20 @@ export class BooksApiService {
             sortDirection,
         };
 
-        return await this.electron.run<BookGroup[]>(
-            'bookSelectGrouped',
-            field,
-            options,
-        );
+        if (libraryId) {
+            return await this.electron.run<BookGroup[]>(
+                'libSelectGroupedBooks',
+                libraryId,
+                field,
+                options,
+            );
+        } else {
+            return await this.electron.run<BookGroup[]>(
+                'bookSelectGrouped',
+                field,
+                options,
+            );
+        }
     }
 
     public async remove(id: number, removeFile = false): Promise<void> {

@@ -77,6 +77,21 @@ Character.init(
     {
         sequelize: db,
         modelName: 'Character',
+        indexes: [
+            {
+                fields: ['externalId'],
+                unique: true,
+            },
+            {
+                fields: ['dateAdded'],
+            },
+            {
+                fields: ['lastUpdated'],
+            },
+            {
+                fields: ['name'],
+            },
+        ],
     },
 );
 

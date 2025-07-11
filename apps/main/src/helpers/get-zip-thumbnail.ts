@@ -31,10 +31,10 @@ export async function getZipThumbnail(
     zipPath: string,
     thumbName: string | undefined,
     thumbsPath: string,
-    fallbackImagePath: string
+    fallbackImagePath: string,
 ): Promise<GlobalResponse> {
     const hash = hashString(zipPath);
-    const thumbPath = path.join(thumbsPath, `${hash}.jpg`);
+    let thumbPath = path.join(thumbsPath, `${hash}.jpg`);
 
     if (!(await exists(thumbPath))) {
         const loaders = Object.values(imageQueue).map((o) => o.loader);
@@ -61,7 +61,7 @@ export async function getZipThumbnail(
             }
 
             if (queueItem.aborted) {
-                return net.fetch(`file:///${fallbackImagePath}`);
+                throw new Error(`Aborted image loading for ${thumbPath}`);
             }
 
             try {
@@ -70,14 +70,12 @@ export async function getZipThumbnail(
                     '.jpg',
                     '.png',
                     '.jpeg',
+                    '.webp',
                 ]);
                 await generateThumb(zipPath, thumbsPath, imageBuffer);
             } catch (er: any) {
                 console.log('ERROR MAKING THUMB', zipPath, er);
-                await sharp(fallbackImagePath)
-                    .resize({ withoutEnlargement: true, width: 300 })
-                    .jpeg({ quality: 80 })
-                    .toFile(thumbPath);
+                thumbPath = fallbackImagePath;
             }
             resolve();
 

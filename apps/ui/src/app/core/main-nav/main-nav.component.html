@@ -1,5 +1,5 @@
 <header>
-    <img src="images/logo.svg" />
+    <img src="images/logo.svg" alt="Comicinator" />
 </header>
 
 <nav>
@@ -8,7 +8,7 @@
         routerLink="/books"
         routerLinkActive="main-nav__nav-item--active"
     >
-        <i class="bi bi-collection"></i>
+        <mat-icon>menu_book</mat-icon>
         Books
     </a>
 
@@ -17,7 +17,7 @@
         routerLink="/characters"
         routerLinkActive="main-nav__nav-item--active"
     >
-        <i class="bi bi-person"></i>
+        <mat-icon>person</mat-icon>
         Characters
     </a>
 
@@ -26,7 +26,7 @@
         routerLink="/teams"
         routerLinkActive="main-nav__nav-item--active"
     >
-        <i class="bi bi-people"></i>
+        <mat-icon>groups</mat-icon>
         Teams
     </a>
 
@@ -35,10 +35,31 @@
         routerLink="/locations"
         routerLinkActive="main-nav__nav-item--active"
     >
-        <i class="bi bi-geo"></i>
+        <mat-icon>location_on</mat-icon>
         Locations
     </a>
+
+    <a
+        class="main-nav__nav-item"
+        routerLink="/libraries"
+        routerLinkActive="main-nav__nav-item--active"
+    >
+        <mat-icon>collections_bookmark</mat-icon>
+        Libraries
+    </a>
 </nav>
+
+@if (libraries().length) {
+    <div class="main-nav__lib-quick-list">
+        <h4>Libraries</h4>
+
+        @for (lib of libraries(); track lib.id) {
+            <div class="main-nav__lib-quick-list-item">
+                <a [routerLink]="['/books/library', lib.id]">{{ lib.name }}</a>
+            </div>
+        }
+    </div>
+}
 
 <cbx-last-read-list />
 
