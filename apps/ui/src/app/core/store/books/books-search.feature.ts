@@ -10,6 +10,7 @@ import { addEntities, addEntity, EntityState } from '@ngrx/signals/entities';
 import { BooksApiService } from '../../api/books/books-api.service';
 import { Book } from '../../models/book.interface';
 import { BooksState } from './books-state.interface';
+import { FieldFilter } from '../../api/field-filter.interface';
 
 export function withBooksSearchFeature() {
     return signalStoreFeature(
@@ -48,8 +49,13 @@ export function withBooksSearchFeature() {
                 },
 
                 async loadLastRead() {
+                    const filter: FieldFilter<Book> = {
+                        field: 'complete',
+                        value: false,
+                        operator: 'eq',
+                    };
                     const books = await booksApiService.selectMany(
-                        undefined,
+                        [filter],
                         0,
                         10,
                         'lastOpened',

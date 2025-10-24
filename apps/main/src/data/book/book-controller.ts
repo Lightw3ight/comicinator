@@ -305,10 +305,18 @@ export class BookController {
         currentPage: number,
         pageCount: number,
     ) {
-        await Book.update(
-            { pageCount, currentPage, lastOpened: new Date() },
-            { where: { id } },
-        );
+        const bookUpdate: Partial<Book> = {
+            pageCount,
+            currentPage,
+            lastOpened: new Date(),
+        };
+
+        if (pageCount === currentPage) {
+            console.log('SET COMPLETE');
+            bookUpdate.complete = true;
+        }
+
+        await Book.update(bookUpdate, { where: { id } });
 
         return await this.selectById(id);
     }

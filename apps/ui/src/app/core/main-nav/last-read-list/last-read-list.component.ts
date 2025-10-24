@@ -23,4 +23,8 @@ export class LastReadListComponent implements OnInit {
     protected openBook(book: Book) {
         this.bookViewer.openBook(book);
     }
+
+    protected refresh() {
+        this.bookStore.loadLastRead();
+    }
 }

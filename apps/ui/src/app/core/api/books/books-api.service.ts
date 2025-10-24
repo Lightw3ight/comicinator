@@ -4,20 +4,22 @@ import { BookGroup } from '../../models/book-group.interface';
 import { Book } from '../../models/book.interface';
 import { SortDirection } from '../../models/sort-direction.type';
 import { SelectOptions } from '../select-options.interface';
+import { FieldFilter } from '../field-filter.interface';
 
 @Injectable({ providedIn: 'root' })
 export class BooksApiService {
     private electron = inject(ElectronService);
 
     public async selectMany(
-        filter: string | undefined,
+        filter: string | undefined | FieldFilter<Book>[],
         offset: number,
         limit = 100,
         sortField: keyof Book = 'coverDate',
         sortDirection: SortDirection = 'DESC',
     ): Promise<Book[]> {
         const options: SelectOptions<Book> = {
-            filter,
+            filter: Array.isArray(filter) ? undefined : filter,
+            filters: Array.isArray(filter) ? filter : undefined,
             offset,
             limit,
             sortField,

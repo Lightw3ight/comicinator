@@ -54,6 +54,21 @@
     height: calc(var(--thumb-width) * 1.536);
     border-top-right-radius: 6px;
     border-top-left-radius: 6px;
+    position: relative;
+}
+
+.book-item__complete-indicator {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    &:after {
+        content: '';
+        display: block;
+        border-radius: 4px;
+        background-color: var(--brand-color);
+        width: 8px;
+        height: 8px;
+    }
 }
 
 .book-item__details {

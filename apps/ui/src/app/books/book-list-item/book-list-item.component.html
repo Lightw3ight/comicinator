@@ -1,4 +1,8 @@
-<div class="book-item__img" [style.backgroundImage]="thumbSrc()"></div>
+<div class="book-item__img" [style.backgroundImage]="thumbSrc()">
+    @if (book()?.complete) {
+        <div class="book-item__complete-indicator"></div>
+    }
+</div>
 
 @if (bookData().number != null) {
     <div class="book-item__num">

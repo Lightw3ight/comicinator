@@ -1,6 +1,7 @@
 import { Component, computed, HostBinding, inject, input } from '@angular/core';
 import { BookViewerService } from '../../../../books/book-viewer/book-viewer.service';
 import { Book } from '../../../models/book.interface';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'cbx-last-read-item',
@@ -9,6 +10,7 @@ import { Book } from '../../../models/book.interface';
 })
 export class LastReadItemComponent {
     private bookViewer = inject(BookViewerService);
+    private router = inject(Router);
 
     public readonly book = input.required<Book>();
 
@@ -37,7 +39,11 @@ export class LastReadItemComponent {
         });
     }
 
-    protected openBook() {
-        this.bookViewer.openBook(this.book());
+    protected onItemClick(args: MouseEvent) {
+        if (args.ctrlKey) {
+            this.router.navigate(['/books', this.book().id]);
+        } else {
+            this.bookViewer.openBook(this.book());
+        }
     }
 }

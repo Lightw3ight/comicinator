@@ -48,6 +48,7 @@ export function withBooksCoreFeature() {
                         .entities()
                         .filter(
                             (o) =>
+                                !o.complete &&
                                 o.lastOpened != null &&
                                 (o.currentPage ?? 0) < (o.pageCount ?? 1),
                         );
@@ -250,6 +251,13 @@ export function withBooksCoreFeature() {
                         store,
                         updateEntity({ id, changes: updatedBook }),
                     );
+                },
+
+                async markComplete(book: Book, complete: boolean) {
+                    await this.updateBook({
+                        ...book,
+                        complete,
+                    });
                 },
 
                 async updateBook(

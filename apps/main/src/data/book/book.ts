@@ -33,6 +33,7 @@ class Book extends Model<InferAttributes<Book>, InferCreationAttributes<Book>> {
     declare lastUpdated?: Date;
     declare lastOpened?: Date;
     declare frontCover?: string;
+    declare complete: boolean;
 }
 
 Book.init(
@@ -69,6 +70,11 @@ Book.init(
         pageCount: DataTypes.INTEGER,
         currentPage: DataTypes.INTEGER,
         fileSize: DataTypes.INTEGER,
+        complete: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
+        },
         dateAdded: {
             type: DataTypes.DATE,
             allowNull: false,

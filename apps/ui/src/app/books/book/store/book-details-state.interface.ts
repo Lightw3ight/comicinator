@@ -4,14 +4,14 @@ import { Location } from '../../../core/models/location.interface';
 import { Team } from '../../../core/models/team.interface';
 
 export interface BookDetailsState {
-    book: Book | undefined;
+    bookId: number | undefined;
     characters: Character[];
     teams: Team[];
     locations: Location[];
 }
 
 export const BOOK_DETAILS_INITIAL_STATE: BookDetailsState = {
-    book: undefined,
+    bookId: undefined,
     characters: [],
     teams: [],
     locations: [],

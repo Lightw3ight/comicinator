@@ -24,4 +24,5 @@ export interface Book {
     externalId?: number;
     frontCover?: string;
     lastUpdated?: Date;
+    complete?: boolean;
 }

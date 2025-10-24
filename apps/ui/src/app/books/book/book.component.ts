@@ -98,6 +98,10 @@ export class BookComponent {
         this.bookDetailsStore.updateItem();
     }
 
+    protected markComplete(complete: boolean) {
+        this.booksStore.markComplete(this.book()!, complete);
+    }
+
     protected async clearThumbCache() {
         await this.electronService.removeThumbCache(this.book()!.filePath);
         await this.messagingService.message({
