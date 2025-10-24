@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, effect, inject } from '@angular/core';
 import {
     AbstractControl,
@@ -33,23 +33,22 @@ import { SettingsStore } from '../core/store/settings/settings.store';
     templateUrl: 'app-settings.component.html',
     styleUrl: 'app-settings.component.scss',
     imports: [
-        CommonModule,
-        MatButton,
-        MatIconButton,
-        MatIcon,
-        MatFormField,
-        MatInput,
-        MatSuffix,
-        MatLabel,
-        MatError,
-        ReactiveFormsModule,
-        MatDialogTitle,
-        MatDialogContent,
-        MatDialogActions,
-        MatDialogClose,
-        MatTabGroup,
-        MatTab,
-    ],
+    MatButton,
+    MatIconButton,
+    MatIcon,
+    MatFormField,
+    MatInput,
+    MatSuffix,
+    MatLabel,
+    MatError,
+    ReactiveFormsModule,
+    MatDialogTitle,
+    MatDialogContent,
+    MatDialogActions,
+    MatDialogClose,
+    MatTabGroup,
+    MatTab
+],
 })
 export class AppSettingsComponent {
     readonly dialogRef = inject(MatDialogRef<AppSettingsComponent>);

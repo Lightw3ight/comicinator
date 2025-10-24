@@ -14,7 +14,7 @@ import { BookGroupStore } from '../../core/store/book-group/book-group.store';
 import { BooksStore } from '../../core/store/books/books.store';
 import { ThumbnailDataSource } from '../thumbnail-data-source';
 import { GroupListItemComponent } from './group-list-item/group-list-item.component';
-import { CommonModule } from '@angular/common';
+
 import { StreamingThumbListComponent } from '../../shared/streaming-thumb-list/streaming-thumb-list.component';
 import { ThumbListItemTemplateDirective } from '../../shared/virtual-thumb-list/thumb-list-item-template.directive';
 
@@ -23,12 +23,11 @@ import { ThumbListItemTemplateDirective } from '../../shared/virtual-thumb-list/
     templateUrl: 'group-list.component.html',
     styleUrl: 'group-list.component.scss',
     imports: [
-        CommonModule,
-        GroupListItemComponent,
-        StreamingThumbListComponent,
-        ThumbListItemTemplateDirective,
-        RouterLink,
-    ],
+    GroupListItemComponent,
+    StreamingThumbListComponent,
+    ThumbListItemTemplateDirective,
+    RouterLink
+],
 })
 export class GroupListComponent implements OnDestroy {
     private electron = inject(ElectronService);

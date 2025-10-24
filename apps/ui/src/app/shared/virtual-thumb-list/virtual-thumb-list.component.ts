@@ -12,14 +12,14 @@ import { observeSize } from '../observers/observe-size';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { ThumbListRowComponent } from './thumb-list-row/thumb-list-row.component';
 import { ThumbListItemTemplateDirective } from './thumb-list-item-template.directive';
-import { CommonModule } from '@angular/common';
+
 import { generateUUID } from '../generate-uuid';
 
 @Component({
     selector: 'cbx-virtual-thumb-list',
     templateUrl: 'virtual-thumb-list.component.html',
     styleUrl: 'virtual-thumb-list.component.scss',
-    imports: [CommonModule, ScrollingModule, ThumbListRowComponent],
+    imports: [ScrollingModule, ThumbListRowComponent],
 })
 export class VirtualThumbListComponent {
     public readonly itemWidth = input.required<number>();

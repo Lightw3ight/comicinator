@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, inject, input, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Book } from '../../core/models/book.interface';
@@ -12,12 +12,11 @@ import { ElectronService } from '../../core/electron.service';
     templateUrl: 'book-list.component.html',
     styleUrl: 'book-list.component.scss',
     imports: [
-        CommonModule,
-        BookListItemComponent,
-        VirtualThumbListComponent,
-        ThumbListItemTemplateDirective,
-        RouterLink,
-    ],
+    BookListItemComponent,
+    VirtualThumbListComponent,
+    ThumbListItemTemplateDirective,
+    RouterLink
+],
 })
 export class BookListComponent implements OnDestroy {
     private electron = inject(ElectronService);

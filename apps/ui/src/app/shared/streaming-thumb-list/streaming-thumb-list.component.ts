@@ -1,6 +1,6 @@
 import { DataSource, isDataSource } from '@angular/cdk/collections';
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { CommonModule } from '@angular/common';
+
 import {
     Component,
     computed,
@@ -22,7 +22,7 @@ const SCROLL_BAR_WIDTH = 20;
     selector: 'cbx-streaming-thumb-list',
     templateUrl: 'streaming-thumb-list.component.html',
     styleUrl: 'streaming-thumb-list.component.scss',
-    imports: [CommonModule, ScrollingModule, ThumbListRowComponent],
+    imports: [ScrollingModule, ThumbListRowComponent],
 })
 export class StreamingThumbListComponent {
     public readonly itemWidth = input.required<number>();

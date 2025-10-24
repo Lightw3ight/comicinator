@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import {
     NonNullableFormBuilder,
@@ -52,27 +52,26 @@ import { ProgressTakeoverComponent } from '../../shared/progress-takeover/progre
     templateUrl: 'book-form.component.html',
     styleUrl: 'book-form.component.scss',
     imports: [
-        CommonModule,
-        MatDialogTitle,
-        MatDialogContent,
-        MatDialogActions,
-        MatDialogClose,
-        MatButtonModule,
-        ReactiveFormsModule,
-        MatDatepickerModule,
-        MatInputModule,
-        MatRadioModule,
-        MatTabsModule,
-        MatFormFieldModule,
-        MatSelectModule,
-        CharacterSelectorComponent,
-        TeamSelectorComponent,
-        MatCheckboxModule,
-        ProgressTakeoverComponent,
-        LocationSelectorComponent,
-        CdkDrag,
-        CdkDragHandle,
-    ],
+    MatDialogTitle,
+    MatDialogContent,
+    MatDialogActions,
+    MatDialogClose,
+    MatButtonModule,
+    ReactiveFormsModule,
+    MatDatepickerModule,
+    MatInputModule,
+    MatRadioModule,
+    MatTabsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    CharacterSelectorComponent,
+    TeamSelectorComponent,
+    MatCheckboxModule,
+    ProgressTakeoverComponent,
+    LocationSelectorComponent,
+    CdkDrag,
+    CdkDragHandle
+],
 })
 export class BookFormComponent implements OnInit {
     private dialog = inject(MatDialog);

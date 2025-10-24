@@ -208,7 +208,7 @@ export class BookViewerComponent implements OnDestroy, OnInit {
                 const urls = imageData
                     .sort((a, b) => a.entryName.localeCompare(b.entryName))
                     .map((item) => {
-                        const image = new Blob([item.image], {
+                        const image = new Blob([new Uint8Array(item.image)], {
                             type: 'image/jpeg',
                         });
                         return {
