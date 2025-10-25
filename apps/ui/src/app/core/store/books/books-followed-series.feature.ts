@@ -51,6 +51,9 @@ export function withBooksFollowedSeriesFeature() {
                     const visible =
                         await followSeriesApiService.selectSeriesWithUnreadBooks();
                     const all = await followSeriesApiService.selectAll();
+
+                    visible.sort();
+
                     patchState(store, {
                         allFollowedSeries: all,
                         visibleFollowedSeries: visible,

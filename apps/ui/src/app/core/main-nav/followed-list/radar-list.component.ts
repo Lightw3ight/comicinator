@@ -6,12 +6,12 @@ import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
 
 @Component({
-    selector: 'cbx-followed-list',
-    templateUrl: 'followed-list.component.html',
-    styleUrl: 'followed-list.component.scss',
+    selector: 'cbx-radar-list',
+    templateUrl: 'radar-list.component.html',
+    styleUrl: 'radar-list.component.scss',
     imports: [NavListComponent, NavListItemComponent, MatIcon, MatIconButton],
 })
-export class FollowedListComponent {
+export class RadarListComponent {
     private readonly bookStore = inject(BooksStore);
 
     public readonly followedSeries = this.bookStore.visibleFollowedSeries;

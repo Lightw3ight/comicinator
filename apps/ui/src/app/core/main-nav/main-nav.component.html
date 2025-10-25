@@ -61,11 +61,8 @@
         </cbx-nav-list>
     }
 
-    <div>
-        <cbx-last-read-list />
-
-        <cbx-followed-list />
-    </div>
+    <cbx-last-read-list />
+    <cbx-radar-list />
 </div>
 <footer>
     <button (click)="openSettings()" [disabled]="!loaded()">

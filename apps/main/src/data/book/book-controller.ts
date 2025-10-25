@@ -369,6 +369,8 @@ export class BookController {
             }
         }
 
+        await UserBookStateController.deleteBookState(id);
+
         await Book.destroy({ where: { id: id } });
     }
 }
