@@ -16,11 +16,13 @@ import {
 } from '@ngrx/signals/entities';
 import store2 from 'store2';
 import { BooksApiService } from '../../api/books/books-api.service';
+import { UserBookStateApiService } from '../../api/user-book-state/user-book-state-api.service';
 import { ElectronService } from '../../electron.service';
 import { Book } from '../../models/book.interface';
 import { ComicInfoXml } from '../../models/comic-info-xml.interface';
 import { PAGE_SCROLL_SIZE } from '../../models/page-scroll-size.const';
 import { SortDirection } from '../../models/sort-direction.type';
+import { UserBookState } from '../../models/user-book-state.interface';
 import { CharactersStore } from '../characters/characters.store';
 import { chunkItems } from '../chunk-items';
 import { LocationsStore } from '../locations/locations.store';
@@ -38,25 +40,46 @@ export function withBooksCoreFeature() {
         withEntities<Book>(),
 
         withComputed((store) => {
+            const userBookStateMap = computed(() => {
+                const state = store.userBookState();
+
+                return state.reduce(
+                    (acc, item) => {
+                        acc[item.bookId] = item;
+                        return acc;
+                    },
+                    {} as {
+                        [bookId: number]: UserBookState;
+                    },
+                );
+            });
+
             return {
+                userBookStateMap,
                 rowCount: computed(() => {
                     return Math.ceil(store.itemCount() / PAGE_SCROLL_SIZE);
                 }),
 
                 lastRead: computed(() => {
                     const readItems = store
-                        .entities()
-                        .filter(
-                            (o) =>
-                                !o.complete &&
-                                o.lastOpened != null &&
-                                (o.currentPage ?? 0) < (o.pageCount ?? 1),
+                        .userBookState()
+                        .filter((o) => {
+                            if (o.complete || o.lastOpened == null) {
+                                return false;
+                            }
+                            const book = store.entityMap()[o.bookId];
+                            return book?.pageCount != null;
+                        })
+                        .sort(
+                            (a, b) =>
+                                b.lastOpened.getTime() - a.lastOpened.getTime(),
                         );
-                    readItems.sort(
-                        (a, b) =>
-                            b.lastOpened!.getTime() - a.lastOpened!.getTime(),
-                    );
-                    return readItems.slice(0, 10);
+
+                    const items = readItems
+                        .slice(0, 10)
+                        .map(({ bookId }) => store.entityMap()[bookId]);
+
+                    return items.filter((o) => o != null) as Book[];
                 }),
             };
         }),
@@ -68,8 +91,34 @@ export function withBooksCoreFeature() {
             const teamsStore = inject(TeamsStore);
             const locationsStore = inject(LocationsStore);
             const electron = inject(ElectronService);
+            const userBookStateApiService = inject(UserBookStateApiService);
 
             return {
+                async loadLastRead() {
+                    const bookState = [...store.userBookState()];
+
+                    const lastReadBookIds = bookState
+                        .filter((o) => !o.complete)
+                        .sort(
+                            (a, b) =>
+                                b.lastOpened.getTime() - a.lastOpened.getTime(),
+                        )
+                        .slice(0, 10)
+                        .map((state) => state.bookId);
+
+                    const books =
+                        await booksApiService.selectByIds(lastReadBookIds);
+                    patchState(store, addEntities(books));
+                },
+
+                async loadAllBookState() {
+                    const userBookState =
+                        await userBookStateApiService.selectAll();
+
+                    patchState(store, { userBookState });
+                    await this.loadLastRead();
+                },
+
                 persistState() {
                     const state: SortState<Book> = {
                         sortField: store.sortField(),
@@ -234,30 +283,6 @@ export function withBooksCoreFeature() {
                         ...chunkedIds,
                     );
                     patchState(store, addEntities(books), { pagedData });
-                },
-
-                async setReadDetails(
-                    id: number,
-                    currentPage: number,
-                    pageCount: number,
-                ) {
-                    const updatedBook = await booksApiService.setReadDetails(
-                        id,
-                        currentPage,
-                        pageCount,
-                    );
-
-                    patchState(
-                        store,
-                        updateEntity({ id, changes: updatedBook }),
-                    );
-                },
-
-                async markComplete(book: Book, complete: boolean) {
-                    await this.updateBook({
-                        ...book,
-                        complete,
-                    });
                 },
 
                 async updateBook(
@@ -450,6 +475,8 @@ export function withBooksCoreFeature() {
                                 state.sortDirection ?? store.sortDirection(),
                         });
                     }
+
+                    await store.loadAllBookState();
                 },
             };
         }),

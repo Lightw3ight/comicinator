@@ -105,6 +105,8 @@ export class ImportProgressComponent implements OnInit {
             await firstValueFrom(ref.afterClosed());
         }
 
+        this.booksStore.loadFollowedSeries();
+
         this.dialogRef.close();
     }
 

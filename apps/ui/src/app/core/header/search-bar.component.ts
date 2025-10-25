@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
+import { ElectronService } from '../electron.service';
 
 @Component({
     selector: 'cbx-search-bar',
@@ -12,6 +13,7 @@ import { map } from 'rxjs';
     imports: [MatIconModule, FormsModule],
 })
 export class SearchBarComponent {
+    private readonly electronService = inject(ElectronService);
     private router = inject(Router);
     private route = inject(ActivatedRoute);
     protected searchValue = signal<string>('');
@@ -34,6 +36,10 @@ export class SearchBarComponent {
 
     protected back() {
         window.history.back();
+    }
+
+    protected refresh() {
+        this.electronService.reloadApp();
     }
 
     protected search() {

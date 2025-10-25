@@ -6,8 +6,13 @@
     width: var(--side-bar-width);
     background-color: #444444;
     display: grid;
-    grid-template-rows: 71px fit-content(0) fit-content(0) auto 51px;
+    grid-template-rows: 71px fit-content(0) auto 51px;
     grid-template-columns: var(--side-bar-width);
+}
+
+.main-nav__content-area {
+    background-color: #555;
+    overflow: auto;
 }
 
 mat-icon {

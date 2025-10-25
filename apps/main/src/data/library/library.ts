@@ -5,7 +5,7 @@ import {
     Model,
 } from 'sequelize';
 import { parseDate } from '../../helpers/parse-date';
-import { db } from '../db';
+import { userDb } from '../user-db';
 
 class Library extends Model<
     InferAttributes<Library>,
@@ -57,7 +57,7 @@ Library.init(
         },
     },
     {
-        sequelize: db,
+        sequelize: userDb,
         modelName: 'Library',
     },
 );

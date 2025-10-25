@@ -1,6 +1,6 @@
 <div class="book-item__img" [style.backgroundImage]="thumbSrc()">
-    @if (book()?.complete) {
-        <div class="book-item__complete-indicator"></div>
+    @if (!bookState()?.complete) {
+        <div class="book-item__complete-indicator" title="Unread"></div>
     }
 </div>
 
@@ -29,10 +29,22 @@
 
 <cbx-thumb-actions>
     <button mat-icon-button (click)="onViewClick($event)" title="View">
-        <mat-icon>visibility</mat-icon>
+        <mat-icon>menu_book</mat-icon>
     </button>
 
     <button mat-icon-button (click)="onEditClick($event)" title="Edit">
         <mat-icon>edit</mat-icon>
+    </button>
+
+    <button
+        mat-icon-button
+        (click)="onToggleCompleteClick($event)"
+        [title]="bookState()?.complete ? 'Mark as unread' : 'Mark as read'"
+    >
+        @if (bookState()?.complete) {
+            <mat-icon>visibility_off</mat-icon>
+        } @else {
+            <mat-icon>visibility</mat-icon>
+        }
     </button>
 </cbx-thumb-actions>

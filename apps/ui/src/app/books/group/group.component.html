@@ -1,4 +1,22 @@
 <cbx-page-header [title]="title()">
+    @if (groupField() === 'series') {
+        <button
+            mat-icon-button
+            [title]="
+                isFollowed()
+                    ? 'Remove from reading radar'
+                    : 'Add to reading radar'
+            "
+            (click)="toggleFollowSeries()"
+        >
+            @if (isFollowed()) {
+                <mat-icon>bookmark_added</mat-icon>
+            } @else {
+                <mat-icon>bookmark_add</mat-icon>
+            }
+        </button>
+    }
+
     <button mat-icon-button title="Move book files" (click)="moveBookFiles()">
         <mat-icon>drive_file_move</mat-icon>
     </button>

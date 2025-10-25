@@ -49,20 +49,24 @@
     </a>
 </nav>
 
-@if (libraries().length) {
-    <div class="main-nav__lib-quick-list">
-        <h4>Libraries</h4>
+<div class="main-nav__content-area">
+    @if (libraries().length) {
+        <cbx-nav-list title="Libraries">
+            @for (lib of libraries(); track lib.id) {
+                <cbx-nav-list-item
+                    [label]="lib.name"
+                    [url]="['/books/library', lib.id]"
+                />
+            }
+        </cbx-nav-list>
+    }
 
-        @for (lib of libraries(); track lib.id) {
-            <div class="main-nav__lib-quick-list-item">
-                <a [routerLink]="['/books/library', lib.id]">{{ lib.name }}</a>
-            </div>
-        }
+    <div>
+        <cbx-last-read-list />
+
+        <cbx-followed-list />
     </div>
-}
-
-<cbx-last-read-list />
-
+</div>
 <footer>
     <button (click)="openSettings()" [disabled]="!loaded()">
         <mat-icon class="material-icons-outlined">settings</mat-icon>

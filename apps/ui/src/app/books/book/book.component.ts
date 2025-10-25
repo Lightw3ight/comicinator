@@ -5,6 +5,7 @@ import {
     inject,
     input,
     numberAttribute,
+    Signal,
     signal,
     untracked,
 } from '@angular/core';
@@ -34,6 +35,7 @@ import { ConfirmDeleteDialogComponent } from '../confirm-delete-dialog/confirm-d
 import { BookDetailsStore } from './store/book-details.store';
 import { DatePipe } from '@angular/common';
 import { PublishersStore } from '../../core/store/publishers/publishers.store';
+import { UserBookState } from '../../core/models/user-book-state.interface';
 
 export type ImageFit = 'width' | 'height' | 'all';
 
@@ -82,6 +84,7 @@ export class BookComponent {
     protected readonly previewImageSrc = this.computeThumbSrc();
     protected readonly activeTabIndex = signal(0);
     protected readonly publisher = this.computePublisher();
+    protected readonly bookState = this.computeBookState();
 
     constructor() {
         effect(() => {
@@ -172,6 +175,12 @@ export class BookComponent {
             }
 
             return book.title;
+        });
+    }
+
+    private computeBookState(): Signal<UserBookState | undefined> {
+        return computed(() => {
+            return this.booksStore.userBookStateMap()[this.id()];
         });
     }
 }

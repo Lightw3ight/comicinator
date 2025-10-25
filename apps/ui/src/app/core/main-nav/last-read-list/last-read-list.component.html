@@ -1,7 +1,9 @@
-<h4 (click)="refresh()">In progress</h4>
-
-<div class="last-read__items">
-    @for (book of books(); track book.id) {
-        <cbx-last-read-item [book]="book" />
+<cbx-nav-list title="In progress" (headerClick)="refresh()">
+    @for (book of books(); track book.data.id) {
+        <cbx-nav-list-item
+            [label]="book.label"
+            [progress]="book.progress"
+            (click)="onItemClick($event, book.data)"
+        />
     }
-</div>
+</cbx-nav-list>

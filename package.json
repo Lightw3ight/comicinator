@@ -1,11 +1,12 @@
 {
     "name": "comicinator",
-    "version": "0.7.0",
+    "version": "0.9.0",
     "description": "Comic book reader and organizer",
     "author": "Kris Mackintosh",
     "license": "MIT",
     "scripts": {
-        "start": "nx run comicinator-main:serve"
+        "start": "nx run comicinator-main:serve",
+        "make": "nx run comicinator-main:make"
     },
     "main": "dist/app/index.js",
     "dependencies": {

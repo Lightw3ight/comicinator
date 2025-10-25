@@ -16,6 +16,9 @@ import { getZipThumbnail } from './helpers/get-zip-thumbnail';
 import { createLazyValue } from './helpers/lazy-value';
 import { getZipHandlers } from './zip/zip-handlers';
 import { LibraryController } from './data/library/library-controller';
+import { userDb } from './data/user-db';
+import { UserBookStateController } from './data/user-book-state/user-book-state.controller';
+import { FollowSeriesController } from './data/follow-series/follow-series.controller';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -24,8 +27,8 @@ if (require('electron-squirrel-startup')) {
 
 const mainWindow = createLazyValue<BrowserWindow>();
 
-const createWindow = (): void => {
-    initializeModelRelationships();
+const createWindow = async (): Promise<void> => {
+    await initializeModelRelationships();
 
     // Create the browser window.
     mainWindow.set(
@@ -154,6 +157,7 @@ async function handleEntityImageRequest(
 app.on('window-all-closed', async () => {
     if (process.platform !== 'darwin') {
         await db.close();
+        await userDb.close();
         app.quit();
     }
 });
@@ -205,3 +209,5 @@ registerControllerHandlers('setting', SettingController);
 registerControllerHandlers('pub', PublisherController);
 registerControllerHandlers('book', BookController);
 registerControllerHandlers('lib', LibraryController);
+registerControllerHandlers('userBook', UserBookStateController);
+registerControllerHandlers('series', FollowSeriesController);

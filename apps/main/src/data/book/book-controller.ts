@@ -3,15 +3,15 @@ import { col, fn, Op, Sequelize, Transaction } from 'sequelize';
 import { Character } from '../character/character';
 import { db } from '../db';
 import { Location } from '../location/location';
+import { generateWhere } from '../models/generate-where';
 import { SelectOptions } from '../models/select-options.interface';
 import { Team } from '../team/team';
 import { Book } from './book';
 import { BookCharacter } from './book-character';
 import { BookLocation } from './book-location';
 import { BookTeam } from './book-team';
-import { generateWhere } from '../models/generate-where';
 import { createBookSort } from './create-book-sort';
-import { FieldFilter } from '../models/field-filter.interface';
+import { UserBookStateController } from '../user-book-state/user-book-state.controller';
 
 async function assignTeams(bookId: number, teamIds: number[], tx: Transaction) {
     await BookTeam.destroy({
@@ -305,18 +305,21 @@ export class BookController {
         currentPage: number,
         pageCount: number,
     ) {
+        let complete = false;
         const bookUpdate: Partial<Book> = {
             pageCount,
-            currentPage,
-            lastOpened: new Date(),
         };
 
         if (pageCount === currentPage) {
-            console.log('SET COMPLETE');
-            bookUpdate.complete = true;
+            complete = true;
         }
 
         await Book.update(bookUpdate, { where: { id } });
+        await UserBookStateController.setBookState(id, {
+            currentPage,
+            complete,
+            lastOpened: new Date(),
+        });
 
         return await this.selectById(id);
     }

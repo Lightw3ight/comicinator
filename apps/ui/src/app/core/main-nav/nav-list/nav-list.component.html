@@ -1,0 +1,21 @@
+<div class="nav-list__header">
+    <h4 (click)="headerClick.emit()">{{ title() }}</h4>
+
+    <div class="nav-list__actions">
+        <ng-content select="[mat-icon-button]"></ng-content>
+
+        <button mat-icon-button (click)="toggleCollapse()">
+            @if (collapsed()) {
+                <mat-icon>arrow_drop_down</mat-icon>
+            } @else {
+                <mat-icon>arrow_drop_up</mat-icon>
+            }
+        </button>
+    </div>
+</div>
+
+@if (!collapsed()) {
+    <div class="nav-list__items">
+        <ng-content select="cbx-nav-list-item"></ng-content>
+    </div>
+}

@@ -1,13 +1,13 @@
 @if (book(); as bk) {
     <cbx-content-super [title]="title()">
         <div cbx-action-buttons>
-            @if (!book()?.complete) {
+            @if (!bookState()?.complete) {
                 <button
                     mat-icon-button
                     (click)="markComplete(true)"
                     title="Mark as read"
                 >
-                    <mat-icon>radio_button_unchecked</mat-icon>
+                    <mat-icon>visibility</mat-icon>
                 </button>
             } @else {
                 <button
@@ -15,12 +15,12 @@
                     (click)="markComplete(false)"
                     title="Mark as unread"
                 >
-                    <mat-icon>check_circle</mat-icon>
+                    <mat-icon>visibility_off</mat-icon>
                 </button>
             }
 
             <button mat-icon-button (click)="openBook()" title="Read book">
-                <mat-icon>visibility</mat-icon>
+                <mat-icon>menu_book</mat-icon>
             </button>
 
             @if (bk.externalUrl) {
@@ -60,7 +60,7 @@
 
                 <div class="book__preview-image-overlay">
                     <button mat-mini-fab (click)="openBook()" title="Read book">
-                        <mat-icon>visibility</mat-icon>
+                        <mat-icon>menu_book</mat-icon>
                     </button>
                 </div>
             </div>

@@ -28,6 +28,10 @@ export class BooksApiService {
         return await this.electron.run<Book[]>('bookSelectMany', options);
     }
 
+    public async selectByIds(ids: number[]): Promise<Book[]> {
+        return await this.electron.run<Book[]>('bookSelectByIds', ids);
+    }
+
     public async selectByLibrary(
         libraryId: number,
         filter: string | undefined,

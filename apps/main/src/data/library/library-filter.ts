@@ -4,9 +4,9 @@ import {
     InferCreationAttributes,
     Model,
 } from 'sequelize';
-import { db } from '../db';
-import { Library } from './library';
 import { FilterOperator } from '../models/filter-operator.type';
+import { userDb } from '../user-db';
+import { Library } from './library';
 
 class LibraryFilter extends Model<
     InferAttributes<LibraryFilter>,
@@ -48,7 +48,7 @@ LibraryFilter.init(
         },
     },
     {
-        sequelize: db,
+        sequelize: userDb,
         modelName: 'LibraryFilter',
     },
 );

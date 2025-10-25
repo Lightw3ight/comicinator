@@ -1,3 +1,4 @@
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -12,15 +13,13 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { firstValueFrom } from 'rxjs';
 import { ElectronService } from '../core/electron.service';
 import { FileSystemService } from '../core/file-system.service';
-import { ComicInfoXml } from '../core/models/comic-info-xml.interface';
 import { BooksStore } from '../core/store/books/books.store';
 import { SettingsStore } from '../core/store/settings/settings.store';
 import { ScanResult } from './models/scan-result.interface';
 import { ScanResultsComponent } from './scan-results/scan-results.component';
-import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 
 @Component({
-    selector: 'cmx-library-scanner',
+    selector: 'cbx-library-scanner',
     templateUrl: 'library-scanner.component.html',
     styleUrl: 'library-scanner.component.scss',
     imports: [
@@ -101,7 +100,7 @@ export class LibraryScannerComponent {
         this.fileCount.set(filePaths.length);
         const results: ScanResult[] = [];
 
-        for (let path of filePaths) {
+        for (const path of filePaths) {
             if (await this.booksStore.checkComicAdded(path)) {
                 results.push({
                     added: false,
@@ -141,6 +140,8 @@ export class LibraryScannerComponent {
                 break;
             }
         }
+
+        this.booksStore.loadFollowedSeries();
 
         if (this.canceling()) {
             this.dialogRef.close();

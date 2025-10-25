@@ -6,6 +6,7 @@ import {
     inject,
     OnDestroy,
     OnInit,
+    Signal,
     signal,
     viewChild,
 } from '@angular/core';
@@ -20,6 +21,7 @@ import { Book } from '../../core/models/book.interface';
 import { BooksStore } from '../../core/store/books/books.store';
 import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 import { ImageFit } from '../book/book.component';
+import { UserBookState } from '../../core/models/user-book-state.interface';
 
 export const FIT_KEY = 'image-viewer-fit';
 export const ZOOM_KEY = 'image-viewer-zoom';
@@ -60,6 +62,7 @@ export class BookViewerComponent implements OnDestroy, OnInit {
     protected readonly percentageRead = this.computePercentageRead();
     protected readonly nextBook = signal<Book | undefined>(undefined);
     protected readonly showReadNext = this.computeCanReadNext();
+    protected readonly userBookState = this.computeUserBookState();
 
     private viewerRef =
         viewChild<ElementRef<HTMLDivElement>>('viewerContainer');
@@ -217,7 +220,7 @@ export class BookViewerComponent implements OnDestroy, OnInit {
                         };
                     });
 
-                let currentPage = (this.book().currentPage ?? 1) - 1;
+                let currentPage = (this.userBookState()?.currentPage ?? 1) - 1;
 
                 if (currentPage > urls.length || currentPage < 0) {
                     currentPage = 0;
@@ -344,6 +347,12 @@ export class BookViewerComponent implements OnDestroy, OnInit {
             }
 
             return this.imageIndex() === this.images().length - 1;
+        });
+    }
+
+    private computeUserBookState(): Signal<UserBookState | undefined> {
+        return computed(() => {
+            return this.bookStore.userBookStateMap()[this.book().id];
         });
     }
 }

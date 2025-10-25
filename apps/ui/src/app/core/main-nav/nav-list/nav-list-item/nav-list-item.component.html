@@ -1,0 +1,5 @@
+<a class="nav-list-item__link" [routerLink]="url()">{{ label() }}</a>
+
+@if (progress()) {
+    <div [style.width.%]="progress()" class="nav-list-item__progress"></div>
+}

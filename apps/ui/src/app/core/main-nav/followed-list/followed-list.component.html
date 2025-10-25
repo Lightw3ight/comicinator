@@ -1,0 +1,8 @@
+<cbx-nav-list title="Reading Radar" (headerClick)="refresh()">
+    @for (seriesName of followedSeries(); track seriesName) {
+        <cbx-nav-list-item
+            [label]="seriesName"
+            [url]="['/books/group/series', seriesName]"
+        />
+    }
+</cbx-nav-list>

@@ -3,6 +3,7 @@ import path from 'path';
 import * as fs from 'fs';
 
 const DB_FILENAME = 'cdb.db';
+const USER_DB_FILENAME = 'user-db.db';
 const THUMB_CACHE_FOLDER = 'thumb-cache';
 const NO_IMG_FILE_NAME = 'no-image.jpg';
 const ICO_FILE_NAME = 'app.ico';
@@ -16,6 +17,12 @@ export const DATA_PATH = path.join(
     app.getPath('appData'),
     APP_NAME,
     DB_FILENAME,
+);
+
+export const USER_DATA_PATH = path.join(
+    app.getPath('appData'),
+    APP_NAME,
+    USER_DB_FILENAME,
 );
 
 export const ICO_PATH = app.isPackaged

@@ -163,7 +163,7 @@ export class ImportBooksComponent {
         const items = this.itemsToImport();
         const newItems: ImportItem[] = [];
 
-        for (let item of items) {
+        for (const item of items) {
             if (item.selected) {
                 const ref = this.dialog.open(BookSearchResultsComponent, {
                     data: {
@@ -256,7 +256,7 @@ export class ImportBooksComponent {
     }
 
     private getTokenValue(key: string, tokens: Dictionary<any>) {
-        let keyMatch = key.match(TOKEN_PADDING_RX);
+        const keyMatch = key.match(TOKEN_PADDING_RX);
         let padding = 0;
 
         if (keyMatch) {
@@ -270,7 +270,7 @@ export class ImportBooksComponent {
             return undefined;
         } else if (isNaN(value) || padding === 0) {
             return typeof value === 'string'
-                ? value.replaceAll(/[<>:"\/\\|?*]/g, '')
+                ? value.replaceAll(/[<>:"/\\|?*]/g, '')
                 : value;
         } else {
             return value.toString().padStart(padding, '0');

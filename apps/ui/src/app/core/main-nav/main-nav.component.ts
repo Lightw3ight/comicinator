@@ -11,6 +11,9 @@ import { FileSystemService } from '../file-system.service';
 import { LibraryStore } from '../store/library/library.store';
 import { SettingsStore } from '../store/settings/settings.store';
 import { LastReadListComponent } from './last-read-list/last-read-list.component';
+import { FollowedListComponent } from './followed-list/followed-list.component';
+import { NavListComponent } from './nav-list/nav-list.component';
+import { NavListItemComponent } from './nav-list/nav-list-item/nav-list-item.component';
 
 @Component({
     selector: 'cbx-main-nav',
@@ -23,6 +26,9 @@ import { LastReadListComponent } from './last-read-list/last-read-list.component
         RouterLinkActive,
         MatIcon,
         LastReadListComponent,
+        FollowedListComponent,
+        NavListComponent,
+        NavListItemComponent,
     ],
 })
 export class MainNavComponent {

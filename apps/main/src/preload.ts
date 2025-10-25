@@ -20,6 +20,9 @@ const ZIP_METHODS = [
     'readImages',
     'importBook',
 ];
+
+const USER_BOOK_METHODS = ['selectById', 'selectAll', 'setBookState'];
+
 const GENERIC_METHODS = ['removeThumbCache', 'abortImageQueue'];
 
 const CHARACTER_METHODS = [
@@ -65,6 +68,13 @@ const LOCATION_METHODS = [
     'selectByIds',
 ];
 
+const SERIES_METHODS = [
+    'selectAll',
+    'followSeries',
+    'unfollowSeries',
+    'selectSeriesWithUnreadBooks',
+];
+
 const PUBLISHER_METHODS = [
     'selectAll',
     'update',
@@ -80,6 +90,7 @@ const PUBLISHER_METHODS = [
 const BOOK_METHODS = [
     'setReadDetails',
     'selectById',
+    'selectByIds',
     'selectMany',
     'search',
     'startsWith',
@@ -139,6 +150,9 @@ contextBridge.exposeInMainWorld('electron', {
     ...createHandlerPassthroughs('zip', ZIP_METHODS),
     ...createHandlerPassthroughs('cbx', GENERIC_METHODS),
     ...createHandlerPassthroughs('lib', LIBRARY_METHODS),
+    ...createHandlerPassthroughs('userBook', USER_BOOK_METHODS),
+    ...createHandlerPassthroughs('series', SERIES_METHODS),
+
     sqlRun: async (sql: string, ...args: any[]) => {
         for (const arg of args) {
             if (arg instanceof Object) {

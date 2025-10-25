@@ -1,0 +1,22 @@
+:host {
+    display: block;
+}
+
+h4 {
+    margin: 0;
+}
+
+.nav-list__header {
+    display: grid;
+    grid-template-columns: auto fit-content(0);
+    align-items: center;
+    margin: 0 4px 0 16px;
+}
+
+.nav-list__items {
+    margin: 0 16px 8px 16px;
+}
+
+.nav-list__actions {
+    white-space: nowrap;
+}

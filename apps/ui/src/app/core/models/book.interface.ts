@@ -17,12 +17,12 @@ export interface Book {
     editor?: string;
     publisherId?: number;
     pageCount?: number;
-    currentPage?: number;
-    lastOpened?: Date;
+    // currentPage?: number;
+    // lastOpened?: Date;
     fileSize?: number;
     externalUrl?: string;
     externalId?: number;
     frontCover?: string;
     lastUpdated?: Date;
-    complete?: boolean;
+    // complete?: boolean;
 }

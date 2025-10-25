@@ -29,21 +29,21 @@ export class ElectronService {
     }
 
     public async zipImportBook(
-        zipPath: string
+        zipPath: string,
     ): Promise<ComicInfoXml | undefined> {
         return this.electron.zipImportBook(zipPath);
     }
 
     public async zipReadText(
         zipPath: string,
-        fileName: string
+        fileName: string,
     ): Promise<string | undefined> {
         return this.electron.zipReadText(zipPath, fileName);
     }
 
     public async zipReadXml<T = any>(
         zipPath: string,
-        fileName: string
+        fileName: string,
     ): Promise<T | undefined> {
         return this.electron.zipReadXml(zipPath, fileName);
     }
@@ -51,14 +51,14 @@ export class ElectronService {
     public async zipWriteXml<T = any>(
         zipPath: string,
         fileName: string,
-        data: object
+        data: object,
     ): Promise<T | undefined> {
         return this.electron.zipWriteXml(zipPath, fileName, data);
     }
 
     public async zipReadData(
         zipPath: string,
-        fileName: string
+        fileName: string,
     ): Promise<Buffer | undefined> {
         return this.electron.zipReadData(zipPath, fileName);
     }
@@ -68,12 +68,35 @@ export class ElectronService {
     }
 
     public async zipReadImages(
-        zipPath: string
+        zipPath: string,
     ): Promise<{ entryName: string; image: Buffer }[]> {
         return this.electron.zipReadImages(zipPath);
     }
 
     public async removeThumbCache(zipPath: string): Promise<void> {
         return this.electron.cbxRemoveThumbCache(zipPath);
+    }
+
+    public reloadApp(): void {
+        const href = window.location.href;
+
+        // If index.html already present, just reload
+        if (href.includes('index.html')) {
+            window.location.reload();
+            return;
+        }
+
+        // Otherwise insert index.html into the URL and reload
+        const hashIndex = href.indexOf('#');
+        let newHref: string;
+        if (hashIndex >= 0) {
+            newHref =
+                href.slice(0, hashIndex) + 'index.html' + href.slice(hashIndex);
+        } else {
+            newHref = href.endsWith('/')
+                ? href + 'index.html'
+                : href + '/index.html';
+        }
+        window.location.href = newHref;
     }
 }

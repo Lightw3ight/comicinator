@@ -9,8 +9,10 @@ import { TeamCharacter } from './team/team-character';
 import { db } from './db';
 import { Library } from './library/library';
 import { LibraryFilter } from './library/library-filter';
+import { userDb } from './user-db';
+import { USER_DATA_PATH } from '../app-paths';
 
-export function initializeModelRelationships() {
+export async function initializeModelRelationships() {
     Book.belongsToMany(Character, {
         through: BookCharacter,
         foreignKey: 'bookId',
@@ -49,5 +51,6 @@ export function initializeModelRelationships() {
 
     LibraryFilter.belongsTo(Library, { foreignKey: 'libraryId' });
 
-    db.sync();
+    await db.sync();
+    await userDb.sync();
 }
